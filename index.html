@@ -16,23 +16,23 @@
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        padding: 40px 20px; /* Instead of margin-top: 200px */
-        min-height: 100vh; /* Full screen height */
+        padding: 40px 20px;
+        min-height: 100vh;
         box-sizing: border-box;
     }
 
     h1 {
-        font-size: 8vw; /* Responsive font size */
+        font-size: 48px; /* Default for desktop */
         margin: 0;
     }
 
     p {
-        font-size: 5vw; /* Responsive font size */
+        font-size: 24px;
         margin-top: -10px;
     }
 
     .p2 {
-        font-size: 4vw;
+        font-size: 18px;
         margin-top: 20px;
         font-weight: normal;
         letter-spacing: 0em;
@@ -44,28 +44,47 @@
     }
 
     .p3 {
-        font-size: 5vw;
+        font-size: 24px;
         margin-top: 50px;
     }
 
     .p4 {
-        font-size: 4vw;
+        font-size: 18px;
         margin-top: 100px;
     }
 
     img {
         margin-top: 20px;
-        width: 40vw; /* Responsive image size */
-        max-width: 250px; /* But don't let it get too big */
-        height: auto; /* Maintain aspect ratio */
+        width: 250px;
+        max-width: 80vw; /* Allow it to shrink on small screens */
+        height: auto;
     }
 
     .icon-container {
         display: flex;
         justify-content: center;
         gap: 20px;
-        flex-wrap: wrap; /* Allow icons to wrap if needed on smaller screens */
+        flex-wrap: wrap;
         margin-top: 20px;
+    }
+
+    /* MOBILE adjustments */
+    @media (max-width: 768px) {
+        h1 {
+            font-size: 8vw;
+        }
+
+        p, .p3, .p4 {
+            font-size: 5vw;
+        }
+
+        .p2 {
+            font-size: 4vw;
+        }
+
+        img {
+            width: 40vw;
+        }
     }
 </style>
 </head>
