@@ -5,62 +5,69 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dainware</title>
     <style>
-        /* Set the page background to black */
-        body {
-            background-color: black;
-            color: white; /* Set font color to white */
-            font-family: 'Helvetica', sans-serif; /* Set font to Helvetica */
-            font-weight: bold; /* Set font weight to bold for the body */
-            letter-spacing: -0.05em; /* Set character spacing */
-            text-align: center; /* Center the text */
-            /*height: 100vh; /* Full viewport height */
-            display: flex;
-            flex-direction: column;
-            justify-content: center; /* Center vertically */
-            align-items: center; /* Center horizontally */
-            margin-top: 200px;
-        }
-        h1 {
-            font-size: 72px; /* Set font size of the h1 */
-            margin: 0;
-        }
-        p {
-            font-size: 32px; /* Set font size of the first paragraph */
-            margin-top: -20px; /* Set the space between h1 and p */
-        }
-        /* Style for the second paragraph (not bold) */
-        .p2 {
-            font-size: 18px; /* Set font size of the second paragraph */
-            margin-top: 10px; /* Set the space between p1 and p2 */
-            font-weight: normal; /* Remove bold */
-            letter-spacing: 0em;
-            text-align: justify;
-            font-family: 'Helvetica', sans-serif; /* Use Helvetica for p2 */
-            max-width: 800px; /* Set the max width of the paragraph */
-            margin-left: auto; /* Center horizontally */
-            margin-right: auto; /* Center horizontally */
-            padding: 0 20px; /* Optional: Add some padding to avoid text touching the edges */
-        }
-        .p3 {
-            font-size: 32px; /* Set font size of the first paragraph */
-            margin-top: 50px; /* Set the space between h1 and p */
-        }
-        .p4 {
-            font-size: 20px; /* Set font size of the first paragraph */
-            margin-top: 200px; /* Set the space between h1 and p */
-        }
-        /* Style for the image */
-        img {
-            margin-top: 10px; /* Space the image from the paragraph */
-            width: 250px; /* Set image width */
-        }
-        /* Container for the app icons */
-        .icon-container {
-            display: flex;
-            justify-content: center; /* Center the icons horizontally */
-            gap: 20px; /* Space between the icons */
-        }
-    </style>
+    body {
+        background-color: black;
+        color: white;
+        font-family: 'Helvetica', sans-serif;
+        font-weight: bold;
+        letter-spacing: -0.05em;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 40px 20px; /* Instead of margin-top: 200px */
+        min-height: 100vh; /* Full screen height */
+        box-sizing: border-box;
+    }
+
+    h1 {
+        font-size: 8vw; /* Responsive font size */
+        margin: 0;
+    }
+
+    p {
+        font-size: 5vw; /* Responsive font size */
+        margin-top: -10px;
+    }
+
+    .p2 {
+        font-size: 4vw;
+        margin-top: 20px;
+        font-weight: normal;
+        letter-spacing: 0em;
+        text-align: justify;
+        max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
+        padding: 0 20px;
+    }
+
+    .p3 {
+        font-size: 5vw;
+        margin-top: 50px;
+    }
+
+    .p4 {
+        font-size: 4vw;
+        margin-top: 100px;
+    }
+
+    img {
+        margin-top: 20px;
+        width: 40vw; /* Responsive image size */
+        max-width: 250px; /* But don't let it get too big */
+        height: auto; /* Maintain aspect ratio */
+    }
+
+    .icon-container {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        flex-wrap: wrap; /* Allow icons to wrap if needed on smaller screens */
+        margin-top: 20px;
+    }
+</style>
 </head>
 <body>
     <h1>Dainware</h1>
