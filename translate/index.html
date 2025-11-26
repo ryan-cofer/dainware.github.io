@@ -167,8 +167,12 @@
             }
 
             .icon-grid {
-                grid-template-columns: repeat(2, 150px);
-                gap: 20px;
+                grid-template-columns: repeat(4, 80px);
+                gap: 10px;
+            }
+
+            .icon-grid img {
+                width: 80px;
             }
 
             .title {
@@ -195,12 +199,12 @@
 
         @media (max-width: 400px) {
             .icon-grid {
-                grid-template-columns: repeat(2, 120px);
-                gap: 15px;
+                grid-template-columns: repeat(4, 70px);
+                gap: 8px;
             }
 
             .icon-grid img {
-                width: 120px;
+                width: 70px;
             }
         }
     </style>
@@ -225,7 +229,7 @@
         <a href="index.html">HOME</a>
         <a href="privacy.html">PRIVACY POLICY</a>
         <a href="terms.html">TERMS OF SERVICE</a>
-        <a href="mailto:support@dainware.com">CONTACT</a>
+        <a href="/cdn-cgi/l/email-protection#21525451514e5355614540484f564053440f424e4c">CONTACT</a>
     </nav>
 
     <!-- Main content -->
@@ -259,10 +263,10 @@
                  class="download-button">
         </a>
 
-        <p class="footer">SUPPORT@DAINWARE.COM</p>
+        <p class="footer"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="fba8aeababb4a9afbbbfbab2b5acbaa9bed5b8b4b6">[email&#160;protected]</a></p>
     </main>
 
-    <script>
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
         function toggleMenu() {
             const menu = document.getElementById('menu');
             const hamburger = document.querySelector('.hamburger');
@@ -273,13 +277,4 @@
         // Close menu when clicking outside
         document.addEventListener('click', function(event) {
             const menu = document.getElementById('menu');
-            const hamburger = document.querySelector('.hamburger');
-            
-            if (!menu.contains(event.target) && !hamburger.contains(event.target)) {
-                menu.classList.remove('active');
-                hamburger.setAttribute('aria-expanded', 'false');
-            }
-        });
-    </script>
-</body>
-</html>
+            const hamburger = document.querySelector('.hamburge
