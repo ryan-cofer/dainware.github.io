@@ -211,16 +211,3 @@
 
         <p class="footer">SUPPORT@DAINWARE.COM</p>
     </main>
-
-    <script>
-        function toggleMenu() {
-            const menu = document.getElementById('menu');
-            const hamburger = document.querySelector('.hamburger');
-            const isExpanded = menu.classList.toggle('active');
-            hamburger.setAttribute('aria-expanded', isExpanded);
-        }
-
-        // Close menu when clicking outside
-        document.addEventListener('click', function(event) {
-            const menu = document.getElementById('menu');
-            const hamburger = document.querySelector('.hamburge
