@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
     <title>Dainware Translation Apps</title>
-    <link rel="icon" type="image/png" href="https://github.com/ryan-cofer/dainware.github.io/blob/main/translate/dainwareLogo.png?raw=true">
     <style>
         /* Base styles (desktop first) */
         * {
@@ -125,7 +124,7 @@
             width: 150px;
             height: auto;
             display: block;
-            border-radius: 30px;
+            border-radius: 20px;
         }
 
         /* Typography */
@@ -164,6 +163,10 @@
 
         /* Mobile styles */
         @media (max-width: 800px) {
+            .top-left {
+                width: 50px;
+            }
+
             .content-wrapper {
                 margin-top: 80px;
             }
@@ -175,6 +178,7 @@
 
             .icon-grid img {
                 width: 80px;
+                border-radius: 8px;
             }
 
             .title {
@@ -207,6 +211,7 @@
 
             .icon-grid img {
                 width: 70px;
+                border-radius: 6px;
             }
         }
     </style>
@@ -279,4 +284,13 @@
         // Close menu when clicking outside
         document.addEventListener('click', function(event) {
             const menu = document.getElementById('menu');
-            const hamburger = document.querySelector('.hamburge
+            const hamburger = document.querySelector('.hamburger');
+            
+            if (!menu.contains(event.target) && !hamburger.contains(event.target)) {
+                menu.classList.remove('active');
+                hamburger.setAttribute('aria-expanded', 'false');
+            }
+        });
+    </script>
+</body>
+</html>
