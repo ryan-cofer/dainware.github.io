@@ -111,20 +111,13 @@
             overflow-x: hidden;
         }
 
-        /* Icon grid */
-        .icon-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 150px);
-            gap: 20px;
-            margin-bottom: 40px;
-            justify-content: center;
-        }
-
-        .icon-grid img {
+        /* App icon */
+        .app-icon {
             width: 150px;
             height: auto;
             display: block;
             border-radius: 20px;
+            margin-bottom: 40px;
         }
 
         /* Typography */
@@ -171,12 +164,7 @@
                 margin-top: 80px;
             }
 
-            .icon-grid {
-                grid-template-columns: repeat(4, 80px);
-                gap: 10px;
-            }
-
-            .icon-grid img {
+            .app-icon {
                 width: 80px;
                 border-radius: 15px;
             }
@@ -204,12 +192,7 @@
         }
 
         @media (max-width: 400px) {
-            .icon-grid {
-                grid-template-columns: repeat(4, 70px);
-                gap: 8px;
-            }
-
-            .icon-grid img {
+            .app-icon {
                 width: 70px;
                 border-radius: 10px;
             }
@@ -241,11 +224,10 @@
 
     <!-- Main content -->
     <main class="content-wrapper">
-        <!-- Icon grid -->
-        <div class="icon-grid">
-            <img src="https://github.com/ryan-cofer/dainware.github.io/blob/main/stutter/appIcon.png?raw=true"
-                 alt="Stutter app icon">
-        </div>
+        <!-- App icon -->
+        <img class="app-icon"
+             src="https://github.com/ryan-cofer/dainware.github.io/blob/main/stutter/appIcon.png?raw=true"
+             alt="Stutter app icon">
 
         <h1 class="title">Stutter</h1>
         <p class="subtitle">Stuttering Fluency Aid</p>
