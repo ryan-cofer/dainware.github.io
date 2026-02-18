@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wander — Affiliate Portal</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --ink:      #0f0e0d;
+      --paper:    #f5f0e8;
+      --cream:    #ede7d9;
+      --gold:     #c9a84c;
+      --muted:    #7a7060;
+      --border:   #d4cabc;
+      --green:    #3a7a5a;
+      --red:      #b84040;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      min-height: 100%;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    /* ── HEADER ── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem 2.5rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--cream);
+    }
+
+    .logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.8rem;
+      font-weight: 300;
+      letter-spacing: 0.12em;
+      color: var(--ink);
+    }
+
+    .logo span { color: var(--gold); }
+
+    .header-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.1rem;
+    }
+
+    .portal-label {
+      font-size: 10px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .code-pill {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      background: var(--ink);
+      color: var(--gold);
+      padding: 0.2rem 0.75rem;
+      letter-spacing: 0.1em;
+    }
+
+    /* ── INVALID CODE SCREEN ── */
+    #invalid-screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 60vh;
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .invalid-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2rem;
+      font-weight: 300;
+      margin-bottom: 0.75rem;
+      color: var(--muted);
+    }
+
+    .invalid-sub {
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+    }
+
+    /* ── MAIN ── */
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 2.5rem 2rem;
+    }
+
+    /* ── CONTROLS ── */
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: flex-end;
+      margin-bottom: 2.5rem;
+      padding: 1.5rem;
+      background: var(--cream);
+      border: 1px solid var(--border);
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    label {
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    input[type="date"] {
+      background: var(--paper);
+      border: 1px solid var(--border);
+      padding: 0.55rem 0.75rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      color: var(--ink);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input[type="date"]:focus { border-color: var(--gold); }
+
+    .btn-fetch {
+      padding: 0.6rem 1.8rem;
+      background: var(--ink);
+      color: var(--paper);
+      border: none;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s;
+      align-self: flex-end;
+    }
+
+    .btn-fetch:hover:not(:disabled) { background: var(--gold-dim, #a8883a); }
+    .btn-fetch:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    /* ── SUMMARY CARDS ── */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      margin-bottom: 2.5rem;
+    }
+
+    .summary-card {
+      background: var(--cream);
+      padding: 1.75rem 1.5rem;
+      text-align: center;
+    }
+
+    .card-label {
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.6rem;
+    }
+
+    .card-value {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.8rem;
+      font-weight: 300;
+      color: var(--ink);
+      line-height: 1;
+    }
+
+    .card-value.gold { color: var(--gold); }
+
+    .card-sub {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 0.35rem;
+    }
+
+    /* ── META ── */
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+
+    /* ── DAILY TABLE ── */
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.1rem;
+      font-weight: 400;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .table-wrap {
+      border: 1px solid var(--border);
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead { background: var(--ink); color: var(--paper); }
+
+    th {
+      padding: 0.7rem 1.1rem;
+      text-align: left;
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      font-weight: 400;
+    }
+
+    th:not(:first-child), td:not(:first-child) { text-align: right; }
+
+    td {
+      padding: 0.75rem 1.1rem;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tr:nth-child(even) td { background: rgba(0,0,0,0.02); }
+
+    .commission-val { color: var(--green); }
+
+    /* ── STATES ── */
+    .state-box {
+      padding: 3rem;
+      text-align: center;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.06em;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--border);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: 0.5rem;
+      vertical-align: middle;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error-box {
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--red);
+      background: rgba(184,64,64,0.05);
+      color: var(--red);
+      font-size: 12px;
+      margin-bottom: 1.5rem;
+      display: none;
+    }
+
+    /* ── COMMISSION NOTE ── */
+    .commission-note {
+      margin-top: 1.5rem;
+      padding: 1rem 1.25rem;
+      border-left: 3px solid var(--gold);
+      background: var(--cream);
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    @media (max-width: 600px) {
+      .summary-grid { grid-template-columns: 1fr; }
+      .controls { flex-direction: column; }
+      header { padding: 1rem; flex-wrap: wrap; gap: 0.75rem; }
+      .header-right { align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Wan<span>d</span>er</div>
+  <div class="header-right">
+    <span class="portal-label">Affiliate Portal</span>
+    <span class="code-pill" id="header-code"></span>
+  </div>
+</header>
+
+<!-- Invalid code screen -->
+<div id="invalid-screen">
+  <div class="invalid-title">Invalid affiliate link</div>
+  <div class="invalid-sub">Please check your link and try again, or contact us at hello@dainware.com</div>
+</div>
+
+<!-- Main portal -->
+<div id="portal-screen" style="display:none">
+  <main>
+
+    <!-- Date controls -->
+    <div class="controls">
+      <div class="field">
+        <label>Start Date</label>
+        <input type="date" id="start-date" />
+      </div>
+      <div class="field">
+        <label>End Date</label>
+        <input type="date" id="end-date" />
+      </div>
+      <button class="btn-fetch" id="fetch-btn" onclick="fetchReport()">Run Report</button>
+    </div>
+
+    <div class="error-box" id="error-box"></div>
+
+    <!-- Loading -->
+    <div class="state-box" id="loading-box" style="display:none">
+      <span class="spinner"></span>Fetching your sales data...
+    </div>
+
+    <!-- Initial -->
+    <div class="state-box" id="initial-box">
+      Select a date range above and click Run Report to see your commission data.
+    </div>
+
+    <!-- Results -->
+    <div id="results-section" style="display:none">
+
+      <!-- Summary cards -->
+      <div class="summary-grid">
+        <div class="summary-card">
+          <div class="card-label">Redemptions</div>
+          <div class="card-value" id="stat-redemptions">—</div>
+          <div class="card-sub">subscriptions via your code</div>
+        </div>
+        <div class="summary-card">
+          <div class="card-label">Active Days</div>
+          <div class="card-value" id="stat-days">—</div>
+          <div class="card-sub">days with at least one sale</div>
+        </div>
+        <div class="summary-card">
+          <div class="card-label">Commission Earned</div>
+          <div class="card-value gold" id="stat-commission">—</div>
+          <div class="card-sub" id="stat-commission-sub"></div>
+        </div>
+      </div>
+
+      <div class="meta-row">
+        <span id="meta-range"></span>
+        <span id="meta-reports"></span>
+      </div>
+
+      <!-- No data -->
+      <div class="state-box" id="no-data-box" style="display:none">
+        No redemptions found for this date range.
+      </div>
+
+      <!-- Commission note -->
+      <div class="commission-note" id="commission-note" style="display:none">
+        Commission is calculated at <strong>$3.82 per redemption</strong>. Payments are processed monthly via PayPal. Questions? Email hello@dainware.com
+      </div>
+
+    </div>
+
+  </main>
+</div>
+
+<script>
+  // ─────────────────────────────────────────
+  //  CONFIG — replace with your deployed function URL and API key
+  // ─────────────────────────────────────────
+  const FUNCTION_URL = "https://us-central1-wander-eab4e.cloudfunctions.net/getOfferCodeReport";
+  const API_KEY      = "wander-affiliateportal";
+
+  // ─────────────────────────────────────────
+  //  Read coupon code from URL path
+  //  URL structure: /wander/affiliateportal/COUPONCODE
+  // ─────────────────────────────────────────
+  function getCouponFromPath() {
+    const segments = window.location.pathname.split("/").filter(Boolean);
+    // Expects: ['wander', 'affiliateportal', 'COUPONCODE']
+    const code = segments[2];
+    return code ? code.toUpperCase() : null;
+  }
+
+  const COUPON_CODE = getCouponFromPath();
+
+  // ─────────────────────────────────────────
+  //  Init
+  // ─────────────────────────────────────────
+  window.addEventListener("load", () => {
+    if (!COUPON_CODE) {
+      document.getElementById("invalid-screen").style.display = "flex";
+      return;
+    }
+
+    document.getElementById("portal-screen").style.display = "block";
+    document.getElementById("header-code").textContent = COUPON_CODE;
+    document.title = `Wander — ${COUPON_CODE} Affiliate Portal`;
+
+    // Default: last 30 days
+    const today = new Date();
+    const thirtyBack = new Date();
+    thirtyBack.setDate(today.getDate() - 30);
+    document.getElementById("end-date").value = fmt(today);
+    document.getElementById("start-date").value = fmt(thirtyBack);
+  });
+
+  function fmt(d) {
+    return d.toISOString().split("T")[0];
+  }
+
+  // ─────────────────────────────────────────
+  //  Fetch report
+  // ─────────────────────────────────────────
+  async function fetchReport() {
+    const startDate = document.getElementById("start-date").value;
+    const endDate   = document.getElementById("end-date").value;
+
+    if (!startDate || !endDate) { showError("Please select both a start and end date."); return; }
+    if (startDate > endDate)    { showError("Start date must be before end date."); return; }
+
+    hideError();
+    setLoading(true);
+
+    try {
+      const params = new URLSearchParams({ startDate, endDate, offerCode: COUPON_CODE });
+      const resp = await fetch(`${FUNCTION_URL}?${params}`, {
+        headers: { "x-api-key": API_KEY },
+      });
+
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.error || `Server error (${resp.status})`);
+      }
+
+      const data = await resp.json();
+      render(data);
+    } catch (e) {
+      showError(`Could not load report: ${e.message}`);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function render(data) {
+    document.getElementById("initial-box").style.display = "none";
+    document.getElementById("results-section").style.display = "block";
+
+    document.getElementById("stat-redemptions").textContent = data.redemptions.toLocaleString();
+    document.getElementById("stat-days").textContent        = data.activeDays.toLocaleString();
+    document.getElementById("stat-commission").textContent  = "$" + data.commission.toFixed(2);
+    document.getElementById("stat-commission-sub").textContent =
+      `${data.redemptions} × $${data.commissionRate.toFixed(2)}`;
+
+    document.getElementById("meta-range").textContent =
+      `${data.startDate} → ${data.endDate}`;
+    document.getElementById("meta-reports").textContent =
+      `${data.reportsFound} of ${data.reportsChecked} days had data`;
+
+    const noData = document.getElementById("no-data-box");
+    const note   = document.getElementById("commission-note");
+
+    if (data.redemptions === 0) {
+      noData.style.display = "block";
+      note.style.display   = "none";
+    } else {
+      noData.style.display = "none";
+      note.style.display   = "block";
+    }
+  }
+
+  function setLoading(on) {
+    document.getElementById("fetch-btn").disabled = on;
+    document.getElementById("fetch-btn").textContent = on ? "Fetching..." : "Run Report";
+    document.getElementById("loading-box").style.display  = on ? "block" : "none";
+    document.getElementById("results-section").style.display = on ? "none" : (
+      document.getElementById("results-section").dataset.visible ? "block" : "none"
+    );
+    if (on) document.getElementById("initial-box").style.display = "none";
+  }
+
+  function showError(msg) {
+    const el = document.getElementById("error-box");
+    el.textContent = msg;
+    el.style.display = "block";
+  }
+
+  function hideError() {
+    document.getElementById("error-box").style.display = "none";
+  }
+</script>
+
+</body>
+</html>
