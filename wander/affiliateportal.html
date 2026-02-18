@@ -426,10 +426,7 @@
   function setLoading(on) {
     document.getElementById("fetch-btn").disabled = on;
     document.getElementById("fetch-btn").textContent = on ? "Fetching..." : "Run Report";
-    document.getElementById("loading-box").style.display  = on ? "block" : "none";
-    document.getElementById("results-section").style.display = on ? "none" : (
-      document.getElementById("results-section").dataset.visible ? "block" : "none"
-    );
+    document.getElementById("loading-box").style.display = on ? "block" : "none";
     if (on) document.getElementById("initial-box").style.display = "none";
   }
 
