@@ -344,6 +344,14 @@
     return code ? code.toUpperCase() : null;
   }
 
+  function getCommissionRate() {
+    const params = new URLSearchParams(window.location.search);
+    const r = params.get("r");
+    return r ? parseFloat(r) / 100 : 0.25; // defaults to 25% if not specified
+  }
+
+  const COMMISSION_RATE = getCommissionRate();
+
   const COUPON_CODE = getCouponFromPath();
 
   window.addEventListener("load", () => {
@@ -377,7 +385,7 @@
     setLoading(true);
 
     try {
-      const params = new URLSearchParams({ startDate, endDate, offerCode: COUPON_CODE });
+      const params = new URLSearchParams({ startDate, endDate, offerCode: COUPON_CODE, rate: COMMISSION_RATE });
       const resp = await fetch(`${FUNCTION_URL}?${params}`, {
         headers: { "x-api-key": API_KEY },
       });
