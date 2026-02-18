@@ -5,20 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Wander — Affiliate Portal</title>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet" />
-
   <style>
     :root {
-      --ink:      #0f0e0d;
-      --paper:    #f5f0e8;
-      --cream:    #ede7d9;
+      --ink:      #ffffff;
+      --paper:    #175873;
+      --cream:    #175873;
       --gold:     #c9a84c;
-      --muted:    #7a7060;
-      --border:   #d4cabc;
-      --green:    #3a7a5a;
-      --red:      #b84040;
+      --muted:    #a8c8d8;
+      --border:   #1f6e8c;
+      --green:    #5dd4a0;
+      --red:      #ff6b6b;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -27,7 +23,7 @@
       min-height: 100%;
       background: var(--paper);
       color: var(--ink);
-      font-family: 'DM Mono', monospace;
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
       font-size: 13px;
       line-height: 1.6;
     }
@@ -42,15 +38,10 @@
       background: var(--cream);
     }
 
-    .logo {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1.8rem;
-      font-weight: 300;
-      letter-spacing: 0.12em;
-      color: var(--ink);
+    .logo img {
+      height: 36px;
+      display: block;
     }
-
-    .logo span { color: var(--gold); }
 
     .header-right {
       display: flex;
@@ -60,19 +51,10 @@
     }
 
     .portal-label {
-      font-size: 10px;
+      font-size: 11px;
       letter-spacing: 0.22em;
       text-transform: uppercase;
       color: var(--muted);
-    }
-
-    .code-pill {
-      font-family: 'DM Mono', monospace;
-      font-size: 13px;
-      background: var(--ink);
-      color: var(--gold);
-      padding: 0.2rem 0.75rem;
-      letter-spacing: 0.1em;
     }
 
     /* ── INVALID CODE SCREEN ── */
@@ -87,7 +69,6 @@
     }
 
     .invalid-title {
-      font-family: 'Cormorant Garamond', serif;
       font-size: 2rem;
       font-weight: 300;
       margin-bottom: 0.75rem;
@@ -115,7 +96,7 @@
       align-items: flex-end;
       margin-bottom: 2.5rem;
       padding: 1.5rem;
-      background: var(--cream);
+      background: rgba(255,255,255,0.07);
       border: 1px solid var(--border);
     }
 
@@ -133,33 +114,35 @@
     }
 
     input[type="date"] {
-      background: var(--paper);
+      background: rgba(255,255,255,0.1);
       border: 1px solid var(--border);
       padding: 0.55rem 0.75rem;
-      font-family: 'DM Mono', monospace;
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
       font-size: 13px;
       color: var(--ink);
       outline: none;
       transition: border-color 0.2s;
+      color-scheme: dark;
     }
 
     input[type="date"]:focus { border-color: var(--gold); }
 
     .btn-fetch {
       padding: 0.6rem 1.8rem;
-      background: var(--ink);
-      color: var(--paper);
+      background: var(--gold);
+      color: #0f0e0d;
       border: none;
-      font-family: 'DM Mono', monospace;
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
       font-size: 11px;
       letter-spacing: 0.18em;
       text-transform: uppercase;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: opacity 0.2s;
       align-self: flex-end;
+      font-weight: 600;
     }
 
-    .btn-fetch:hover:not(:disabled) { background: var(--gold-dim, #a8883a); }
+    .btn-fetch:hover:not(:disabled) { opacity: 0.85; }
     .btn-fetch:disabled { opacity: 0.45; cursor: not-allowed; }
 
     /* ── SUMMARY CARDS ── */
@@ -173,7 +156,7 @@
     }
 
     .summary-card {
-      background: var(--cream);
+      background: rgba(255,255,255,0.07);
       padding: 1.75rem 1.5rem;
       text-align: center;
     }
@@ -187,9 +170,8 @@
     }
 
     .card-value {
-      font-family: 'Cormorant Garamond', serif;
       font-size: 2.8rem;
-      font-weight: 300;
+      font-weight: 200;
       color: var(--ink);
       line-height: 1;
     }
@@ -211,52 +193,6 @@
       margin-bottom: 1rem;
     }
 
-    /* ── DAILY TABLE ── */
-    .section-title {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1.1rem;
-      font-weight: 400;
-      letter-spacing: 0.06em;
-      color: var(--muted);
-      margin-bottom: 0.75rem;
-      padding-bottom: 0.5rem;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .table-wrap {
-      border: 1px solid var(--border);
-      overflow-x: auto;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    thead { background: var(--ink); color: var(--paper); }
-
-    th {
-      padding: 0.7rem 1.1rem;
-      text-align: left;
-      font-size: 10px;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      font-weight: 400;
-    }
-
-    th:not(:first-child), td:not(:first-child) { text-align: right; }
-
-    td {
-      padding: 0.75rem 1.1rem;
-      border-bottom: 1px solid var(--border);
-      font-size: 13px;
-    }
-
-    tr:last-child td { border-bottom: none; }
-    tr:nth-child(even) td { background: rgba(0,0,0,0.02); }
-
-    .commission-val { color: var(--green); }
-
     /* ── STATES ── */
     .state-box {
       padding: 3rem;
@@ -265,6 +201,7 @@
       color: var(--muted);
       font-size: 12px;
       letter-spacing: 0.06em;
+      background: rgba(255,255,255,0.04);
     }
 
     .spinner {
@@ -284,7 +221,7 @@
     .error-box {
       padding: 0.75rem 1rem;
       border: 1px solid var(--red);
-      background: rgba(184,64,64,0.05);
+      background: rgba(255,107,107,0.1);
       color: var(--red);
       font-size: 12px;
       margin-bottom: 1.5rem;
@@ -296,7 +233,7 @@
       margin-top: 1.5rem;
       padding: 1rem 1.25rem;
       border-left: 3px solid var(--gold);
-      background: var(--cream);
+      background: rgba(255,255,255,0.07);
       font-size: 12px;
       color: var(--muted);
     }
@@ -312,10 +249,11 @@
 <body>
 
 <header>
-  <div class="logo">Wan<span>d</span>er</div>
+  <div class="logo">
+    <img src="appTitle.png" alt="Wander" />
+  </div>
   <div class="header-right">
     <span class="portal-label">Affiliate Portal</span>
-    <span class="code-pill" id="header-code"></span>
   </div>
 </header>
 
@@ -397,16 +335,9 @@
 </div>
 
 <script>
-  // ─────────────────────────────────────────
-  //  CONFIG — replace with your deployed function URL and API key
-  // ─────────────────────────────────────────
   const FUNCTION_URL = "https://us-central1-wander-eab4e.cloudfunctions.net/getOfferCodeReport";
   const API_KEY      = "wander-affiliateportal";
 
-  // ─────────────────────────────────────────
-  //  Read coupon code from URL path
-  //  URL structure: /wander/affiliateportal/COUPONCODE
-  // ─────────────────────────────────────────
   function getCouponFromPath() {
     const params = new URLSearchParams(window.location.search);
     const code = params.get("code");
@@ -415,9 +346,6 @@
 
   const COUPON_CODE = getCouponFromPath();
 
-  // ─────────────────────────────────────────
-  //  Init
-  // ─────────────────────────────────────────
   window.addEventListener("load", () => {
     if (!COUPON_CODE) {
       document.getElementById("invalid-screen").style.display = "flex";
@@ -425,8 +353,6 @@
     }
 
     document.getElementById("portal-screen").style.display = "block";
-    document.getElementById("header-code").textContent = COUPON_CODE;
-    document.title = `Wander — ${COUPON_CODE} Affiliate Portal`;
 
     // Default: last 30 days
     const today = new Date();
@@ -440,9 +366,6 @@
     return d.toISOString().split("T")[0];
   }
 
-  // ─────────────────────────────────────────
-  //  Fetch report
-  // ─────────────────────────────────────────
   async function fetchReport() {
     const startDate = document.getElementById("start-date").value;
     const endDate   = document.getElementById("end-date").value;
