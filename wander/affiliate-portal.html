@@ -408,9 +408,8 @@
   //  URL structure: /wander/affiliateportal/COUPONCODE
   // ─────────────────────────────────────────
   function getCouponFromPath() {
-    const segments = window.location.pathname.split("/").filter(Boolean);
-    // Expects: ['wander', 'affiliateportal', 'COUPONCODE']
-    const code = segments[2];
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
     return code ? code.toUpperCase() : null;
   }
 
