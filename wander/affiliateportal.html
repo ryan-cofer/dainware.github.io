@@ -94,6 +94,7 @@
       flex-wrap: wrap;
       gap: 1rem;
       align-items: flex-end;
+      justify-content: center;
       margin-bottom: 2.5rem;
       padding: 1.5rem;
       background: rgba(255,255,255,0.07);
@@ -230,7 +231,7 @@
 
     @media (max-width: 600px) {
       .summary-grid { grid-template-columns: 1fr; }
-      .controls { flex-direction: row; flex-wrap: wrap; justify-content: center; align-items: flex-end; }
+      .controls { flex-direction: row; flex-wrap: wrap; justify-content: center; }
       .controls .field { flex: 1; min-width: 120px; }
       .controls .btn-fetch { width: 100%; }
       header { padding: 1rem; flex-wrap: wrap; gap: 0.75rem; }
@@ -252,7 +253,7 @@
 <!-- Invalid code screen -->
 <div id="invalid-screen">
   <div class="invalid-title">Invalid affiliate link</div>
-  <div class="invalid-sub">Please check your link and try again, or contact us at <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="620a070e0e0d2206030b0c150310074c010d0f">[email&#160;protected]</a></div>
+  <div class="invalid-sub">Please check your link and try again, or contact us at hello@dainware.com</div>
 </div>
 
 <!-- Main portal -->
@@ -297,7 +298,7 @@
         <div class="summary-card">
           <div class="card-label">Active Days</div>
           <div class="card-value" id="stat-days">—</div>
-          <div class="card-sub">days with at least one sale</div>
+          <div class="card-sub">days with at least one redemption</div>
         </div>
       </div>
 
@@ -317,7 +318,7 @@
   </main>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
   const FUNCTION_URL = "https://us-central1-wander-eab4e.cloudfunctions.net/getOfferCodeReport";
   const API_KEY      = "wander-affiliateportal";
 
@@ -403,4 +404,15 @@
   }
 
   function showError(msg) {
-    cons
+    const el = document.getElementById("error-box");
+    el.textContent = msg;
+    el.style.display = "block";
+  }
+
+  function hideError() {
+    document.getElementById("error-box").style.display = "none";
+  }
+</script>
+
+</body>
+</html>
