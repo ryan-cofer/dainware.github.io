@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wander — Affiliate Management</title>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <style>
+    :root {
+      --ink:      #ffffff;
+      --paper:    #175873;
+      --cream:    #175873;
+      --gold:     #c9a84c;
+      --muted:    #a8c8d8;
+      --border:   #1f6e8c;
+      --green:    #5dd4a0;
+      --red:      #ff6b6b;
+      --deep:     #0f3d4f;
+      --input-bg: rgba(255,255,255,0.08);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      min-height: 100%;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    /* ── HEADER ── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem 2.5rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--cream);
+    }
+
+    .logo img { height: 36px; display: block; }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .portal-label {
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .btn-logout {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 0.4rem 1rem;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+
+    .btn-logout:hover {
+      border-color: var(--red);
+      color: var(--red);
+    }
+
+    /* ── LOGIN SCREEN ── */
+    #login-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 80vh;
+      padding: 2rem;
+    }
+
+    .login-box {
+      width: 100%;
+      max-width: 360px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      padding: 2.5rem 2rem;
+    }
+
+    .login-title {
+      font-size: 1.2rem;
+      font-weight: 300;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .login-box input[type="password"] {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      padding: 0.7rem 0.75rem;
+      font-family: inherit;
+      font-size: 13px;
+      color: var(--ink);
+      outline: none;
+      margin-bottom: 1rem;
+      transition: border-color 0.2s;
+    }
+
+    .login-box input[type="password"]:focus { border-color: var(--gold); }
+
+    .login-box .btn-primary {
+      width: 100%;
+    }
+
+    .login-error {
+      color: var(--red);
+      font-size: 11px;
+      text-align: center;
+      margin-top: 0.75rem;
+      display: none;
+    }
+
+    /* ── MAIN APP ── */
+    #app-screen { display: none; }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    /* ── TABS ── */
+    .tab-bar {
+      display: flex;
+      gap: 0;
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tab-btn {
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      padding: 0.75rem 1.5rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab-btn:hover { color: var(--ink); }
+    .tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* ── BUTTONS ── */
+    .btn-primary {
+      padding: 0.6rem 1.8rem;
+      background: var(--gold);
+      color: #0f0e0d;
+      border: none;
+      font-family: inherit;
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      font-weight: 600;
+    }
+
+    .btn-primary:hover:not(:disabled) { opacity: 0.85; }
+    .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .btn-secondary {
+      padding: 0.5rem 1.2rem;
+      background: none;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      font-family: inherit;
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-secondary:hover { border-color: var(--gold); color: var(--gold); }
+
+    .btn-danger {
+      padding: 0.5rem 1.2rem;
+      background: none;
+      color: var(--red);
+      border: 1px solid rgba(255,107,107,0.3);
+      font-family: inherit;
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-danger:hover { background: rgba(255,107,107,0.1); }
+
+    /* ── FORMS ── */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .form-group label {
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .form-group input,
+    .form-group select {
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      padding: 0.6rem 0.75rem;
+      font-family: inherit;
+      font-size: 13px;
+      color: var(--ink);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus { border-color: var(--gold); }
+
+    .form-group select {
+      appearance: none;
+      cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23a8c8d8'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.75rem center;
+      padding-right: 2rem;
+    }
+
+    .form-group select option {
+      background: var(--deep);
+      color: var(--ink);
+    }
+
+    .form-group input[type="date"] {
+      color-scheme: dark;
+    }
+
+    .form-actions {
+      grid-column: 1 / -1;
+      display: flex;
+      gap: 1rem;
+      margin-top: 0.5rem;
+    }
+
+    .form-section-title {
+      grid-column: 1 / -1;
+      font-size: 10px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--gold);
+      padding-bottom: 0.25rem;
+      border-bottom: 1px solid var(--border);
+      margin-top: 0.5rem;
+    }
+
+    /* ── AFFILIATE LIST ── */
+    .search-bar {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      align-items: center;
+    }
+
+    .search-bar input {
+      flex: 1;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      padding: 0.6rem 0.75rem;
+      font-family: inherit;
+      font-size: 13px;
+      color: var(--ink);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-bar input:focus { border-color: var(--gold); }
+
+    .aff-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid var(--border);
+    }
+
+    .aff-table th {
+      background: rgba(255,255,255,0.05);
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 0.75rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    .aff-table td {
+      padding: 0.65rem 1rem;
+      border-bottom: 1px solid rgba(31,110,140,0.4);
+      font-size: 12px;
+    }
+
+    .aff-table tr:hover td {
+      background: rgba(255,255,255,0.03);
+    }
+
+    .aff-table tr { cursor: pointer; }
+
+    .status-badge {
+      display: inline-block;
+      padding: 0.15rem 0.6rem;
+      font-size: 9px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .status-badge.active {
+      background: rgba(93,212,160,0.15);
+      color: var(--green);
+      border: 1px solid rgba(93,212,160,0.3);
+    }
+
+    .status-badge.inactive {
+      background: rgba(255,107,107,0.1);
+      color: var(--red);
+      border: 1px solid rgba(255,107,107,0.3);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: var(--muted);
+      font-size: 12px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+    }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      padding: 0.75rem 1.5rem;
+      font-size: 12px;
+      border: 1px solid;
+      z-index: 1000;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.3s;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .toast.success {
+      background: rgba(93,212,160,0.15);
+      color: var(--green);
+      border-color: rgba(93,212,160,0.3);
+    }
+
+    .toast.error {
+      background: rgba(255,107,107,0.1);
+      color: var(--red);
+      border-color: rgba(255,107,107,0.3);
+    }
+
+    /* ── DETAIL VIEW ── */
+    .detail-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .detail-back {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: color 0.2s;
+    }
+
+    .detail-back:hover { color: var(--gold); }
+
+    .detail-name {
+      font-size: 1.4rem;
+      font-weight: 300;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      margin-bottom: 2rem;
+    }
+
+    .info-cell {
+      background: rgba(255,255,255,0.05);
+      padding: 1rem 1.25rem;
+    }
+
+    .info-cell .cell-label {
+      font-size: 9px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.25rem;
+    }
+
+    .info-cell .cell-value {
+      font-size: 13px;
+      color: var(--ink);
+      word-break: break-all;
+    }
+
+    .info-cell .cell-value a {
+      color: var(--gold);
+      text-decoration: none;
+    }
+
+    .info-cell .cell-value a:hover { text-decoration: underline; }
+
+    /* ── MODAL OVERLAY ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 999;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .modal-overlay.show { display: flex; }
+
+    .modal-box {
+      background: var(--paper);
+      border: 1px solid var(--border);
+      width: 100%;
+      max-width: 500px;
+      padding: 2rem;
+    }
+
+    .modal-title {
+      font-size: 14px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 1rem;
+    }
+
+    .modal-body {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 1.5rem;
+      line-height: 1.7;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 700px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .info-grid { grid-template-columns: 1fr; }
+      header { padding: 1rem; flex-wrap: wrap; gap: 0.75rem; }
+      .header-right { gap: 0.75rem; }
+      main { padding: 1.5rem 1rem; }
+      .aff-table { font-size: 11px; }
+      .aff-table th, .aff-table td { padding: 0.5rem 0.6rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <img src="appTitle.png" alt="Wander" />
+  </div>
+  <div class="header-right">
+    <span class="portal-label">Affiliate Management</span>
+    <button class="btn-logout" id="logout-btn" style="display:none" onclick="doLogout()">Logout</button>
+  </div>
+</header>
+
+<!-- ───── LOGIN ───── -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-title">Authenticate</div>
+    <input type="password" id="login-pw" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()" />
+    <button class="btn-primary" onclick="doLogin()" style="width:100%">Enter</button>
+    <div class="login-error" id="login-error">Incorrect password.</div>
+  </div>
+</div>
+
+<!-- ───── APP ───── -->
+<div id="app-screen">
+  <main>
+    <!-- Tabs -->
+    <div class="tab-bar">
+      <button class="tab-btn active" data-tab="list" onclick="switchTab('list')">Affiliates</button>
+      <button class="tab-btn" data-tab="add" onclick="switchTab('add')">Add New</button>
+    </div>
+
+    <!-- ── LIST TAB ── -->
+    <div class="tab-content active" id="tab-list">
+      <div class="search-bar">
+        <input type="text" id="search-input" placeholder="Search by name, code, channel, or email..." oninput="renderList()" />
+      </div>
+      <div id="list-container"></div>
+    </div>
+
+    <!-- ── ADD TAB ── -->
+    <div class="tab-content" id="tab-add">
+      <div class="form-grid" id="add-form">
+        <div class="form-section-title">Channel Information</div>
+
+        <div class="form-group">
+          <label>Primary Medium</label>
+          <select id="add-medium">
+            <option value="YouTube">YouTube</option>
+            <option value="Blog">Blog</option>
+            <option value="Instagram">Instagram</option>
+            <option value="TikTok">TikTok</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Channel Name</label>
+          <input type="text" id="add-channelName" placeholder="e.g. Nomadic Matt" />
+        </div>
+
+        <div class="form-group full-width">
+          <label>Channel URL</label>
+          <input type="text" id="add-channelUrl" placeholder="https://..." />
+        </div>
+
+        <div class="form-section-title">Affiliate Details</div>
+
+        <div class="form-group">
+          <label>First Name</label>
+          <input type="text" id="add-firstName" />
+        </div>
+
+        <div class="form-group">
+          <label>Last Name</label>
+          <input type="text" id="add-lastName" />
+        </div>
+
+        <div class="form-group">
+          <label>Business Entity</label>
+          <input type="text" id="add-businessEntity" placeholder="(optional)" />
+        </div>
+
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="add-email" />
+        </div>
+
+        <div class="form-group">
+          <label>PayPal Address</label>
+          <input type="email" id="add-paypal" />
+        </div>
+
+        <div class="form-group">
+          <label>Assigned Offer Code</label>
+          <input type="text" id="add-offerCode" placeholder="e.g. WANDER25" style="text-transform:uppercase" />
+        </div>
+
+        <div class="form-group">
+          <label>Portal Code (auto-generated)</label>
+          <input type="text" id="add-portalCode" readonly style="opacity:0.6" />
+        </div>
+
+        <div class="form-section-title">Commission Settings</div>
+
+        <div class="form-group">
+          <label>Commission Percentage (%)</label>
+          <input type="number" id="add-commissionPct" value="25" min="0" max="100" step="1" />
+        </div>
+
+        <div class="form-group">
+          <label>Commission Eligibility Period (days)</label>
+          <input type="number" id="add-eligibilityPeriod" value="90" min="1" />
+        </div>
+
+        <div class="form-group">
+          <label>Last Qualified Promotion Date</label>
+          <input type="date" id="add-lastPromoDate" />
+        </div>
+
+        <div class="form-group">
+          <label>Commission Eligibility End Date (auto)</label>
+          <input type="date" id="add-eligibilityEnd" readonly style="opacity:0.6" />
+        </div>
+
+        <div class="form-actions">
+          <button class="btn-primary" onclick="saveNewAffiliate()">Save Affiliate</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── DETAIL TAB (hidden tab) ── -->
+    <div class="tab-content" id="tab-detail">
+      <div class="detail-header">
+        <button class="detail-back" onclick="switchTab('list')">← Back to list</button>
+        <div style="display:flex;gap:0.75rem;">
+          <button class="btn-secondary" onclick="enterEditMode()">Edit</button>
+        </div>
+      </div>
+
+      <!-- VIEW MODE -->
+      <div id="detail-view">
+        <div class="detail-name" id="detail-name"></div>
+        <div style="margin:0.5rem 0 1.5rem;">
+          <span id="detail-status-badge"></span>
+        </div>
+        <div class="info-grid" id="detail-info-grid"></div>
+      </div>
+
+      <!-- EDIT MODE -->
+      <div id="detail-edit" style="display:none">
+        <div class="form-grid" id="edit-form"></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Confirm Modal -->
+<div class="modal-overlay" id="confirm-modal">
+  <div class="modal-box">
+    <div class="modal-title" id="modal-title">Confirm</div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" id="modal-confirm-btn">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ═════════════════════════════════════════
+  // Firebase config
+  // ═════════════════════════════════════════
+  const firebaseConfig = {
+    apiKey: "AIzaSyCoV77OBnUFpuOACPNJm9XEsBCasTxOjUk",
+    authDomain: "wander-eab4e.firebaseapp.com",
+    projectId: "wander-eab4e",
+    storageBucket: "wander-eab4e.firebasestorage.app",
+    messagingSenderId: "1025291838498",
+    appId: "1:1025291838498:web:b6f1ace2e7b0ee9d032205",
+    measurementId: "G-B5DN7GFD37"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  const COLLECTION = "affiliates";
+
+  // ═════════════════════════════════════════
+  // Auth - simple password hash
+  // ═════════════════════════════════════════
+  // Password hash is checked client-side with SHA-256.
+  // This is NOT a secure auth system but provides basic gating.
+  // The Firestore security rules should be the real guard.
+  const PW_HASH = "REPLACE_WITH_SHA256_HASH"; // Set this to SHA-256 hash of your password
+
+  async function sha256(str) {
+    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+  }
+
+  async function doLogin() {
+    const pw = document.getElementById("login-pw").value;
+    const hash = await sha256(pw);
+
+    // Store the hash and check
+    if (hash === PW_HASH) {
+      sessionStorage.setItem("wander_admin", "1");
+      showApp();
+    } else {
+      document.getElementById("login-error").style.display = "block";
+    }
+  }
+
+  function doLogout() {
+    sessionStorage.removeItem("wander_admin");
+    location.reload();
+  }
+
+  function showApp() {
+    document.getElementById("login-screen").style.display = "none";
+    document.getElementById("app-screen").style.display = "block";
+    document.getElementById("logout-btn").style.display = "block";
+    loadAffiliates();
+  }
+
+  window.addEventListener("load", () => {
+    if (sessionStorage.getItem("wander_admin") === "1") {
+      showApp();
+    }
+  });
+
+  // ═════════════════════════════════════════
+  // Portal code generation
+  // ═════════════════════════════════════════
+  function generatePortalCode(offerCode) {
+    return offerCode.toUpperCase().split("").map(ch => {
+      if (/[A-Y]/i.test(ch)) return String.fromCharCode(ch.charCodeAt(0) + 1);
+      if (ch === "Z" || ch === "z") return "A";
+      if (/[0-8]/.test(ch)) return String(Number(ch) + 1);
+      if (ch === "9") return "0";
+      return ch;
+    }).join("");
+  }
+
+  // Wire up auto-generation of portal code
+  document.getElementById("add-offerCode").addEventListener("input", function() {
+    const code = this.value.toUpperCase();
+    this.value = code;
+    document.getElementById("add-portalCode").value = code ? generatePortalCode(code) : "";
+  });
+
+  // Wire up auto eligibility end date
+  document.getElementById("add-lastPromoDate").addEventListener("change", calcAddEndDate);
+  document.getElementById("add-eligibilityPeriod").addEventListener("input", calcAddEndDate);
+
+  function calcAddEndDate() {
+    const dateStr = document.getElementById("add-lastPromoDate").value;
+    const days = parseInt(document.getElementById("add-eligibilityPeriod").value) || 90;
+    if (dateStr) {
+      const d = new Date(dateStr + "T00:00:00");
+      d.setDate(d.getDate() + days);
+      document.getElementById("add-eligibilityEnd").value = fmtDate(d);
+    }
+  }
+
+  function fmtDate(d) {
+    return d.toISOString().split("T")[0];
+  }
+
+  function displayDate(dateStr) {
+    if (!dateStr) return "—";
+    const d = new Date(dateStr + "T00:00:00");
+    return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  }
+
+  // ═════════════════════════════════════════
+  // Data
+  // ═════════════════════════════════════════
+  let affiliates = [];
+  let currentAffiliate = null;
+
+  async function loadAffiliates() {
+    try {
+      const snap = await db.collection(COLLECTION).get();
+      affiliates = [];
+      snap.forEach(doc => {
+        affiliates.push({ id: doc.id, ...doc.data() });
+      });
+      affiliates.sort((a, b) => (a.lastName || "").localeCompare(b.lastName || ""));
+      renderList();
+    } catch (e) {
+      console.error("Error loading affiliates:", e);
+      toast("Error loading affiliates: " + e.message, "error");
+    }
+  }
+
+  // ═════════════════════════════════════════
+  // List rendering
+  // ═════════════════════════════════════════
+  function renderList() {
+    const q = (document.getElementById("search-input").value || "").toLowerCase();
+    const filtered = affiliates.filter(a => {
+      if (!q) return true;
+      const haystack = [
+        a.firstName, a.lastName, a.offerCode, a.channelName, a.email, a.medium
+      ].filter(Boolean).join(" ").toLowerCase();
+      return haystack.includes(q);
+    });
+
+    const container = document.getElementById("list-container");
+
+    if (filtered.length === 0) {
+      container.innerHTML = `<div class="empty-state">${affiliates.length === 0 ? "No affiliates yet. Add one to get started." : "No affiliates match your search."}</div>`;
+      return;
+    }
+
+    let html = `<table class="aff-table">
+      <thead><tr>
+        <th>Name</th>
+        <th>Offer Code</th>
+        <th>Channel</th>
+        <th>Medium</th>
+        <th>Status</th>
+        <th>Eligibility End</th>
+      </tr></thead><tbody>`;
+
+    for (const a of filtered) {
+      const statusClass = (a.status || "ACTIVE") === "ACTIVE" ? "active" : "inactive";
+      html += `<tr onclick="viewAffiliate('${a.id}')">
+        <td>${esc(a.firstName || "")} ${esc(a.lastName || "")}</td>
+        <td style="font-family:monospace;letter-spacing:0.05em">${esc(a.offerCode || a.id)}</td>
+        <td>${esc(a.channelName || "—")}</td>
+        <td>${esc(a.medium || "—")}</td>
+        <td><span class="status-badge ${statusClass}">${statusClass}</span></td>
+        <td>${displayDate(a.commissionEligibilityEndDate)}</td>
+      </tr>`;
+    }
+
+    html += `</tbody></table>`;
+    container.innerHTML = html;
+  }
+
+  // ═════════════════════════════════════════
+  // View affiliate detail
+  // ═════════════════════════════════════════
+  function viewAffiliate(id) {
+    currentAffiliate = affiliates.find(a => a.id === id);
+    if (!currentAffiliate) return;
+    renderDetail();
+    switchTab("detail");
+  }
+
+  const FIELD_MAP = [
+    { key: "medium", label: "Primary Medium" },
+    { key: "channelName", label: "Channel Name" },
+    { key: "channelUrl", label: "Channel URL", link: true },
+    { key: "email", label: "Email" },
+    { key: "businessEntity", label: "Business Entity" },
+    { key: "paypal", label: "PayPal Address" },
+    { key: "offerCode", label: "Offer Code" },
+    { key: "portalCode", label: "Portal Code" },
+    { key: "commissionPct", label: "Commission %", suffix: "%" },
+    { key: "commissionEligibilityPeriod", label: "Eligibility Period", suffix: " days" },
+    { key: "lastPromoDate", label: "Last Qualified Promotion Date", date: true },
+    { key: "lastPromoUrl", label: "Last Qualified Promotion URL", link: true },
+    { key: "lastPromoTimestamp", label: "Last Qualified Promotion Timestamp" },
+    { key: "commissionEligibilityEndDate", label: "Commission Eligibility End", date: true },
+    { key: "status", label: "Status" },
+  ];
+
+  function renderDetail() {
+    const a = currentAffiliate;
+    document.getElementById("detail-name").textContent = `${a.firstName || ""} ${a.lastName || ""}`;
+
+    const statusClass = (a.status || "ACTIVE") === "ACTIVE" ? "active" : "inactive";
+    document.getElementById("detail-status-badge").outerHTML =
+      `<span class="status-badge ${statusClass}" id="detail-status-badge">${a.status || "ACTIVE"}</span>`;
+
+    let gridHtml = "";
+    for (const f of FIELD_MAP) {
+      let val = a[f.key] || "—";
+      if (f.date && val !== "—") val = displayDate(val);
+      if (f.suffix && val !== "—") val = val + f.suffix;
+      if (f.link && val !== "—") val = `<a href="${esc(a[f.key])}" target="_blank">${esc(a[f.key])}</a>`;
+      else val = esc(String(val));
+
+      gridHtml += `<div class="info-cell">
+        <div class="cell-label">${f.label}</div>
+        <div class="cell-value">${val}</div>
+      </div>`;
+    }
+
+    document.getElementById("detail-info-grid").innerHTML = gridHtml;
+    document.getElementById("detail-view").style.display = "block";
+    document.getElementById("detail-edit").style.display = "none";
+  }
+
+  // ═════════════════════════════════════════
+  // Edit mode
+  // ═════════════════════════════════════════
+  function enterEditMode() {
+    const a = currentAffiliate;
+    const EDIT_FIELDS = [
+      { key: "medium", label: "Primary Medium", type: "select", options: ["YouTube","Blog","Instagram","TikTok"] },
+      { key: "channelName", label: "Channel Name" },
+      { key: "channelUrl", label: "Channel URL", full: true },
+      { key: "firstName", label: "First Name" },
+      { key: "lastName", label: "Last Name" },
+      { key: "businessEntity", label: "Business Entity" },
+      { key: "email", label: "Email", type: "email" },
+      { key: "paypal", label: "PayPal Address", type: "email" },
+      { key: "offerCode", label: "Offer Code", readonly: true },
+      { key: "portalCode", label: "Portal Code", readonly: true },
+      { key: "commissionPct", label: "Commission %", type: "number" },
+      { key: "commissionEligibilityPeriod", label: "Eligibility Period (days)", type: "number" },
+      { key: "lastPromoDate", label: "Last Qualified Promotion Date", type: "date" },
+      { key: "lastPromoUrl", label: "Last Qualified Promotion URL", full: true },
+      { key: "lastPromoTimestamp", label: "Last Qualified Promotion Timestamp" },
+      { key: "commissionEligibilityEndDate", label: "Commission Eligibility End", type: "date", readonly: true },
+      { key: "status", label: "Status", type: "select", options: ["ACTIVE","INACTIVE"] },
+    ];
+
+    let html = "";
+    for (const f of EDIT_FIELDS) {
+      const val = a[f.key] || "";
+      const cls = f.full ? "form-group full-width" : "form-group";
+      const ro = f.readonly ? "readonly style='opacity:0.6'" : "";
+
+      if (f.type === "select") {
+        let opts = f.options.map(o => `<option value="${o}" ${val === o ? "selected" : ""}>${o}</option>`).join("");
+        html += `<div class="${cls}"><label>${f.label}</label><select id="edit-${f.key}" ${f.readonly ? "disabled" : ""}>${opts}</select></div>`;
+      } else {
+        const t = f.type || "text";
+        html += `<div class="${cls}"><label>${f.label}</label><input type="${t}" id="edit-${f.key}" value="${esc(String(val))}" ${ro} /></div>`;
+      }
+    }
+
+    html += `<div class="form-actions">
+      <button class="btn-primary" onclick="saveEdit()">Save Changes</button>
+      <button class="btn-secondary" onclick="cancelEdit()">Cancel</button>
+    </div>`;
+
+    document.getElementById("edit-form").innerHTML = html;
+    document.getElementById("detail-view").style.display = "none";
+    document.getElementById("detail-edit").style.display = "block";
+
+    // Wire edit auto-calc
+    const promoEl = document.getElementById("edit-lastPromoDate");
+    const periodEl = document.getElementById("edit-commissionEligibilityPeriod");
+    if (promoEl && periodEl) {
+      const recalc = () => {
+        const d = promoEl.value;
+        const p = parseInt(periodEl.value) || 90;
+        if (d) {
+          const dt = new Date(d + "T00:00:00");
+          dt.setDate(dt.getDate() + p);
+          const endEl = document.getElementById("edit-commissionEligibilityEndDate");
+          if (endEl) endEl.value = fmtDate(dt);
+        }
+      };
+      promoEl.addEventListener("change", recalc);
+      periodEl.addEventListener("input", recalc);
+    }
+  }
+
+  function cancelEdit() {
+    renderDetail();
+  }
+
+  async function saveEdit() {
+    const a = currentAffiliate;
+    const data = {
+      medium: gev("edit-medium"),
+      channelName: gev("edit-channelName"),
+      channelUrl: gev("edit-channelUrl"),
+      firstName: gev("edit-firstName"),
+      lastName: gev("edit-lastName"),
+      businessEntity: gev("edit-businessEntity"),
+      email: gev("edit-email"),
+      paypal: gev("edit-paypal"),
+      commissionPct: parseFloat(gev("edit-commissionPct")) || 25,
+      commissionEligibilityPeriod: parseInt(gev("edit-commissionEligibilityPeriod")) || 90,
+      lastPromoDate: gev("edit-lastPromoDate"),
+      lastPromoUrl: gev("edit-lastPromoUrl"),
+      lastPromoTimestamp: gev("edit-lastPromoTimestamp"),
+      commissionEligibilityEndDate: gev("edit-commissionEligibilityEndDate"),
+      status: gev("edit-status"),
+    };
+
+    try {
+      await db.collection(COLLECTION).doc(a.id).update(data);
+      Object.assign(a, data);
+      renderDetail();
+      toast("Affiliate updated successfully.", "success");
+    } catch (e) {
+      toast("Error saving: " + e.message, "error");
+    }
+  }
+
+  // ═════════════════════════════════════════
+  // Add new affiliate
+  // ═════════════════════════════════════════
+  async function saveNewAffiliate() {
+    const offerCode = (document.getElementById("add-offerCode").value || "").toUpperCase().trim();
+    if (!offerCode) { toast("Offer code is required.", "error"); return; }
+
+    const firstName = gev("add-firstName");
+    const lastName = gev("add-lastName");
+    const email = gev("add-email");
+    if (!firstName || !lastName || !email) {
+      toast("First name, last name, and email are required.", "error");
+      return;
+    }
+
+    const lastPromoDate = gev("add-lastPromoDate");
+    const eligPeriod = parseInt(gev("add-eligibilityPeriod")) || 90;
+
+    let endDate = "";
+    if (lastPromoDate) {
+      const d = new Date(lastPromoDate + "T00:00:00");
+      d.setDate(d.getDate() + eligPeriod);
+      endDate = fmtDate(d);
+    }
+
+    const data = {
+      medium: gev("add-medium"),
+      channelName: gev("add-channelName"),
+      channelUrl: gev("add-channelUrl"),
+      firstName,
+      lastName,
+      businessEntity: gev("add-businessEntity"),
+      email,
+      paypal: gev("add-paypal"),
+      offerCode,
+      portalCode: generatePortalCode(offerCode),
+      commissionPct: parseFloat(gev("add-commissionPct")) || 25,
+      commissionEligibilityPeriod: eligPeriod,
+      lastPromoDate: lastPromoDate,
+      lastPromoUrl: "",
+      lastPromoTimestamp: "",
+      commissionEligibilityEndDate: endDate,
+      status: "ACTIVE",
+      createdAt: new Date().toISOString(),
+    };
+
+    try {
+      // Check if doc already exists
+      const existing = await db.collection(COLLECTION).doc(offerCode).get();
+      if (existing.exists) {
+        toast("An affiliate with this offer code already exists.", "error");
+        return;
+      }
+
+      await db.collection(COLLECTION).doc(offerCode).set(data);
+      affiliates.push({ id: offerCode, ...data });
+      affiliates.sort((a, b) => (a.lastName || "").localeCompare(b.lastName || ""));
+
+      // Clear form
+      ["add-channelName","add-channelUrl","add-firstName","add-lastName","add-businessEntity","add-email","add-paypal","add-offerCode","add-portalCode","add-lastPromoDate","add-eligibilityEnd"].forEach(id => {
+        document.getElementById(id).value = "";
+      });
+      document.getElementById("add-commissionPct").value = "25";
+      document.getElementById("add-eligibilityPeriod").value = "90";
+
+      toast("Affiliate added successfully.", "success");
+      switchTab("list");
+      renderList();
+    } catch (e) {
+      toast("Error saving affiliate: " + e.message, "error");
+    }
+  }
+
+  // ═════════════════════════════════════════
+  // Tab switching
+  // ═════════════════════════════════════════
+  function switchTab(name) {
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.tab === name));
+    document.querySelectorAll(".tab-content").forEach(t => t.classList.toggle("active", t.id === "tab-" + name));
+  }
+
+  // ═════════════════════════════════════════
+  // Helpers
+  // ═════════════════════════════════════════
+  function gev(id) {
+    const el = document.getElementById(id);
+    return el ? (el.value || "").trim() : "";
+  }
+
+  function esc(s) {
+    const d = document.createElement("div");
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  function toast(msg, type) {
+    const el = document.getElementById("toast");
+    el.textContent = msg;
+    el.className = "toast " + type + " show";
+    setTimeout(() => el.classList.remove("show"), 3500);
+  }
+
+  function closeModal() {
+    document.getElementById("confirm-modal").classList.remove("show");
+  }
+</script>
+
+</body>
+</html>
