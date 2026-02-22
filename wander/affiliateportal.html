@@ -625,7 +625,8 @@
     statusEl.textContent = affiliateData.status || "ACTIVE";
     statusEl.className = affiliateData.status === "ACTIVE" ? "cell-value green" : "cell-value red";
 
-    document.getElementById("promo-period-display").textContent = affiliateData.commissionEligibilityPeriod || 90;
+    var periodEl = document.getElementById("promo-period-display");
+    if (periodEl) periodEl.textContent = affiliateData.commissionEligibilityPeriod || 90;
   }
 
   function fmt(d) {
