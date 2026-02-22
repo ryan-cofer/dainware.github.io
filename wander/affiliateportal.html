@@ -326,6 +326,17 @@
 
     .promo-help a:hover { text-decoration: underline; }
 
+    .form-section-label {
+      grid-column: 1 / -1;
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding-bottom: 0.25rem;
+      border-bottom: 1px solid var(--border);
+      margin-top: 0.5rem;
+    }
+
     .elig-bar {
       display: flex;
       gap: 1px;
@@ -475,6 +486,8 @@
         <div class="success-box" id="promo-success"></div>
 
         <div class="form-grid">
+          <div class="form-section-label">Verification</div>
+
           <div class="form-group">
             <label>Your Email Address</label>
             <input type="email" id="promo-email" placeholder="Must match your email on file" />
@@ -484,6 +497,8 @@
             <label>Your PayPal Address</label>
             <input type="email" id="promo-paypal" placeholder="Must match your PayPal on file" />
           </div>
+
+          <div class="form-section-label">Promotion Details</div>
 
           <div class="form-group">
             <label>Promotion Date</label>
@@ -511,12 +526,10 @@
 </div>
 
 <script>
-  // Build email addresses in JS so Cloudflare cannot obfuscate them in HTML
   var CONTACT_EMAIL = ['ryan', '.', 'cofer', String.fromCharCode(64), 'gmail', '.', 'com'].join('');
   var DAINWARE_EMAIL = ['ryan', '.', 'cofer', String.fromCharCode(64), 'dainware', '.', 'com'].join('');
   var HELLO_EMAIL = ['hello', String.fromCharCode(64), 'dainware', '.', 'com'].join('');
 
-  // Set the text content that contains emails via JS (avoids Cloudflare mangling)
   document.getElementById('invalid-sub-text').textContent = 'Please check your link and try again, or contact us at ' + HELLO_EMAIL;
   document.getElementById('inactive-sub-text').innerHTML = 'Your affiliate partnership is no longer active.<br><br>If you have questions, please contact<br><a href="mai' + 'lto:' + DAINWARE_EMAIL + '">' + DAINWARE_EMAIL + '</a>';
 
@@ -527,7 +540,7 @@
     storageBucket: "wander-eab4e.firebasestorage.app",
     messagingSenderId: "679842398896",
     appId: "1:679842398896:web:97763db575ecca5f09b175"
-};
+  };
 
   firebase.initializeApp(firebaseConfig);
 
