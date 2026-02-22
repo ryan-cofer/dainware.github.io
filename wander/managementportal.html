@@ -723,7 +723,7 @@
   // Password hash is checked client-side with SHA-256.
   // This is NOT a secure auth system but provides basic gating.
   // The Firestore security rules should be the real guard.
-  const PW_HASH = "REPLACE_WITH_SHA256_HASH"; // Set this to SHA-256 hash of your password
+  const PW_HASH = "1942822b210e12d2323bf6b039fcfcb5dda5d2cb5b03a12b3f03fcd4172e82cf"; // Set this to SHA-256 hash of your password
 
   async function sha256(str) {
     const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
