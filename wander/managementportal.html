@@ -6,6 +6,7 @@
   <title>Wander — Affiliate Management</title>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
   <style>
     :root {
       --ink:      #ffffff;
@@ -707,6 +708,13 @@
   };
 
   firebase.initializeApp(firebaseConfig);
+
+  // App Check — reCAPTCHA Enterprise attestation
+  firebase.appCheck().activate(
+    new firebase.appCheck.ReCaptchaEnterpriseProvider('REPLACE_WITH_RECAPTCHA_SITE_KEY'),
+    true
+  );
+
   const db = firebase.firestore();
   const COLLECTION = "affiliates";
 
