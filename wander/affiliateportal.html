@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Wander — Affiliate Portal</title>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
   <style>
     :root {
@@ -15,6 +17,7 @@
       --border:   #1f6e8c;
       --green:    #5dd4a0;
       --red:      #ff6b6b;
+      --input-bg: rgba(255,255,255,0.08);
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -81,11 +84,54 @@
       letter-spacing: 0.05em;
     }
 
+    /* ── INACTIVE SCREEN ── */
+    #inactive-screen {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 60vh;
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .inactive-title {
+      font-size: 1.6rem;
+      font-weight: 300;
+      margin-bottom: 0.75rem;
+      color: var(--red);
+    }
+
+    .inactive-sub {
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+      line-height: 1.8;
+    }
+
+    .inactive-sub a {
+      color: var(--gold);
+      text-decoration: none;
+    }
+
+    .inactive-sub a:hover { text-decoration: underline; }
+
     /* ── MAIN ── */
     main {
       max-width: 960px;
       margin: 0 auto;
       padding: 2.5rem 2rem;
+    }
+
+    /* ── SECTION TITLES ── */
+    .section-title {
+      font-size: 10px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
     }
 
     /* ── CONTROLS ── */
@@ -114,8 +160,11 @@
       color: var(--muted);
     }
 
-    input[type="date"] {
-      background: rgba(255,255,255,0.1);
+    input[type="date"],
+    input[type="text"],
+    input[type="email"],
+    input[type="url"] {
+      background: var(--input-bg);
       border: 1px solid var(--border);
       padding: 0.55rem 0.75rem;
       font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -123,10 +172,10 @@
       color: var(--ink);
       outline: none;
       transition: border-color 0.2s;
-      color-scheme: dark;
     }
 
-    input[type="date"]:focus { border-color: var(--gold); }
+    input[type="date"] { color-scheme: dark; }
+    input:focus { border-color: var(--gold); }
 
     .btn-fetch {
       padding: 0.6rem 1.8rem;
@@ -229,6 +278,101 @@
       display: none;
     }
 
+    .success-box {
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--green);
+      background: rgba(93,212,160,0.1);
+      color: var(--green);
+      font-size: 12px;
+      margin-bottom: 1.5rem;
+      display: none;
+    }
+
+    /* ── PROMOTION FORM ── */
+    .promo-section {
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .promo-form {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      padding: 1.5rem;
+    }
+
+    .promo-form .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .promo-form .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .promo-form .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .promo-form .form-group input {
+      width: 100%;
+    }
+
+    .promo-form .form-actions {
+      grid-column: 1 / -1;
+      margin-top: 0.5rem;
+    }
+
+    .promo-help {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 0.75rem;
+      line-height: 1.7;
+    }
+
+    .promo-help a {
+      color: var(--gold);
+      text-decoration: none;
+    }
+
+    .promo-help a:hover { text-decoration: underline; }
+
+    /* ── ELIGIBILITY INFO ── */
+    .elig-bar {
+      display: flex;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      margin-bottom: 2.5rem;
+    }
+
+    .elig-cell {
+      flex: 1;
+      background: rgba(255,255,255,0.05);
+      padding: 1rem 1.25rem;
+      text-align: center;
+    }
+
+    .elig-cell .cell-label {
+      font-size: 9px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.25rem;
+    }
+
+    .elig-cell .cell-value {
+      font-size: 14px;
+      color: var(--ink);
+    }
+
+    .elig-cell .cell-value.gold { color: var(--gold); }
+    .elig-cell .cell-value.green { color: var(--green); }
+    .elig-cell .cell-value.red { color: var(--red); }
+
     @media (max-width: 600px) {
       .summary-grid { grid-template-columns: 1fr; }
       .controls { flex-direction: row; flex-wrap: wrap; justify-content: center; }
@@ -236,6 +380,8 @@
       .controls .btn-fetch { width: 100%; }
       header { padding: 1rem; flex-wrap: wrap; gap: 0.75rem; }
       .header-right { align-items: flex-start; }
+      .promo-form .form-grid { grid-template-columns: 1fr; }
+      .elig-bar { flex-direction: column; }
     }
   </style>
 </head>
@@ -256,9 +402,42 @@
   <div class="invalid-sub">Please check your link and try again, or contact us at hello@dainware.com</div>
 </div>
 
+<!-- Inactive screen -->
+<div id="inactive-screen">
+  <div class="inactive-title">Partnership Inactive</div>
+  <div class="inactive-sub">
+    Your affiliate partnership is no longer active.<br><br>
+    If you have questions, please contact<br>
+    <a href="mailto:ryan.cofer@dainware.com">ryan.cofer@dainware.com</a>
+  </div>
+</div>
+
 <!-- Main portal -->
 <div id="portal-screen" style="display:none">
   <main>
+
+    <!-- Eligibility info bar -->
+    <div class="elig-bar" id="elig-bar" style="display:none">
+      <div class="elig-cell">
+        <div class="cell-label">Commission Rate</div>
+        <div class="cell-value gold" id="elig-rate">—</div>
+      </div>
+      <div class="elig-cell">
+        <div class="cell-label">Last Qualified Promotion</div>
+        <div class="cell-value" id="elig-last-promo">—</div>
+      </div>
+      <div class="elig-cell">
+        <div class="cell-label">Commission Active Until</div>
+        <div class="cell-value" id="elig-end-date">—</div>
+      </div>
+      <div class="elig-cell">
+        <div class="cell-label">Status</div>
+        <div class="cell-value" id="elig-status">—</div>
+      </div>
+    </div>
+
+    <!-- Sales Report Section -->
+    <div class="section-title">Sales Report</div>
 
     <!-- Date controls -->
     <div class="controls">
@@ -288,8 +467,6 @@
 
     <!-- Results -->
     <div id="results-section" style="display:none">
-
-      <!-- Summary cards -->
       <div class="summary-grid">
         <div class="summary-card">
           <div class="card-label">Redemptions</div>
@@ -309,48 +486,194 @@
       </div>
       <div style="font-size:11px;color:var(--muted);margin-bottom:1rem;">Data may be delayed up to 24 hours.</div>
 
-      <!-- No data -->
       <div class="state-box" id="no-data-box" style="display:none">
         No redemptions found for this date range.
       </div>
+    </div>
 
+    <!-- ── PROMOTION SUBMISSION ── -->
+    <div class="promo-section">
+      <div class="section-title">Submit a Promotion</div>
+      <p class="promo-help" style="margin-bottom:1rem;">
+        After you publish a qualifying promotion, submit it here to keep your commission window active.
+        Your commission eligibility will be extended for another <span id="promo-period-display">90</span> days from the promotion date.
+      </p>
+
+      <div class="promo-form">
+        <div class="error-box" id="promo-error"></div>
+        <div class="success-box" id="promo-success"></div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Your Email Address</label>
+            <input type="email" id="promo-email" placeholder="Must match your email on file" />
+          </div>
+
+          <div class="form-group">
+            <label>Your PayPal Address</label>
+            <input type="email" id="promo-paypal" placeholder="Must match your PayPal on file" />
+          </div>
+
+          <div class="form-group">
+            <label>Promotion Date</label>
+            <input type="date" id="promo-date" />
+          </div>
+
+          <div class="form-group">
+            <label>Promotion Timestamp</label>
+            <input type="text" id="promo-timestamp" placeholder="e.g. 2:35 (optional)" />
+          </div>
+
+          <div class="form-group full-width">
+            <label>Promotion URL</label>
+            <input type="url" id="promo-url" placeholder="https://youtube.com/watch?v=..." />
+          </div>
+
+          <div class="form-actions">
+            <button class="btn-fetch" id="promo-submit-btn" onclick="submitPromotion()">Submit Promotion</button>
+          </div>
+        </div>
+      </div>
     </div>
 
   </main>
 </div>
 
 <script>
+  // ═════════════════════════════════════════
+  // Firebase config
+  // ═════════════════════════════════════════
+  const firebaseConfig = {
+    apiKey: "AIzaSyCoV77OBnUFpuOACPNJm9XEsBCasTxOjUk",
+    authDomain: "wander-eab4e.firebaseapp.com",
+    projectId: "wander-eab4e",
+    storageBucket: "wander-eab4e.firebasestorage.app",
+    messagingSenderId: "1025291838498",
+    appId: "1:1025291838498:web:b6f1ace2e7b0ee9d032205",
+    measurementId: "G-B5DN7GFD37"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  const COLLECTION = "affiliates";
+
+  // ═════════════════════════════════════════
+  // Existing report functionality
+  // ═════════════════════════════════════════
   const FUNCTION_URL = "https://us-central1-wander-eab4e.cloudfunctions.net/getOfferCodeReport";
   const API_KEY      = "wander-affiliateportal";
 
-  function getCouponFromPath() {
+  function getPortalCode() {
     const params = new URLSearchParams(window.location.search);
     const code = params.get("code");
     return code ? code.toUpperCase() : null;
   }
 
-  const COUPON_CODE = getCouponFromPath();
+  // Convert portal code back to offer code (preceding letters)
+  function portalCodeToOfferCode(portalCode) {
+    return portalCode.split("").map(ch => {
+      if (/[B-Z]/i.test(ch)) return String.fromCharCode(ch.charCodeAt(0) - 1);
+      if (ch === "A" || ch === "a") return "Z";
+      if (/[1-9]/.test(ch)) return String(Number(ch) - 1);
+      if (ch === "0") return "9";
+      return ch;
+    }).join("");
+  }
 
-  window.addEventListener("load", () => {
-    if (!COUPON_CODE) {
+  const PORTAL_CODE = getPortalCode();
+  const OFFER_CODE = PORTAL_CODE ? portalCodeToOfferCode(PORTAL_CODE) : null;
+
+  let affiliateData = null;
+
+  window.addEventListener("load", async () => {
+    if (!PORTAL_CODE || !OFFER_CODE) {
       document.getElementById("invalid-screen").style.display = "flex";
       return;
     }
 
-    document.getElementById("portal-screen").style.display = "block";
+    // Look up affiliate in Firestore
+    try {
+      const doc = await db.collection(COLLECTION).doc(OFFER_CODE).get();
+      if (!doc.exists) {
+        document.getElementById("invalid-screen").style.display = "flex";
+        return;
+      }
 
-    // Default: last 30 days
-    const today = new Date();
-    const thirtyBack = new Date();
-    thirtyBack.setDate(today.getDate() - 30);
-    document.getElementById("end-date").value = fmt(today);
-    document.getElementById("start-date").value = fmt(thirtyBack);
+      affiliateData = doc.data();
+
+      // Check if portal code matches
+      if ((affiliateData.portalCode || "").toUpperCase() !== PORTAL_CODE) {
+        document.getElementById("invalid-screen").style.display = "flex";
+        return;
+      }
+
+      // Check if INACTIVE
+      if (affiliateData.status === "INACTIVE") {
+        document.getElementById("inactive-screen").style.display = "flex";
+        return;
+      }
+
+      // Show portal
+      document.getElementById("portal-screen").style.display = "block";
+      populateEligibilityBar();
+
+      // Default date range: last 30 days
+      const today = new Date();
+      const thirtyBack = new Date();
+      thirtyBack.setDate(today.getDate() - 30);
+      document.getElementById("end-date").value = fmt(today);
+      document.getElementById("start-date").value = fmt(thirtyBack);
+
+      // Set max date for promo date input (today)
+      document.getElementById("promo-date").max = fmt(today);
+
+    } catch (e) {
+      console.error("Error loading affiliate:", e);
+      document.getElementById("invalid-screen").style.display = "flex";
+    }
   });
+
+  function populateEligibilityBar() {
+    if (!affiliateData) return;
+    const bar = document.getElementById("elig-bar");
+    bar.style.display = "flex";
+
+    document.getElementById("elig-rate").textContent = (affiliateData.commissionPct || 25) + "%";
+
+    const lastPromo = affiliateData.lastPromoDate;
+    document.getElementById("elig-last-promo").textContent = lastPromo ? displayDate(lastPromo) : "—";
+
+    const endDate = affiliateData.commissionEligibilityEndDate;
+    const endEl = document.getElementById("elig-end-date");
+    endEl.textContent = endDate ? displayDate(endDate) : "—";
+
+    // Color the end date based on whether it's in the future or past
+    if (endDate) {
+      const end = new Date(endDate + "T23:59:59");
+      endEl.className = end >= new Date() ? "cell-value green" : "cell-value red";
+    }
+
+    const statusEl = document.getElementById("elig-status");
+    statusEl.textContent = affiliateData.status || "ACTIVE";
+    statusEl.className = affiliateData.status === "ACTIVE" ? "cell-value green" : "cell-value red";
+
+    // Update period display
+    document.getElementById("promo-period-display").textContent = affiliateData.commissionEligibilityPeriod || 90;
+  }
 
   function fmt(d) {
     return d.toISOString().split("T")[0];
   }
 
+  function displayDate(dateStr) {
+    if (!dateStr) return "—";
+    const d = new Date(dateStr + "T00:00:00");
+    return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  }
+
+  // ═════════════════════════════════════════
+  // Sales report (existing functionality)
+  // ═════════════════════════════════════════
   async function fetchReport() {
     const startDate = document.getElementById("start-date").value;
     const endDate   = document.getElementById("end-date").value;
@@ -362,7 +685,7 @@
     setLoading(true);
 
     try {
-      const params = new URLSearchParams({ startDate, endDate, offerCode: COUPON_CODE });
+      const params = new URLSearchParams({ startDate, endDate, offerCode: OFFER_CODE });
       const resp = await fetch(`${FUNCTION_URL}?${params}`, {
         headers: { "x-api-key": API_KEY },
       });
@@ -412,6 +735,101 @@
 
   function hideError() {
     document.getElementById("error-box").style.display = "none";
+  }
+
+  // ═════════════════════════════════════════
+  // Promotion submission
+  // ═════════════════════════════════════════
+  async function submitPromotion() {
+    const errEl = document.getElementById("promo-error");
+    const sucEl = document.getElementById("promo-success");
+    errEl.style.display = "none";
+    sucEl.style.display = "none";
+
+    const email = (document.getElementById("promo-email").value || "").trim().toLowerCase();
+    const paypal = (document.getElementById("promo-paypal").value || "").trim().toLowerCase();
+    const promoDate = document.getElementById("promo-date").value;
+    const promoUrl = (document.getElementById("promo-url").value || "").trim();
+    const promoTimestamp = (document.getElementById("promo-timestamp").value || "").trim();
+
+    // Validation
+    if (!email || !paypal) {
+      showPromoError("Please enter both your email and PayPal address for verification.");
+      return;
+    }
+
+    if (!promoDate) {
+      showPromoError("Please enter the promotion date.");
+      return;
+    }
+
+    // Check date is not in the future
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+    const promoD = new Date(promoDate + "T00:00:00");
+    if (promoD > today) {
+      showPromoError("The promotion date cannot be a date in the future.");
+      return;
+    }
+
+    // Verify email and PayPal match what's on file
+    const fileEmail = (affiliateData.email || "").trim().toLowerCase();
+    const filePaypal = (affiliateData.paypal || "").trim().toLowerCase();
+
+    if (email !== fileEmail || paypal !== filePaypal) {
+      showPromoError("The information you entered doesn't match what's on file. Please contact ryan.cofer@gmail.com for assistance.");
+      return;
+    }
+
+    // Disable button
+    const btn = document.getElementById("promo-submit-btn");
+    btn.disabled = true;
+    btn.textContent = "Submitting...";
+
+    try {
+      // Calculate new eligibility end date
+      const eligPeriod = affiliateData.commissionEligibilityPeriod || 90;
+      const newEndDate = new Date(promoDate + "T00:00:00");
+      newEndDate.setDate(newEndDate.getDate() + eligPeriod);
+
+      await db.collection(COLLECTION).doc(OFFER_CODE).update({
+        lastPromoDate: promoDate,
+        lastPromoUrl: promoUrl,
+        lastPromoTimestamp: promoTimestamp,
+        commissionEligibilityEndDate: fmt(newEndDate),
+      });
+
+      // Update local data
+      affiliateData.lastPromoDate = promoDate;
+      affiliateData.lastPromoUrl = promoUrl;
+      affiliateData.lastPromoTimestamp = promoTimestamp;
+      affiliateData.commissionEligibilityEndDate = fmt(newEndDate);
+
+      // Refresh the eligibility bar
+      populateEligibilityBar();
+
+      // Clear form
+      document.getElementById("promo-email").value = "";
+      document.getElementById("promo-paypal").value = "";
+      document.getElementById("promo-date").value = "";
+      document.getElementById("promo-url").value = "";
+      document.getElementById("promo-timestamp").value = "";
+
+      sucEl.textContent = "Promotion submitted successfully! Your commission eligibility has been extended to " + displayDate(fmt(newEndDate)) + ".";
+      sucEl.style.display = "block";
+
+    } catch (e) {
+      showPromoError("Error submitting promotion: " + e.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Submit Promotion";
+    }
+  }
+
+  function showPromoError(msg) {
+    const el = document.getElementById("promo-error");
+    el.textContent = msg;
+    el.style.display = "block";
   }
 </script>
 
