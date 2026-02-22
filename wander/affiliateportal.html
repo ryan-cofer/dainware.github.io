@@ -6,6 +6,7 @@
   <title>Wander — Affiliate Portal</title>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
 
   <style>
     :root {
@@ -399,7 +400,7 @@
 <!-- Invalid code screen -->
 <div id="invalid-screen">
   <div class="invalid-title">Invalid affiliate link</div>
-  <div class="invalid-sub">Please check your link and try again, or contact us at hello@dainware.com</div>
+  <div class="invalid-sub">Please check your link and try again, or contact us at <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="cba3aea7a7a48bafaaa2a5bcaab9aee5a8a4a6">[email&#160;protected]</a></div>
 </div>
 
 <!-- Inactive screen -->
@@ -408,7 +409,7 @@
   <div class="inactive-sub">
     Your affiliate partnership is no longer active.<br><br>
     If you have questions, please contact<br>
-    <a href="mailto:ryan.cofer@dainware.com">ryan.cofer@dainware.com</a>
+    <a href="/cdn-cgi/l/email-protection#22505b434c0c414d4447506246434b4c554350470c414d4f"><span class="__cf_email__" data-cfemail="106269717e3e737f767562507471797e677162753e737f7d">[email&#160;protected]</span></a>
   </div>
 </div>
 
@@ -539,7 +540,7 @@
   </main>
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
   // ═════════════════════════════════════════
   // Firebase config
   // ═════════════════════════════════════════
@@ -554,6 +555,13 @@
   };
 
   firebase.initializeApp(firebaseConfig);
+
+  // App Check — reCAPTCHA Enterprise attestation
+  firebase.appCheck().activate(
+    new firebase.appCheck.ReCaptchaEnterpriseProvider('REPLACE_WITH_RECAPTCHA_SITE_KEY'),
+    true
+  );
+
   const db = firebase.firestore();
   const COLLECTION = "affiliates";
 
@@ -816,22 +824,4 @@
       document.getElementById("promo-timestamp").value = "";
 
       sucEl.textContent = "Promotion submitted successfully! Your commission eligibility has been extended to " + displayDate(fmt(newEndDate)) + ".";
-      sucEl.style.display = "block";
-
-    } catch (e) {
-      showPromoError("Error submitting promotion: " + e.message);
-    } finally {
-      btn.disabled = false;
-      btn.textContent = "Submit Promotion";
-    }
-  }
-
-  function showPromoError(msg) {
-    const el = document.getElementById("promo-error");
-    el.textContent = msg;
-    el.style.display = "block";
-  }
-</script>
-
-</body>
-</html>
+      sucEl.style.display
