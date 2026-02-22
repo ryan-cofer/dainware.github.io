@@ -32,7 +32,6 @@
       line-height: 1.6;
     }
 
-    /* ── HEADER ── */
     header {
       display: flex;
       align-items: center;
@@ -42,10 +41,7 @@
       background: var(--cream);
     }
 
-    .logo img {
-      height: 36px;
-      display: block;
-    }
+    .logo img { height: 36px; display: block; }
 
     .header-right {
       display: flex;
@@ -61,7 +57,6 @@
       color: var(--muted);
     }
 
-    /* ── INVALID CODE SCREEN ── */
     #invalid-screen {
       display: none;
       flex-direction: column;
@@ -85,7 +80,6 @@
       letter-spacing: 0.05em;
     }
 
-    /* ── INACTIVE SCREEN ── */
     #inactive-screen {
       display: none;
       flex-direction: column;
@@ -117,14 +111,12 @@
 
     .inactive-sub a:hover { text-decoration: underline; }
 
-    /* ── MAIN ── */
     main {
       max-width: 960px;
       margin: 0 auto;
       padding: 2.5rem 2rem;
     }
 
-    /* ── SECTION TITLES ── */
     .section-title {
       font-size: 10px;
       letter-spacing: 0.22em;
@@ -135,7 +127,6 @@
       border-bottom: 1px solid var(--border);
     }
 
-    /* ── CONTROLS ── */
     .controls {
       display: flex;
       flex-wrap: wrap;
@@ -196,7 +187,6 @@
     .btn-fetch:hover:not(:disabled) { opacity: 0.85; }
     .btn-fetch:disabled { opacity: 0.45; cursor: not-allowed; }
 
-    /* ── SUMMARY CARDS ── */
     .summary-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -235,7 +225,6 @@
       margin-top: 0.35rem;
     }
 
-    /* ── META ── */
     .meta-row {
       display: flex;
       justify-content: space-between;
@@ -244,7 +233,6 @@
       margin-bottom: 1rem;
     }
 
-    /* ── STATES ── */
     .state-box {
       padding: 3rem;
       text-align: center;
@@ -289,7 +277,6 @@
       display: none;
     }
 
-    /* ── PROMOTION FORM ── */
     .promo-section {
       margin-top: 3rem;
       padding-top: 2rem;
@@ -318,9 +305,7 @@
       grid-column: 1 / -1;
     }
 
-    .promo-form .form-group input {
-      width: 100%;
-    }
+    .promo-form .form-group input { width: 100%; }
 
     .promo-form .form-actions {
       grid-column: 1 / -1;
@@ -341,7 +326,6 @@
 
     .promo-help a:hover { text-decoration: underline; }
 
-    /* ── ELIGIBILITY INFO ── */
     .elig-bar {
       display: flex;
       gap: 1px;
@@ -397,50 +381,40 @@
   </div>
 </header>
 
-<!-- Invalid code screen -->
 <div id="invalid-screen">
   <div class="invalid-title">Invalid affiliate link</div>
-  <div class="invalid-sub">Please check your link and try again, or contact us at <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="cba3aea7a7a48bafaaa2a5bcaab9aee5a8a4a6">[email&#160;protected]</a></div>
+  <div class="invalid-sub" id="invalid-sub-text"></div>
 </div>
 
-<!-- Inactive screen -->
 <div id="inactive-screen">
   <div class="inactive-title">Partnership Inactive</div>
-  <div class="inactive-sub">
-    Your affiliate partnership is no longer active.<br><br>
-    If you have questions, please contact<br>
-    <a href="/cdn-cgi/l/email-protection#22505b434c0c414d4447506246434b4c554350470c414d4f"><span class="__cf_email__" data-cfemail="106269717e3e737f767562507471797e677162753e737f7d">[email&#160;protected]</span></a>
-  </div>
+  <div class="inactive-sub" id="inactive-sub-text"></div>
 </div>
 
-<!-- Main portal -->
 <div id="portal-screen" style="display:none">
   <main>
 
-    <!-- Eligibility info bar -->
     <div class="elig-bar" id="elig-bar" style="display:none">
       <div class="elig-cell">
         <div class="cell-label">Commission Rate</div>
-        <div class="cell-value gold" id="elig-rate">—</div>
+        <div class="cell-value gold" id="elig-rate"></div>
       </div>
       <div class="elig-cell">
         <div class="cell-label">Last Qualified Promotion</div>
-        <div class="cell-value" id="elig-last-promo">—</div>
+        <div class="cell-value" id="elig-last-promo"></div>
       </div>
       <div class="elig-cell">
         <div class="cell-label">Commission Active Until</div>
-        <div class="cell-value" id="elig-end-date">—</div>
+        <div class="cell-value" id="elig-end-date"></div>
       </div>
       <div class="elig-cell">
         <div class="cell-label">Status</div>
-        <div class="cell-value" id="elig-status">—</div>
+        <div class="cell-value" id="elig-status"></div>
       </div>
     </div>
 
-    <!-- Sales Report Section -->
     <div class="section-title">Sales Report</div>
 
-    <!-- Date controls -->
     <div class="controls">
       <div class="field">
         <label>Start Date</label>
@@ -455,28 +429,25 @@
 
     <div class="error-box" id="error-box"></div>
 
-    <!-- Loading -->
     <div class="state-box" id="loading-box" style="display:none">
       <span class="spinner"></span>Fetching your sales data...
     </div>
 
-    <!-- Initial -->
     <div class="state-box" id="initial-box">
       Select a date range above and click Run Report to see your redemption data.<br><br>
       Note: data may be delayed up to 24 hours.
     </div>
 
-    <!-- Results -->
     <div id="results-section" style="display:none">
       <div class="summary-grid">
         <div class="summary-card">
           <div class="card-label">Redemptions</div>
-          <div class="card-value" id="stat-redemptions">—</div>
+          <div class="card-value" id="stat-redemptions"></div>
           <div class="card-sub">purchases with your code</div>
         </div>
         <div class="summary-card">
           <div class="card-label">Active Days</div>
-          <div class="card-value" id="stat-days">—</div>
+          <div class="card-value" id="stat-days"></div>
           <div class="card-sub">days with at least one redemption</div>
         </div>
       </div>
@@ -492,7 +463,6 @@
       </div>
     </div>
 
-    <!-- ── PROMOTION SUBMISSION ── -->
     <div class="promo-section">
       <div class="section-title">Submit a Promotion</div>
       <p class="promo-help" style="margin-bottom:1rem;">
@@ -527,7 +497,7 @@
 
           <div class="form-group full-width">
             <label>Promotion URL</label>
-            <input type="url" id="promo-url" placeholder="https://youtube.com/watch?v=..." />
+            <input type="url" id="promo-url" placeholder="https://..." />
           </div>
 
           <div class="form-actions">
@@ -540,11 +510,17 @@
   </main>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
-  // ═════════════════════════════════════════
-  // Firebase config
-  // ═════════════════════════════════════════
-  const firebaseConfig = {
+<script>
+  // Build email addresses in JS so Cloudflare cannot obfuscate them in HTML
+  var CONTACT_EMAIL = ['ryan', '.', 'cofer', String.fromCharCode(64), 'gmail', '.', 'com'].join('');
+  var DAINWARE_EMAIL = ['ryan', '.', 'cofer', String.fromCharCode(64), 'dainware', '.', 'com'].join('');
+  var HELLO_EMAIL = ['hello', String.fromCharCode(64), 'dainware', '.', 'com'].join('');
+
+  // Set the text content that contains emails via JS (avoids Cloudflare mangling)
+  document.getElementById('invalid-sub-text').textContent = 'Please check your link and try again, or contact us at ' + HELLO_EMAIL;
+  document.getElementById('inactive-sub-text').innerHTML = 'Your affiliate partnership is no longer active.<br><br>If you have questions, please contact<br><a href="mai' + 'lto:' + DAINWARE_EMAIL + '">' + DAINWARE_EMAIL + '</a>';
+
+  var firebaseConfig = {
     apiKey: "AIzaSyCoV77OBnUFpuOACPNJm9XEsBCasTxOjUk",
     authDomain: "wander-eab4e.firebaseapp.com",
     projectId: "wander-eab4e",
@@ -556,30 +532,25 @@
 
   firebase.initializeApp(firebaseConfig);
 
-  // App Check — reCAPTCHA Enterprise attestation
   firebase.appCheck().activate(
     new firebase.appCheck.ReCaptchaEnterpriseProvider('6LfIBXQsAAAAAH2P3fLRotftf3DdpW-kda9Ed-U1'),
     true
   );
 
-  const db = firebase.firestore();
-  const COLLECTION = "affiliates";
+  var db = firebase.firestore();
+  var COLLECTION = "affiliates";
 
-  // ═════════════════════════════════════════
-  // Existing report functionality
-  // ═════════════════════════════════════════
-  const FUNCTION_URL = "https://us-central1-wander-eab4e.cloudfunctions.net/getOfferCodeReport";
-  const API_KEY      = "wander-affiliateportal";
+  var FUNCTION_URL = "https://us-central1-wander-eab4e.cloudfunctions.net/getOfferCodeReport";
+  var API_KEY = "wander-affiliateportal";
 
   function getPortalCode() {
-    const params = new URLSearchParams(window.location.search);
-    const code = params.get("code");
+    var params = new URLSearchParams(window.location.search);
+    var code = params.get("code");
     return code ? code.toUpperCase() : null;
   }
 
-  // Convert portal code back to offer code (preceding letters)
   function portalCodeToOfferCode(portalCode) {
-    return portalCode.split("").map(ch => {
+    return portalCode.split("").map(function(ch) {
       if (/[B-Z]/i.test(ch)) return String.fromCharCode(ch.charCodeAt(0) - 1);
       if (ch === "A" || ch === "a") return "Z";
       if (/[1-9]/.test(ch)) return String(Number(ch) - 1);
@@ -588,20 +559,17 @@
     }).join("");
   }
 
-  const PORTAL_CODE = getPortalCode();
-  const OFFER_CODE = PORTAL_CODE ? portalCodeToOfferCode(PORTAL_CODE) : null;
+  var PORTAL_CODE = getPortalCode();
+  var OFFER_CODE = PORTAL_CODE ? portalCodeToOfferCode(PORTAL_CODE) : null;
+  var affiliateData = null;
 
-  let affiliateData = null;
-
-  window.addEventListener("load", async () => {
+  window.addEventListener("load", function() {
     if (!PORTAL_CODE || !OFFER_CODE) {
       document.getElementById("invalid-screen").style.display = "flex";
       return;
     }
 
-    // Look up affiliate in Firestore
-    try {
-      const doc = await db.collection(COLLECTION).doc(OFFER_CODE).get();
+    db.collection(COLLECTION).doc(OFFER_CODE).get().then(function(doc) {
       if (!doc.exists) {
         document.getElementById("invalid-screen").style.display = "flex";
         return;
@@ -609,63 +577,55 @@
 
       affiliateData = doc.data();
 
-      // Check if portal code matches
       if ((affiliateData.portalCode || "").toUpperCase() !== PORTAL_CODE) {
         document.getElementById("invalid-screen").style.display = "flex";
         return;
       }
 
-      // Check if INACTIVE
       if (affiliateData.status === "INACTIVE") {
         document.getElementById("inactive-screen").style.display = "flex";
         return;
       }
 
-      // Show portal
       document.getElementById("portal-screen").style.display = "block";
       populateEligibilityBar();
 
-      // Default date range: last 30 days
-      const today = new Date();
-      const thirtyBack = new Date();
+      var today = new Date();
+      var thirtyBack = new Date();
       thirtyBack.setDate(today.getDate() - 30);
       document.getElementById("end-date").value = fmt(today);
       document.getElementById("start-date").value = fmt(thirtyBack);
-
-      // Set max date for promo date input (today)
       document.getElementById("promo-date").max = fmt(today);
 
-    } catch (e) {
+    }).catch(function(e) {
       console.error("Error loading affiliate:", e);
       document.getElementById("invalid-screen").style.display = "flex";
-    }
+    });
   });
 
   function populateEligibilityBar() {
     if (!affiliateData) return;
-    const bar = document.getElementById("elig-bar");
+    var bar = document.getElementById("elig-bar");
     bar.style.display = "flex";
 
     document.getElementById("elig-rate").textContent = (affiliateData.commissionPct || 25) + "%";
 
-    const lastPromo = affiliateData.lastPromoDate;
-    document.getElementById("elig-last-promo").textContent = lastPromo ? displayDate(lastPromo) : "—";
+    var lastPromo = affiliateData.lastPromoDate;
+    document.getElementById("elig-last-promo").textContent = lastPromo ? displayDate(lastPromo) : "\u2014";
 
-    const endDate = affiliateData.commissionEligibilityEndDate;
-    const endEl = document.getElementById("elig-end-date");
-    endEl.textContent = endDate ? displayDate(endDate) : "—";
+    var endDate = affiliateData.commissionEligibilityEndDate;
+    var endEl = document.getElementById("elig-end-date");
+    endEl.textContent = endDate ? displayDate(endDate) : "\u2014";
 
-    // Color the end date based on whether it's in the future or past
     if (endDate) {
-      const end = new Date(endDate + "T23:59:59");
+      var end = new Date(endDate + "T23:59:59");
       endEl.className = end >= new Date() ? "cell-value green" : "cell-value red";
     }
 
-    const statusEl = document.getElementById("elig-status");
+    var statusEl = document.getElementById("elig-status");
     statusEl.textContent = affiliateData.status || "ACTIVE";
     statusEl.className = affiliateData.status === "ACTIVE" ? "cell-value green" : "cell-value red";
 
-    // Update period display
     document.getElementById("promo-period-display").textContent = affiliateData.commissionEligibilityPeriod || 90;
   }
 
@@ -674,58 +634,48 @@
   }
 
   function displayDate(dateStr) {
-    if (!dateStr) return "—";
-    const d = new Date(dateStr + "T00:00:00");
+    if (!dateStr) return "\u2014";
+    var d = new Date(dateStr + "T00:00:00");
     return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   }
 
-  // ═════════════════════════════════════════
-  // Sales report (existing functionality)
-  // ═════════════════════════════════════════
-  async function fetchReport() {
-    const startDate = document.getElementById("start-date").value;
-    const endDate   = document.getElementById("end-date").value;
+  function fetchReport() {
+    var startDate = document.getElementById("start-date").value;
+    var endDate = document.getElementById("end-date").value;
 
     if (!startDate || !endDate) { showError("Please select both a start and end date."); return; }
-    if (startDate > endDate)    { showError("Start date must be before end date."); return; }
+    if (startDate > endDate) { showError("Start date must be before end date."); return; }
 
     hideError();
     setLoading(true);
 
-    try {
-      const params = new URLSearchParams({ startDate, endDate, offerCode: OFFER_CODE });
-      const resp = await fetch(`${FUNCTION_URL}?${params}`, {
-        headers: { "x-api-key": API_KEY },
-      });
-
+    var params = new URLSearchParams({ startDate: startDate, endDate: endDate, offerCode: OFFER_CODE });
+    fetch(FUNCTION_URL + "?" + params, {
+      headers: { "x-api-key": API_KEY }
+    }).then(function(resp) {
       if (!resp.ok) {
-        const err = await resp.json().catch(() => ({}));
-        throw new Error(err.error || `Server error (${resp.status})`);
+        return resp.json().catch(function() { return {}; }).then(function(err) {
+          throw new Error(err.error || "Server error (" + resp.status + ")");
+        });
       }
-
-      const data = await resp.json();
+      return resp.json();
+    }).then(function(data) {
       render(data);
-    } catch (e) {
-      showError(`Could not load report: ${e.message}`);
-    } finally {
+    }).catch(function(e) {
+      showError("Could not load report: " + e.message);
+    }).finally(function() {
       setLoading(false);
-    }
+    });
   }
 
   function render(data) {
     document.getElementById("initial-box").style.display = "none";
     document.getElementById("results-section").style.display = "block";
-
     document.getElementById("stat-redemptions").textContent = data.redemptions.toLocaleString();
-    document.getElementById("stat-days").textContent        = data.activeDays.toLocaleString();
-
-    document.getElementById("meta-range").textContent =
-      `${data.startDate} → ${data.endDate}`;
-    document.getElementById("meta-reports").textContent =
-      `${data.reportsFound} of ${data.reportsChecked} days had data`;
-
-    const noData = document.getElementById("no-data-box");
-    noData.style.display = data.redemptions === 0 ? "block" : "none";
+    document.getElementById("stat-days").textContent = data.activeDays.toLocaleString();
+    document.getElementById("meta-range").textContent = data.startDate + " \u2192 " + data.endDate;
+    document.getElementById("meta-reports").textContent = data.reportsFound + " of " + data.reportsChecked + " days had data";
+    document.getElementById("no-data-box").style.display = data.redemptions === 0 ? "block" : "none";
   }
 
   function setLoading(on) {
@@ -736,7 +686,7 @@
   }
 
   function showError(msg) {
-    const el = document.getElementById("error-box");
+    var el = document.getElementById("error-box");
     el.textContent = msg;
     el.style.display = "block";
   }
@@ -745,22 +695,18 @@
     document.getElementById("error-box").style.display = "none";
   }
 
-  // ═════════════════════════════════════════
-  // Promotion submission
-  // ═════════════════════════════════════════
-  async function submitPromotion() {
-    const errEl = document.getElementById("promo-error");
-    const sucEl = document.getElementById("promo-success");
+  function submitPromotion() {
+    var errEl = document.getElementById("promo-error");
+    var sucEl = document.getElementById("promo-success");
     errEl.style.display = "none";
     sucEl.style.display = "none";
 
-    const email = (document.getElementById("promo-email").value || "").trim().toLowerCase();
-    const paypal = (document.getElementById("promo-paypal").value || "").trim().toLowerCase();
-    const promoDate = document.getElementById("promo-date").value;
-    const promoUrl = (document.getElementById("promo-url").value || "").trim();
-    const promoTimestamp = (document.getElementById("promo-timestamp").value || "").trim();
+    var email = (document.getElementById("promo-email").value || "").trim().toLowerCase();
+    var paypal = (document.getElementById("promo-paypal").value || "").trim().toLowerCase();
+    var promoDate = document.getElementById("promo-date").value;
+    var promoUrl = (document.getElementById("promo-url").value || "").trim();
+    var promoTimestamp = (document.getElementById("promo-timestamp").value || "").trim();
 
-    // Validation
     if (!email || !paypal) {
       showPromoError("Please enter both your email and PayPal address for verification.");
       return;
@@ -771,52 +717,43 @@
       return;
     }
 
-    // Check date is not in the future
-    const today = new Date();
+    var today = new Date();
     today.setHours(23, 59, 59, 999);
-    const promoD = new Date(promoDate + "T00:00:00");
+    var promoD = new Date(promoDate + "T00:00:00");
     if (promoD > today) {
       showPromoError("The promotion date cannot be a date in the future.");
       return;
     }
 
-    // Verify email and PayPal match what's on file
-    const fileEmail = (affiliateData.email || "").trim().toLowerCase();
-    const filePaypal = (affiliateData.paypal || "").trim().toLowerCase();
+    var fileEmail = (affiliateData.email || "").trim().toLowerCase();
+    var filePaypal = (affiliateData.paypal || "").trim().toLowerCase();
 
     if (email !== fileEmail || paypal !== filePaypal) {
-      showPromoError("The information you entered doesn't match what's on file. Please contact ryan.cofer@gmail.com for assistance.");
+      showPromoError("The information you entered doesn't match what's on file. Please contact " + CONTACT_EMAIL + " for assistance.");
       return;
     }
 
-    // Disable button
-    const btn = document.getElementById("promo-submit-btn");
+    var btn = document.getElementById("promo-submit-btn");
     btn.disabled = true;
     btn.textContent = "Submitting...";
 
-    try {
-      // Calculate new eligibility end date
-      const eligPeriod = affiliateData.commissionEligibilityPeriod || 90;
-      const newEndDate = new Date(promoDate + "T00:00:00");
-      newEndDate.setDate(newEndDate.getDate() + eligPeriod);
+    var eligPeriod = affiliateData.commissionEligibilityPeriod || 90;
+    var newEndDate = new Date(promoDate + "T00:00:00");
+    newEndDate.setDate(newEndDate.getDate() + eligPeriod);
 
-      await db.collection(COLLECTION).doc(OFFER_CODE).update({
-        lastPromoDate: promoDate,
-        lastPromoUrl: promoUrl,
-        lastPromoTimestamp: promoTimestamp,
-        commissionEligibilityEndDate: fmt(newEndDate),
-      });
-
-      // Update local data
+    db.collection(COLLECTION).doc(OFFER_CODE).update({
+      lastPromoDate: promoDate,
+      lastPromoUrl: promoUrl,
+      lastPromoTimestamp: promoTimestamp,
+      commissionEligibilityEndDate: fmt(newEndDate)
+    }).then(function() {
       affiliateData.lastPromoDate = promoDate;
       affiliateData.lastPromoUrl = promoUrl;
       affiliateData.lastPromoTimestamp = promoTimestamp;
       affiliateData.commissionEligibilityEndDate = fmt(newEndDate);
 
-      // Refresh the eligibility bar
       populateEligibilityBar();
 
-      // Clear form
       document.getElementById("promo-email").value = "";
       document.getElementById("promo-paypal").value = "";
       document.getElementById("promo-date").value = "";
@@ -824,4 +761,21 @@
       document.getElementById("promo-timestamp").value = "";
 
       sucEl.textContent = "Promotion submitted successfully! Your commission eligibility has been extended to " + displayDate(fmt(newEndDate)) + ".";
-      sucEl.style.display
+      sucEl.style.display = "block";
+    }).catch(function(e) {
+      showPromoError("Error submitting promotion: " + e.message);
+    }).finally(function() {
+      btn.disabled = false;
+      btn.textContent = "Submit Promotion";
+    });
+  }
+
+  function showPromoError(msg) {
+    var el = document.getElementById("promo-error");
+    el.textContent = msg;
+    el.style.display = "block";
+  }
+</script>
+
+</body>
+</html>
