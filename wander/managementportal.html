@@ -603,7 +603,9 @@
   <main>
     <div class="tab-bar">
       <button class="tab-btn active" data-tab="list"       onclick="switchTab('list')">Affiliates</button>
-      <button class="tab-btn"        data-tab="add"        onclick="switchTab('add')">Add New</button>
+      <button class="tab-btn"        data-tab="add"        onclick="switchTab('add')">Add Affiliate</button>
+      <button class="tab-btn"        data-tab="leads"      onclick="switchTab('leads'); loadLeads()">Leads</button>
+      <button class="tab-btn"        data-tab="add-lead"   onclick="switchTab('add-lead')">Add Lead</button>
       <button class="tab-btn"        data-tab="activities" onclick="switchTab('activities'); loadActivities()">Affiliate Activities</button>
       <button class="tab-btn"        data-tab="reports"    onclick="switchTab('reports'); loadPaymentReports()">Payment Reports</button>
     </div>
@@ -700,6 +702,93 @@
       </div>
     </div>
 
+    <!-- ── LEADS TAB ── -->
+    <div class="tab-content" id="tab-leads">
+      <div class="search-bar">
+        <input type="text" id="leads-search-input" placeholder="Search by name, code, channel, or email..." oninput="renderLeadsList()" />
+      </div>
+      <div id="leads-list-container"></div>
+    </div>
+
+    <!-- ── ADD LEAD TAB ── -->
+    <div class="tab-content" id="tab-add-lead">
+      <div class="form-grid" id="add-lead-form">
+        <div class="form-section-title">Channel Information</div>
+        <div class="form-group">
+          <label>Primary Medium</label>
+          <select id="lead-medium">
+            <option value="YouTube">YouTube</option>
+            <option value="Blog">Blog</option>
+            <option value="Instagram">Instagram</option>
+            <option value="TikTok">TikTok</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Channel Name</label>
+          <input type="text" id="lead-channelName" placeholder="e.g. Nomadic Matt" />
+        </div>
+        <div class="form-group full-width">
+          <label>Channel URL</label>
+          <input type="text" id="lead-channelUrl" placeholder="https://..." />
+        </div>
+        <div class="form-section-title">Lead Details</div>
+        <div class="form-group">
+          <label>First Name</label>
+          <input type="text" id="lead-firstName" />
+        </div>
+        <div class="form-group">
+          <label>Last Name</label>
+          <input type="text" id="lead-lastName" />
+        </div>
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="lead-email" />
+        </div>
+        <div class="form-group">
+          <label>Assigned Offer Code</label>
+          <input type="text" id="lead-offerCode" placeholder="e.g. WANDER25" style="text-transform:uppercase" />
+        </div>
+        <div class="form-section-title">Commission Settings</div>
+        <div class="form-group">
+          <label>Commission Percentage (%)</label>
+          <input type="number" id="lead-commissionPct" value="25" min="0" max="100" step="1" />
+        </div>
+        <div class="form-group">
+          <label>Commission Eligibility Period (days)</label>
+          <input type="number" id="lead-eligibilityPeriod" value="90" min="1" />
+        </div>
+        <div class="form-section-title">Onboarding Link</div>
+        <div class="form-group full-width">
+          <label>Onboarding URL (auto-generated)</label>
+          <div style="display:flex;gap:0.75rem;align-items:center;">
+            <input type="text" id="lead-onboardingUrl" readonly style="opacity:0.7;flex:1;font-size:11px;" />
+            <button class="btn-secondary" onclick="copyOnboardingUrl()" id="copy-url-btn">Copy</button>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn-primary" id="save-lead-btn" onclick="saveNewLead()">Save Lead</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── LEAD DETAIL TAB ── -->
+    <div class="tab-content" id="tab-lead-detail">
+      <div class="detail-header">
+        <button class="detail-back" onclick="switchTab('leads')">← Back to leads</button>
+        <div style="display:flex;gap:0.75rem;">
+          <button class="btn-secondary" onclick="enterLeadEditMode()">Edit</button>
+        </div>
+      </div>
+      <div id="lead-detail-view">
+        <div class="detail-name" id="lead-detail-name"></div>
+        <div style="margin:0.5rem 0 1.5rem;"><span id="lead-detail-status-badge"></span></div>
+        <div class="info-grid" id="lead-detail-info-grid"></div>
+      </div>
+      <div id="lead-detail-edit" style="display:none">
+        <div class="form-grid" id="lead-edit-form"></div>
+      </div>
+    </div>
+
     <!-- ── AFFILIATE ACTIVITIES TAB ── -->
     <div class="tab-content" id="tab-activities">
       <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;">
@@ -758,10 +847,6 @@
         <div class="detail-name" id="detail-name"></div>
         <div style="margin:0.5rem 0 1.5rem;"><span id="detail-status-badge"></span></div>
         <div class="info-grid" id="detail-info-grid"></div>
-        <div class="section-divider" style="margin-top:2rem;">
-          Promotion Submission History
-        </div>
-        <div id="promo-history-container"></div>
       </div>
       <div id="detail-edit" style="display:none">
         <div class="form-grid" id="edit-form"></div>
@@ -987,55 +1072,12 @@
   // ═══════════════════════════
   // Detail view
   // ═══════════════════════════
-  async function viewAffiliate(id) {
+  function viewAffiliate(id) {
     currentAffiliate = affiliates.find(a => a.id === id);
     if (!currentAffiliate) return;
     renderDetail();
     switchTab("detail");
-    await loadAffiliatePromotions(id);
   }
-
-  async function loadAffiliatePromotions(offerCode) {
-  const container = document.getElementById("promo-history-container");
-  container.innerHTML = `<div class="empty-state"><span class="loading-spinner"></span> Loading...</div>`;
-
-  try {
-    const snap = await db.collection(COLLECTION).doc(offerCode)
-      .collection("promotions")
-      .orderBy("submittedAt", "desc")
-      .get();
-
-    if (snap.empty) {
-      container.innerHTML = `<div class="empty-state">No promotion submissions on record.</div>`;
-      return;
-    }
-
-    let html = `<table class="act-table"><thead><tr>
-      <th>Submitted</th>
-      <th>Promotion Date</th>
-      <th>Minute Marker</th>
-      <th>Promotion URL</th>
-    </tr></thead><tbody>`;
-
-    snap.forEach(doc => {
-      const p = doc.data();
-      html += `<tr>
-        <td style="white-space:nowrap">${esc(displayDateTime(p.submittedAt))}</td>
-        <td style="white-space:nowrap">${esc(displayDate(p.promoDate))}</td>
-        <td>${esc(p.promoTimestamp || "—")}</td>
-        <td class="url-cell">${
-          p.promoUrl
-            ? `<a href="${esc(p.promoUrl)}" target="_blank" rel="noopener">${esc(p.promoUrl)}</a>`
-            : "—"
-        }</td>
-      </tr>`;
-    });
-
-    container.innerHTML = html + `</tbody></table>`;
-  } catch (e) {
-    container.innerHTML = `<div class="empty-state" style="color:var(--red)">Error: ${esc(e.message)}</div>`;
-  }
-}
 
   const FIELD_MAP = [
     { key: "medium",                       label: "Primary Medium" },
@@ -1538,6 +1580,294 @@
     el.textContent = msg;
     el.className = "toast " + type + " show";
     setTimeout(() => el.classList.remove("show"), 3500);
+  }
+
+
+  // ═══════════════════════════
+  // Leads
+  // ═══════════════════════════
+  let leads = [];
+  let currentLead = null;
+  let leadsLoaded = false;
+
+  const ONBOARDING_BASE_URL = "https://dainware.com/wander/affiliateonboarding.html";
+
+  function generateOnboardingCode(offerCode) {
+    return offerCode.toUpperCase().split("").map(ch => {
+      if (/[A-Y]/i.test(ch)) return String.fromCharCode(ch.charCodeAt(0) + 1);
+      if (ch === "Z" || ch === "z") return "A";
+      if (/[0-8]/.test(ch)) return String(Number(ch) + 1);
+      if (ch === "9") return "0";
+      return ch;
+    }).join("");
+  }
+
+  function getOnboardingUrl(offerCode) {
+    if (!offerCode) return "";
+    return ONBOARDING_BASE_URL + "?code=" + generateOnboardingCode(offerCode);
+  }
+
+  document.getElementById("lead-offerCode").addEventListener("input", function() {
+    const code = this.value.toUpperCase();
+    this.value = code;
+    document.getElementById("lead-onboardingUrl").value = code ? getOnboardingUrl(code) : "";
+  });
+
+  function copyOnboardingUrl() {
+    const url = document.getElementById("lead-onboardingUrl").value;
+    if (!url) { toast("Enter an offer code first.", "error"); return; }
+    navigator.clipboard.writeText(url).then(() => {
+      const btn = document.getElementById("copy-url-btn");
+      btn.textContent = "Copied!";
+      setTimeout(() => { btn.textContent = "Copy"; }, 2000);
+    });
+  }
+
+  async function loadLeads() {
+    if (leadsLoaded) return;
+    leadsLoaded = true;
+    try {
+      const snap = await db.collection("leads").get();
+      leads = [];
+      snap.forEach(doc => leads.push({ id: doc.id, ...doc.data() }));
+      leads.sort((a, b) => (a.lastName || "").localeCompare(b.lastName || ""));
+      renderLeadsList();
+    } catch (e) {
+      console.error("Error loading leads:", e);
+      document.getElementById("leads-list-container").innerHTML =
+        `<div class="empty-state" style="color:var(--red)">Error loading leads: ${esc(e.message)}</div>`;
+    }
+  }
+
+  function renderLeadsList() {
+    const q = (document.getElementById("leads-search-input").value || "").toLowerCase();
+    const filtered = leads.filter(l => {
+      if (!q) return true;
+      return [l.firstName, l.lastName, l.offerCode, l.channelName, l.email]
+        .filter(Boolean).join(" ").toLowerCase().includes(q);
+    });
+
+    const container = document.getElementById("leads-list-container");
+    if (filtered.length === 0) {
+      container.innerHTML = `<div class="empty-state">${leads.length === 0 ? "No leads yet." : "No leads match your search."}</div>`;
+      return;
+    }
+
+    let html = `<table class="aff-table"><thead><tr>
+      <th>Name</th><th>Offer Code</th><th>Channel</th><th>Onboarding Status</th><th>Onboarding Link</th>
+    </tr></thead><tbody>`;
+
+    for (const l of filtered) {
+      const status = l.onboardingStatus || "pending";
+      const badgeClass = status === "completed" ? "active" : "inactive";
+      const onboardingUrl = getOnboardingUrl(l.offerCode || l.id);
+      html += `<tr>
+        <td onclick="viewLead('${l.id}')" style="cursor:pointer">${esc(l.firstName||"")}&nbsp;${esc(l.lastName||"")}</td>
+        <td onclick="viewLead('${l.id}')" style="cursor:pointer;font-family:monospace;letter-spacing:0.05em">${esc(l.offerCode||l.id)}</td>
+        <td onclick="viewLead('${l.id}')" style="cursor:pointer">${esc(l.channelName||"—")}</td>
+        <td onclick="viewLead('${l.id}')" style="cursor:pointer"><span class="status-badge ${badgeClass}">${status}</span></td>
+        <td><button class="btn-secondary" style="font-size:9px;padding:0.3rem 0.7rem" onclick="copyLeadUrl('${esc(onboardingUrl)}', this)">Copy Link</button></td>
+      </tr>`;
+    }
+
+    container.innerHTML = html + `</tbody></table>`;
+  }
+
+  function copyLeadUrl(url, btn) {
+    navigator.clipboard.writeText(url).then(() => {
+      const orig = btn.textContent;
+      btn.textContent = "Copied!";
+      setTimeout(() => { btn.textContent = orig; }, 2000);
+    });
+  }
+
+  function viewLead(id) {
+    currentLead = leads.find(l => l.id === id);
+    if (!currentLead) return;
+    renderLeadDetail();
+    switchTab("lead-detail");
+  }
+
+  const LEAD_FIELD_MAP = [
+    { key: "medium",                      label: "Primary Medium" },
+    { key: "channelName",                 label: "Channel Name" },
+    { key: "channelUrl",                  label: "Channel URL", link: true },
+    { key: "firstName",                   label: "First Name" },
+    { key: "lastName",                    label: "Last Name" },
+    { key: "businessEntity",              label: "Business Entity" },
+    { key: "address",                     label: "Physical Address" },
+    { key: "email",                       label: "Email" },
+    { key: "paypal",                      label: "PayPal Address" },
+    { key: "offerCode",                   label: "Offer Code" },
+    { key: "commissionPct",               label: "Commission %", suffix: "%" },
+    { key: "commissionEligibilityPeriod", label: "Eligibility Period", suffix: " days" },
+    { key: "taxFormType",                 label: "Tax Form Type" },
+    { key: "taxFormUrl",                  label: "Tax Form", taxform: true },
+    { key: "signatureName",               label: "Signed By" },
+    { key: "onboardingCompletedAt",       label: "Completed At", datetime: true },
+    { key: "onboardingEnabled",           label: "Onboarding Link Active" },
+    { key: "onboardingUrl",               label: "Onboarding URL", onboardingurl: true },
+  ];
+
+  function renderLeadDetail() {
+    const l = currentLead;
+    document.getElementById("lead-detail-name").textContent = `${l.firstName||""} ${l.lastName||""}`;
+    const status = l.onboardingStatus || "pending";
+    const badgeClass = status === "completed" ? "active" : "inactive";
+    document.getElementById("lead-detail-status-badge").outerHTML =
+      `<span class="status-badge ${badgeClass}" id="lead-detail-status-badge">${status}</span>`;
+
+    let gridHtml = "";
+    for (const f of LEAD_FIELD_MAP) {
+      let val;
+      if (f.taxform) {
+        val = l.taxFormUrl
+          ? `<a href="${esc(l.taxFormUrl)}" target="_blank" rel="noopener">Download PDF</a>`
+          : `<span style="color:var(--muted);font-size:11px;">Not uploaded yet</span>`;
+      } else if (f.onboardingurl) {
+        const url = getOnboardingUrl(l.offerCode || l.id);
+        val = `<span style="font-size:11px;word-break:break-all">${esc(url)}</span>
+          <button class="btn-secondary" style="margin-top:0.5rem;font-size:9px;padding:0.25rem 0.6rem" onclick="navigator.clipboard.writeText('${esc(url)}').then(()=>toast('Copied!','success'))">Copy</button>`;
+      } else if (f.datetime) {
+        val = esc(l[f.key] ? displayDateTime(l[f.key]) : "—");
+      } else if (f.link) {
+        const raw = l[f.key] || "";
+        val = raw ? `<a href="${esc(raw)}" target="_blank">${esc(raw)}</a>` : "—";
+      } else {
+        let raw = l[f.key];
+        if (raw === undefined || raw === null || raw === "") raw = "—";
+        if (f.suffix && raw !== "—") raw = raw + f.suffix;
+        if (typeof raw === "boolean") raw = raw ? "Yes" : "No";
+        val = esc(String(raw));
+      }
+      gridHtml += `<div class="info-cell"><div class="cell-label">${f.label}</div><div class="cell-value">${val}</div></div>`;
+    }
+    document.getElementById("lead-detail-info-grid").innerHTML = gridHtml;
+    document.getElementById("lead-detail-view").style.display = "block";
+    document.getElementById("lead-detail-edit").style.display = "none";
+  }
+
+  function enterLeadEditMode() {
+    const l = currentLead;
+    const LEAD_EDIT_FIELDS = [
+      { key: "medium",                      label: "Primary Medium", type: "select", options: ["YouTube","Blog","Instagram","TikTok"] },
+      { key: "channelName",                 label: "Channel Name" },
+      { key: "channelUrl",                  label: "Channel URL", full: true },
+      { key: "firstName",                   label: "First Name" },
+      { key: "lastName",                    label: "Last Name" },
+      { key: "email",                       label: "Email", type: "email" },
+      { key: "offerCode",                   label: "Offer Code", readonly: true },
+      { key: "commissionPct",               label: "Commission %", type: "number" },
+      { key: "commissionEligibilityPeriod", label: "Eligibility Period (days)", type: "number" },
+      { key: "onboardingStatus",            label: "Onboarding Status", type: "select", options: ["pending","completed"] },
+      { key: "onboardingEnabled",           label: "Onboarding Link Active", type: "select", options: ["true","false"] },
+    ];
+
+    let html = "";
+    for (const f of LEAD_EDIT_FIELDS) {
+      let val = l[f.key];
+      if (val === undefined || val === null) val = "";
+      val = String(val);
+      const cls = f.full ? "form-group full-width" : "form-group";
+      const ro  = f.readonly ? "readonly style='opacity:0.6'" : "";
+
+      if (f.type === "select") {
+        const opts = f.options.map(o => `<option value="${o}" ${val===o?"selected":""}>${o}</option>`).join("");
+        html += `<div class="${cls}"><label>${f.label}</label><select id="lead-edit-${f.key}" ${f.readonly?"disabled":""}>${opts}</select></div>`;
+      } else {
+        html += `<div class="${cls}"><label>${f.label}</label><input type="${f.type||"text"}" id="lead-edit-${f.key}" value="${esc(val)}" ${ro} /></div>`;
+      }
+    }
+
+    html += `<div class="form-actions">
+      <button class="btn-primary" onclick="saveLeadEdit()">Save Changes</button>
+      <button class="btn-secondary" onclick="cancelLeadEdit()">Cancel</button>
+    </div>`;
+
+    document.getElementById("lead-edit-form").innerHTML = html;
+    document.getElementById("lead-detail-view").style.display = "none";
+    document.getElementById("lead-detail-edit").style.display = "block";
+  }
+
+  function cancelLeadEdit() { renderLeadDetail(); }
+
+  async function saveLeadEdit() {
+    const l = currentLead;
+    const onboardingEnabledStr = document.getElementById("lead-edit-onboardingEnabled")?.value;
+    const data = {
+      medium:                      document.getElementById("lead-edit-medium")?.value || "",
+      channelName:                 gev("lead-edit-channelName"),
+      channelUrl:                  gev("lead-edit-channelUrl"),
+      firstName:                   gev("lead-edit-firstName"),
+      lastName:                    gev("lead-edit-lastName"),
+      email:                       gev("lead-edit-email"),
+      commissionPct:               parseFloat(gev("lead-edit-commissionPct")) || 25,
+      commissionEligibilityPeriod: parseInt(gev("lead-edit-commissionEligibilityPeriod")) || 90,
+      onboardingStatus:            document.getElementById("lead-edit-onboardingStatus")?.value || "pending",
+      onboardingEnabled:           onboardingEnabledStr === "true",
+    };
+
+    try {
+      await db.collection("leads").doc(l.id).update(data);
+      Object.assign(l, data);
+      renderLeadDetail();
+      toast("Lead updated successfully.", "success");
+    } catch (e) {
+      toast("Error saving: " + e.message, "error");
+    }
+  }
+
+  async function saveNewLead() {
+    const offerCode = (document.getElementById("lead-offerCode").value || "").toUpperCase().trim();
+    if (!offerCode) { toast("Offer code is required.", "error"); return; }
+
+    const firstName = gev("lead-firstName"), lastName = gev("lead-lastName"), email = gev("lead-email");
+    if (!firstName || !lastName || !email) {
+      toast("First name, last name, and email are required.", "error"); return;
+    }
+
+    const data = {
+      medium:                      document.getElementById("lead-medium").value,
+      channelName:                 gev("lead-channelName"),
+      channelUrl:                  gev("lead-channelUrl"),
+      firstName, lastName, email,
+      offerCode,
+      commissionPct:               parseFloat(gev("lead-commissionPct")) || 25,
+      commissionEligibilityPeriod: parseInt(gev("lead-eligibilityPeriod")) || 90,
+      onboardingStatus:            "pending",
+      onboardingEnabled:           true,
+      createdAt:                   new Date().toISOString(),
+    };
+
+    const btn = document.getElementById("save-lead-btn");
+    btn.disabled = true;
+
+    try {
+      const existing = await db.collection("leads").doc(offerCode).get();
+      if (existing.exists) { toast("A lead with this offer code already exists.", "error"); btn.disabled = false; return; }
+
+      const existingAffiliate = await db.collection("affiliates").doc(offerCode).get();
+      if (existingAffiliate.exists) { toast("An affiliate with this offer code already exists.", "error"); btn.disabled = false; return; }
+
+      await db.collection("leads").doc(offerCode).set(data);
+      leads.push({ id: offerCode, ...data });
+      leads.sort((a, b) => (a.lastName||""    ).localeCompare(b.lastName||""));
+
+      // Reset form
+      ["lead-channelName","lead-channelUrl","lead-firstName","lead-lastName","lead-email","lead-offerCode","lead-onboardingUrl"]
+        .forEach(id => { const el = document.getElementById(id); if (el) el.value = ""; });
+      document.getElementById("lead-commissionPct").value    = "25";
+      document.getElementById("lead-eligibilityPeriod").value = "90";
+
+      toast("Lead saved successfully.", "success");
+      leadsLoaded = false;
+      switchTab("leads");
+      await loadLeads();
+    } catch (e) {
+      toast("Error saving lead: " + e.message, "error");
+    } finally {
+      btn.disabled = false;
+    }
   }
 
   function closeModal() { document.getElementById("confirm-modal").classList.remove("show"); }
