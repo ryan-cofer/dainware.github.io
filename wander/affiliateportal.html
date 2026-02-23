@@ -637,9 +637,6 @@
     var statusEl = document.getElementById("elig-status");
     statusEl.textContent = affiliateData.status || "ACTIVE";
     statusEl.className = affiliateData.status === "ACTIVE" ? "cell-value green" : "cell-value red";
-
-    var periodEl = document.getElementById("promo-period-display");
-    if (periodEl) periodEl.textContent = affiliateData.commissionEligibilityPeriod || 90;
   }
 
   function fmt(d) {
@@ -714,17 +711,16 @@
     errEl.style.display = "none";
     sucEl.style.display = "none";
 
-    var email = (document.getElementById("promo-email").value || "").trim().toLowerCase();
-    var paypal = (document.getElementById("promo-paypal").value || "").trim().toLowerCase();
-    var promoDate = document.getElementById("promo-date").value;
-    var promoUrl = (document.getElementById("promo-url").value || "").trim();
+    var email   = (document.getElementById("promo-email").value || "").trim().toLowerCase();
+    var paypal  = (document.getElementById("promo-paypal").value || "").trim().toLowerCase();
+    var promoDate      = document.getElementById("promo-date").value;
+    var promoUrl       = (document.getElementById("promo-url").value || "").trim();
     var promoTimestamp = (document.getElementById("promo-timestamp").value || "").trim();
 
     if (!email || !paypal) {
       showPromoError("Please enter both your email and PayPal address for security verification.");
       return;
     }
-
     if (!promoDate) {
       showPromoError("Please enter the date the promotion was published.");
       return;
@@ -747,7 +743,7 @@
       }
     }
 
-    var fileEmail = (affiliateData.email || "").trim().toLowerCase();
+    var fileEmail  = (affiliateData.email  || "").trim().toLowerCase();
     var filePaypal = (affiliateData.paypal || "").trim().toLowerCase();
 
     if (email !== fileEmail || paypal !== filePaypal) {
@@ -759,30 +755,59 @@
     btn.disabled = true;
     btn.textContent = "Submitting...";
 
-    var eligPeriod = affiliateData.commissionEligibilityPeriod || 90;
-    var newEndDate = new Date(promoDate + "T00:00:00");
+    var eligPeriod  = affiliateData.commissionEligibilityPeriod || 90;
+    var newEndDate  = new Date(promoDate + "T00:00:00");
     newEndDate.setDate(newEndDate.getDate() + eligPeriod);
+    var newEndDateStr = fmt(newEndDate);
 
-    db.collection(COLLECTION).doc(OFFER_CODE).update({
-      lastPromoDate: promoDate,
-      lastPromoUrl: promoUrl,
-      lastPromoTimestamp: promoTimestamp,
-      commissionEligibilityEndDate: fmt(newEndDate)
-    }).then(function() {
-      affiliateData.lastPromoDate = promoDate;
-      affiliateData.lastPromoUrl = promoUrl;
-      affiliateData.lastPromoTimestamp = promoTimestamp;
-      affiliateData.commissionEligibilityEndDate = fmt(newEndDate);
+    // Timestamp of this submission (server-side via Firestore)
+    var submittedAt = new Date().toISOString();
+
+    // Build the promotion record for the subcollection audit log
+    var promotionRecord = {
+      promoDate:      promoDate,
+      promoUrl:       promoUrl,
+      promoTimestamp: promoTimestamp,
+      submittedAt:    submittedAt,
+      offerCode:      OFFER_CODE,
+      channelName:    affiliateData.channelName || "",
+      medium:         affiliateData.medium || "",
+    };
+
+    // Write both the subcollection record and the parent doc update atomically
+    var batch = db.batch();
+
+    // 1. Add to promotions subcollection (auto-generated doc ID)
+    var promoRef = db.collection(COLLECTION).doc(OFFER_CODE).collection("promotions").doc();
+    batch.set(promoRef, promotionRecord);
+
+    // 2. Update parent affiliate document
+    var affiliateRef = db.collection(COLLECTION).doc(OFFER_CODE);
+    batch.update(affiliateRef, {
+      lastPromoDate:                promoDate,
+      lastPromoUrl:                 promoUrl,
+      lastPromoTimestamp:           promoTimestamp,
+      lastPromoSubmittedAt:         submittedAt,
+      commissionEligibilityEndDate: newEndDateStr,
+    });
+
+    batch.commit().then(function() {
+      // Update local cache
+      affiliateData.lastPromoDate                = promoDate;
+      affiliateData.lastPromoUrl                 = promoUrl;
+      affiliateData.lastPromoTimestamp           = promoTimestamp;
+      affiliateData.lastPromoSubmittedAt         = submittedAt;
+      affiliateData.commissionEligibilityEndDate = newEndDateStr;
 
       populateEligibilityBar();
 
-      document.getElementById("promo-email").value = "";
-      document.getElementById("promo-paypal").value = "";
-      document.getElementById("promo-date").value = "";
-      document.getElementById("promo-url").value = "";
+      document.getElementById("promo-email").value     = "";
+      document.getElementById("promo-paypal").value    = "";
+      document.getElementById("promo-date").value      = "";
+      document.getElementById("promo-url").value       = "";
       document.getElementById("promo-timestamp").value = "";
 
-      sucEl.textContent = "Promotion submitted successfully! Your commission eligibility has been extended to " + displayDate(fmt(newEndDate)) + ", pending review.";
+      sucEl.textContent = "Promotion submitted successfully! Your commission eligibility has been extended to " + displayDate(newEndDateStr) + ", pending review.";
       sucEl.style.display = "block";
     }).catch(function(e) {
       showPromoError("Error submitting promotion: " + e.message);
