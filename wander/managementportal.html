@@ -32,7 +32,6 @@
       line-height: 1.6;
     }
 
-    /* ── HEADER ── */
     header {
       display: flex;
       align-items: center;
@@ -70,12 +69,8 @@
       transition: all 0.2s;
     }
 
-    .btn-logout:hover {
-      border-color: var(--red);
-      color: var(--red);
-    }
+    .btn-logout:hover { border-color: var(--red); color: var(--red); }
 
-    /* ── LOGIN SCREEN ── */
     #login-screen {
       display: flex;
       flex-direction: column;
@@ -117,29 +112,12 @@
     }
 
     .login-box input[type="password"]:focus { border-color: var(--gold); }
+    .login-error { color: var(--red); font-size: 11px; text-align: center; margin-top: 0.75rem; display: none; }
 
-    .login-box .btn-primary {
-      width: 100%;
-    }
-
-    .login-error {
-      color: var(--red);
-      font-size: 11px;
-      text-align: center;
-      margin-top: 0.75rem;
-      display: none;
-    }
-
-    /* ── MAIN APP ── */
     #app-screen { display: none; }
 
-    main {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 2rem;
-    }
+    main { max-width: 1100px; margin: 0 auto; padding: 2rem; }
 
-    /* ── TABS ── */
     .tab-bar {
       display: flex;
       gap: 0;
@@ -163,11 +141,9 @@
 
     .tab-btn:hover { color: var(--ink); }
     .tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
-
     .tab-content { display: none; }
     .tab-content.active { display: block; }
 
-    /* ── BUTTONS ── */
     .btn-primary {
       padding: 0.6rem 1.8rem;
       background: var(--gold);
@@ -215,22 +191,9 @@
 
     .btn-danger:hover { background: rgba(255,107,107,0.1); }
 
-    /* ── FORMS ── */
-    .form-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.25rem;
-    }
-
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 0.35rem;
-    }
-
-    .form-group.full-width {
-      grid-column: 1 / -1;
-    }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+    .form-group { display: flex; flex-direction: column; gap: 0.35rem; }
+    .form-group.full-width { grid-column: 1 / -1; }
 
     .form-group label {
       font-size: 10px;
@@ -263,21 +226,10 @@
       padding-right: 2rem;
     }
 
-    .form-group select option {
-      background: var(--deep);
-      color: var(--ink);
-    }
+    .form-group select option { background: var(--deep); color: var(--ink); }
+    .form-group input[type="date"] { color-scheme: dark; }
 
-    .form-group input[type="date"] {
-      color-scheme: dark;
-    }
-
-    .form-actions {
-      grid-column: 1 / -1;
-      display: flex;
-      gap: 1rem;
-      margin-top: 0.5rem;
-    }
+    .form-actions { grid-column: 1 / -1; display: flex; gap: 1rem; margin-top: 0.5rem; }
 
     .form-section-title {
       grid-column: 1 / -1;
@@ -290,13 +242,7 @@
       margin-top: 0.5rem;
     }
 
-    /* ── AFFILIATE LIST ── */
-    .search-bar {
-      display: flex;
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-      align-items: center;
-    }
+    .search-bar { display: flex; gap: 1rem; margin-bottom: 1.5rem; align-items: center; }
 
     .search-bar input {
       flex: 1;
@@ -312,11 +258,7 @@
 
     .search-bar input:focus { border-color: var(--gold); }
 
-    .aff-table {
-      width: 100%;
-      border-collapse: collapse;
-      border: 1px solid var(--border);
-    }
+    .aff-table { width: 100%; border-collapse: collapse; border: 1px solid var(--border); }
 
     .aff-table th {
       background: rgba(255,255,255,0.05);
@@ -336,10 +278,7 @@
       font-size: 12px;
     }
 
-    .aff-table tr:hover td {
-      background: rgba(255,255,255,0.03);
-    }
-
+    .aff-table tr:hover td { background: rgba(255,255,255,0.03); }
     .aff-table tr { cursor: pointer; }
 
     .status-badge {
@@ -372,7 +311,6 @@
       background: rgba(255,255,255,0.04);
     }
 
-    /* ── TOAST ── */
     .toast {
       position: fixed;
       bottom: 2rem;
@@ -387,30 +325,11 @@
       pointer-events: none;
     }
 
-    .toast.show {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.success { background: rgba(93,212,160,0.15); color: var(--green); border-color: rgba(93,212,160,0.3); }
+    .toast.error   { background: rgba(255,107,107,0.1);  color: var(--red);   border-color: rgba(255,107,107,0.3); }
 
-    .toast.success {
-      background: rgba(93,212,160,0.15);
-      color: var(--green);
-      border-color: rgba(93,212,160,0.3);
-    }
-
-    .toast.error {
-      background: rgba(255,107,107,0.1);
-      color: var(--red);
-      border-color: rgba(255,107,107,0.3);
-    }
-
-    /* ── DETAIL VIEW ── */
-    .detail-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1.5rem;
-    }
+    .detail-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
 
     .detail-back {
       background: none;
@@ -426,11 +345,7 @@
     }
 
     .detail-back:hover { color: var(--gold); }
-
-    .detail-name {
-      font-size: 1.4rem;
-      font-weight: 300;
-    }
+    .detail-name { font-size: 1.4rem; font-weight: 300; }
 
     .info-grid {
       display: grid;
@@ -441,10 +356,7 @@
       margin-bottom: 2rem;
     }
 
-    .info-cell {
-      background: rgba(255,255,255,0.05);
-      padding: 1rem 1.25rem;
-    }
+    .info-cell { background: rgba(255,255,255,0.05); padding: 1rem 1.25rem; }
 
     .info-cell .cell-label {
       font-size: 9px;
@@ -454,20 +366,10 @@
       margin-bottom: 0.25rem;
     }
 
-    .info-cell .cell-value {
-      font-size: 13px;
-      color: var(--ink);
-      word-break: break-all;
-    }
-
-    .info-cell .cell-value a {
-      color: var(--gold);
-      text-decoration: none;
-    }
-
+    .info-cell .cell-value { font-size: 13px; color: var(--ink); word-break: break-all; }
+    .info-cell .cell-value a { color: var(--gold); text-decoration: none; }
     .info-cell .cell-value a:hover { text-decoration: underline; }
 
-    /* ── MODAL OVERLAY ── */
     .modal-overlay {
       display: none;
       position: fixed;
@@ -481,47 +383,13 @@
 
     .modal-overlay.show { display: flex; }
 
-    .modal-box {
-      background: var(--paper);
-      border: 1px solid var(--border);
-      width: 100%;
-      max-width: 500px;
-      padding: 2rem;
-    }
+    .modal-box { background: var(--paper); border: 1px solid var(--border); width: 100%; max-width: 500px; padding: 2rem; }
+    .modal-title { font-size: 14px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; }
+    .modal-body { font-size: 13px; color: var(--muted); margin-bottom: 1.5rem; line-height: 1.7; }
+    .modal-actions { display: flex; gap: 1rem; justify-content: flex-end; }
 
-    .modal-title {
-      font-size: 14px;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--gold);
-      margin-bottom: 1rem;
-    }
-
-    .modal-body {
-      font-size: 13px;
-      color: var(--muted);
-      margin-bottom: 1.5rem;
-      line-height: 1.7;
-    }
-
-    .modal-actions {
-      display: flex;
-      gap: 1rem;
-      justify-content: flex-end;
-    }
-
-    /* ── PAYMENT REPORTS TAB ── */
-    .reports-toolbar {
-      display: flex;
-      align-items: flex-end;
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-      flex-wrap: wrap;
-    }
-
-    .reports-toolbar .form-group {
-      margin: 0;
-    }
+    /* ── PAYMENT REPORTS ── */
+    .reports-toolbar { display: flex; align-items: flex-end; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
 
     .reports-toolbar label {
       font-size: 10px;
@@ -546,11 +414,7 @@
 
     .reports-toolbar input[type="date"]:focus { border-color: var(--gold); }
 
-    .reports-table {
-      width: 100%;
-      border-collapse: collapse;
-      border: 1px solid var(--border);
-    }
+    .reports-table { width: 100%; border-collapse: collapse; border: 1px solid var(--border); }
 
     .reports-table th {
       background: rgba(255,255,255,0.05);
@@ -570,24 +434,7 @@
       font-size: 12px;
     }
 
-    .reports-table tr.clickable-row:hover td {
-      background: rgba(255,255,255,0.03);
-      cursor: pointer;
-    }
-
-    .test-badge {
-      display: inline-block;
-      padding: 0.15rem 0.5rem;
-      font-size: 9px;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      font-weight: 600;
-      background: rgba(201,168,76,0.15);
-      color: var(--gold);
-      border: 1px solid rgba(201,168,76,0.3);
-      margin-left: 0.5rem;
-      vertical-align: middle;
-    }
+    .reports-table tr.clickable-row:hover td { background: rgba(255,255,255,0.03); cursor: pointer; }
 
     .loading-spinner {
       display: inline-block;
@@ -613,7 +460,67 @@
       margin-bottom: 1.25rem;
     }
 
-    /* ── RESPONSIVE ── */
+    /* ── ACTIVITIES TAB ── */
+    .act-table { width: 100%; border-collapse: collapse; border: 1px solid var(--border); }
+
+    .act-table th {
+      background: rgba(255,255,255,0.05);
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 0.65rem 0.9rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    .act-table td {
+      padding: 0.6rem 0.9rem;
+      border-bottom: 1px solid rgba(31,110,140,0.4);
+      font-size: 12px;
+      vertical-align: top;
+    }
+
+    .act-table tr:last-child td { border-bottom: none; }
+
+    .act-table .url-cell {
+      max-width: 360px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .act-table .url-cell a {
+      color: var(--gold);
+      text-decoration: none;
+      font-size: 11px;
+    }
+
+    .act-table .url-cell a:hover { text-decoration: underline; }
+
+    .rank-num { font-size: 11px; color: var(--muted); font-weight: 600; min-width: 1.5rem; display: inline-block; }
+    .rank-num.top3 { color: var(--gold); }
+
+    .count-badge {
+      display: inline-block;
+      padding: 0.1rem 0.5rem;
+      font-size: 10px;
+      font-weight: 600;
+      background: rgba(201,168,76,0.12);
+      color: var(--gold);
+      border: 1px solid rgba(201,168,76,0.25);
+    }
+
+    .activities-two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+
+    @media (max-width: 800px) { .activities-two-col { grid-template-columns: 1fr; } }
+
     @media (max-width: 700px) {
       .form-grid { grid-template-columns: 1fr; }
       .info-grid { grid-template-columns: 1fr; }
@@ -639,7 +546,7 @@
   </div>
 </header>
 
-<!-- ───── LOGIN ───── -->
+<!-- LOGIN -->
 <div id="login-screen">
   <div class="login-box">
     <div class="login-title">Authenticate</div>
@@ -649,14 +556,14 @@
   </div>
 </div>
 
-<!-- ───── APP ───── -->
+<!-- APP -->
 <div id="app-screen">
   <main>
-    <!-- Tabs -->
     <div class="tab-bar">
-      <button class="tab-btn active" data-tab="list" onclick="switchTab('list')">Affiliates</button>
-      <button class="tab-btn" data-tab="add" onclick="switchTab('add')">Add New</button>
-      <button class="tab-btn" data-tab="reports" onclick="switchTab('reports'); loadPaymentReports()">Payment Reports</button>
+      <button class="tab-btn active" data-tab="list"       onclick="switchTab('list')">Affiliates</button>
+      <button class="tab-btn"        data-tab="add"        onclick="switchTab('add')">Add New</button>
+      <button class="tab-btn"        data-tab="activities" onclick="switchTab('activities'); loadActivities()">Affiliate Activities</button>
+      <button class="tab-btn"        data-tab="reports"    onclick="switchTab('reports'); loadPaymentReports()">Payment Reports</button>
     </div>
 
     <!-- ── LIST TAB ── -->
@@ -671,7 +578,6 @@
     <div class="tab-content" id="tab-add">
       <div class="form-grid" id="add-form">
         <div class="form-section-title">Channel Information</div>
-
         <div class="form-group">
           <label>Primary Medium</label>
           <select id="add-medium">
@@ -681,89 +587,102 @@
             <option value="TikTok">TikTok</option>
           </select>
         </div>
-
         <div class="form-group">
           <label>Channel Name</label>
           <input type="text" id="add-channelName" placeholder="e.g. Nomadic Matt" />
         </div>
-
         <div class="form-group full-width">
           <label>Channel URL</label>
           <input type="text" id="add-channelUrl" placeholder="https://..." />
         </div>
-
         <div class="form-section-title">Affiliate Details</div>
-
         <div class="form-group">
           <label>First Name</label>
           <input type="text" id="add-firstName" />
         </div>
-
         <div class="form-group">
           <label>Last Name</label>
           <input type="text" id="add-lastName" />
         </div>
-
         <div class="form-group">
           <label>Business Entity</label>
           <input type="text" id="add-businessEntity" placeholder="(optional)" />
         </div>
-
         <div class="form-group">
           <label>Email Address</label>
           <input type="email" id="add-email" />
         </div>
-
         <div class="form-group">
           <label>PayPal Address</label>
           <input type="email" id="add-paypal" />
         </div>
-
         <div class="form-group">
           <label>Assigned Offer Code</label>
           <input type="text" id="add-offerCode" placeholder="e.g. WANDER25" style="text-transform:uppercase" />
         </div>
-
         <div class="form-group">
           <label>Portal Code (auto-generated)</label>
           <input type="text" id="add-portalCode" readonly style="opacity:0.6" />
         </div>
-
         <div class="form-section-title">Commission Settings</div>
-
         <div class="form-group">
           <label>Commission Percentage (%)</label>
           <input type="number" id="add-commissionPct" value="25" min="0" max="100" step="1" />
         </div>
-
         <div class="form-group">
           <label>Commission Eligibility Period (days)</label>
           <input type="number" id="add-eligibilityPeriod" value="90" min="1" />
         </div>
-
         <div class="form-group">
           <label>Last Qualified Promotion Date</label>
           <input type="date" id="add-lastPromoDate" />
         </div>
-
         <div class="form-group">
           <label>Commission Eligibility End Date (auto)</label>
           <input type="date" id="add-eligibilityEnd" readonly style="opacity:0.6" />
         </div>
-
         <div class="form-actions">
           <button class="btn-primary" onclick="saveNewAffiliate()">Save Affiliate</button>
         </div>
       </div>
     </div>
 
+    <!-- ── AFFILIATE ACTIVITIES TAB ── -->
+    <div class="tab-content" id="tab-activities">
+      <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;">
+        <button class="btn-secondary" onclick="activitiesLoaded=false; loadActivities()">↻ Refresh</button>
+      </div>
+
+      <!-- Recent Promotions — full width -->
+      <div class="section-divider">
+        Recent Promotions
+        <span style="font-size:9px; color:var(--muted); letter-spacing:0.1em; margin-left:0.5rem;">(last 30 days, sorted by submission date)</span>
+      </div>
+      <div id="recent-promos-container">
+        <div class="empty-state">Loading...</div>
+      </div>
+
+      <!-- Two-column lower sections -->
+      <div class="activities-two-col">
+        <div>
+          <div class="section-divider" style="margin-top:0;">
+            Most Active Affiliates
+            <span style="font-size:9px; color:var(--muted); letter-spacing:0.1em; margin-left:0.5rem;">(by promotions submitted, all time)</span>
+          </div>
+          <div id="most-active-container">
+            <div class="empty-state">Loading...</div>
+          </div>
+        </div>
+        <!-- Right column reserved for future use -->
+        <div></div>
+      </div>
+    </div>
+
     <!-- ── PAYMENT REPORTS TAB ── -->
     <div class="tab-content" id="tab-reports">
-
-      <!-- Test Report Section -->
       <div class="section-divider">Run Test Report</div>
       <div class="reports-toolbar">
-        <div class="form-group">
+        <div>
           <label>Reference Date (simulates the 7th of a month)</label>
           <input type="date" id="test-report-date" />
         </div>
@@ -771,15 +690,13 @@
       </div>
       <div id="test-report-status" style="font-size:12px;color:var(--muted);margin-bottom:2rem;min-height:1.2rem;"></div>
 
-      <!-- Saved Reports Section -->
       <div class="section-divider">Saved Reports</div>
       <div id="reports-container">
         <div class="empty-state">Loading reports...</div>
       </div>
-
     </div>
 
-    <!-- ── DETAIL TAB (hidden tab) ── -->
+    <!-- ── DETAIL TAB ── -->
     <div class="tab-content" id="tab-detail">
       <div class="detail-header">
         <button class="detail-back" onclick="switchTab('list')">← Back to list</button>
@@ -787,17 +704,11 @@
           <button class="btn-secondary" onclick="enterEditMode()">Edit</button>
         </div>
       </div>
-
-      <!-- VIEW MODE -->
       <div id="detail-view">
         <div class="detail-name" id="detail-name"></div>
-        <div style="margin:0.5rem 0 1.5rem;">
-          <span id="detail-status-badge"></span>
-        </div>
+        <div style="margin:0.5rem 0 1.5rem;"><span id="detail-status-badge"></span></div>
         <div class="info-grid" id="detail-info-grid"></div>
       </div>
-
-      <!-- EDIT MODE -->
       <div id="detail-edit" style="display:none">
         <div class="form-grid" id="edit-form"></div>
       </div>
@@ -806,10 +717,8 @@
   </main>
 </div>
 
-<!-- Toast -->
 <div class="toast" id="toast"></div>
 
-<!-- Confirm Modal -->
 <div class="modal-overlay" id="confirm-modal">
   <div class="modal-box">
     <div class="modal-title" id="modal-title">Confirm</div>
@@ -822,9 +731,6 @@
 </div>
 
 <script>
-  // ═════════════════════════════════════════
-  // Firebase config
-  // ═════════════════════════════════════════
   const firebaseConfig = {
     apiKey: "AIzaSyCL63-Rsfg_IhcwB17YpdfpczD1CmoRWI4",
     authDomain: "wander-eab4e.firebaseapp.com",
@@ -835,7 +741,6 @@
   };
 
   firebase.initializeApp(firebaseConfig);
-
   firebase.appCheck().activate(
     new firebase.appCheck.ReCaptchaEnterpriseProvider('6LfIBXQsAAAAAH2P3fLRotftf3DdpW-kda9Ed-U1'),
     true
@@ -843,27 +748,17 @@
 
   const db = firebase.firestore();
   const COLLECTION = "affiliates";
-
-  // ─────────────────────────────────────────
-  // IMPORTANT: Replace with your deployed Cloud Function base URL
-  // e.g. https://us-central1-wander-eab4e.cloudfunctions.net
-  // ─────────────────────────────────────────
   const FUNCTIONS_BASE_URL = "https://us-central1-wander-eab4e.cloudfunctions.net";
-
-  // ─────────────────────────────────────────
-  // IMPORTANT: Replace with your PORTAL_API_KEY secret value
-  // This is only in the admin portal and never exposed to affiliates
-  // ─────────────────────────────────────────
   const PORTAL_API_KEY = "wander-affiliateportal";
 
-  // ═════════════════════════════════════════
+  // ═══════════════════════════
   // Auth
-  // ═════════════════════════════════════════
+  // ═══════════════════════════
   const PW_HASH = "1942822b210e12d2323bf6b039fcfcb5dda5d2cb5b03a12b3f03fcd4172e82cf";
 
   async function sha256(str) {
     const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
-    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,"0")).join("");
   }
 
   async function doLogin() {
@@ -877,10 +772,7 @@
     }
   }
 
-  function doLogout() {
-    sessionStorage.removeItem("wander_admin");
-    location.reload();
-  }
+  function doLogout() { sessionStorage.removeItem("wander_admin"); location.reload(); }
 
   function showApp() {
     document.getElementById("login-screen").style.display = "none";
@@ -890,18 +782,13 @@
   }
 
   window.addEventListener("load", () => {
-    if (sessionStorage.getItem("wander_admin") === "1") {
-      showApp();
-    }
-
-    // Default test report date to today
-    const today = new Date().toISOString().split("T")[0];
-    document.getElementById("test-report-date").value = today;
+    if (sessionStorage.getItem("wander_admin") === "1") showApp();
+    document.getElementById("test-report-date").value = new Date().toISOString().split("T")[0];
   });
 
-  // ═════════════════════════════════════════
-  // Portal code generation
-  // ═════════════════════════════════════════
+  // ═══════════════════════════
+  // Portal code
+  // ═══════════════════════════
   function generatePortalCode(offerCode) {
     return offerCode.toUpperCase().split("").map(ch => {
       if (/[A-Y]/i.test(ch)) return String.fromCharCode(ch.charCodeAt(0) + 1);
@@ -931,9 +818,7 @@
     }
   }
 
-  function fmtDate(d) {
-    return d.toISOString().split("T")[0];
-  }
+  function fmtDate(d) { return d.toISOString().split("T")[0]; }
 
   function displayDate(dateStr) {
     if (!dateStr) return "—";
@@ -941,17 +826,23 @@
     return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   }
 
+  function displayDateTime(isoStr) {
+    if (!isoStr) return "—";
+    const d = new Date(isoStr);
+    return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) +
+           " " + d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  }
+
   function displayMonth(monthLabel) {
-    // monthLabel: "2026-01"
     if (!monthLabel) return "—";
     const [year, month] = monthLabel.split("-");
     const d = new Date(parseInt(year), parseInt(month) - 1, 1);
     return d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
   }
 
-  // ═════════════════════════════════════════
+  // ═══════════════════════════
   // Affiliate data
-  // ═════════════════════════════════════════
+  // ═══════════════════════════
   let affiliates = [];
   let currentAffiliate = null;
 
@@ -959,9 +850,7 @@
     try {
       const snap = await db.collection(COLLECTION).get();
       affiliates = [];
-      snap.forEach(doc => {
-        affiliates.push({ id: doc.id, ...doc.data() });
-      });
+      snap.forEach(doc => affiliates.push({ id: doc.id, ...doc.data() }));
       affiliates.sort((a, b) => (a.lastName || "").localeCompare(b.lastName || ""));
       renderList();
     } catch (e) {
@@ -970,55 +859,46 @@
     }
   }
 
-  // ═════════════════════════════════════════
-  // List rendering
-  // ═════════════════════════════════════════
+  // ═══════════════════════════
+  // List
+  // ═══════════════════════════
   function renderList() {
     const q = (document.getElementById("search-input").value || "").toLowerCase();
     const filtered = affiliates.filter(a => {
       if (!q) return true;
-      const haystack = [
-        a.firstName, a.lastName, a.offerCode, a.channelName, a.email, a.medium
-      ].filter(Boolean).join(" ").toLowerCase();
-      return haystack.includes(q);
+      return [a.firstName, a.lastName, a.offerCode, a.channelName, a.email, a.medium]
+        .filter(Boolean).join(" ").toLowerCase().includes(q);
     });
 
     const container = document.getElementById("list-container");
 
     if (filtered.length === 0) {
-      container.innerHTML = `<div class="empty-state">${affiliates.length === 0 ? "No affiliates yet. Add one to get started." : "No affiliates match your search."}</div>`;
+      container.innerHTML = `<div class="empty-state">${affiliates.length === 0 ? "No affiliates yet." : "No affiliates match your search."}</div>`;
       return;
     }
 
-    let html = `<table class="aff-table">
-      <thead><tr>
-        <th>Name</th>
-        <th>Offer Code</th>
-        <th>Channel</th>
-        <th>Medium</th>
-        <th>Status</th>
-        <th>Eligibility End</th>
-      </tr></thead><tbody>`;
+    let html = `<table class="aff-table"><thead><tr>
+      <th>Name</th><th>Offer Code</th><th>Channel</th><th>Medium</th><th>Status</th><th>Eligibility End</th>
+    </tr></thead><tbody>`;
 
     for (const a of filtered) {
-      const statusClass = (a.status || "ACTIVE") === "ACTIVE" ? "active" : "inactive";
+      const sc = (a.status || "ACTIVE") === "ACTIVE" ? "active" : "inactive";
       html += `<tr onclick="viewAffiliate('${a.id}')">
-        <td>${esc(a.firstName || "")} ${esc(a.lastName || "")}</td>
-        <td style="font-family:monospace;letter-spacing:0.05em">${esc(a.offerCode || a.id)}</td>
-        <td>${esc(a.channelName || "—")}</td>
-        <td>${esc(a.medium || "—")}</td>
-        <td><span class="status-badge ${statusClass}">${statusClass}</span></td>
+        <td>${esc(a.firstName||"")} ${esc(a.lastName||"")}</td>
+        <td style="font-family:monospace;letter-spacing:0.05em">${esc(a.offerCode||a.id)}</td>
+        <td>${esc(a.channelName||"—")}</td>
+        <td>${esc(a.medium||"—")}</td>
+        <td><span class="status-badge ${sc}">${sc}</span></td>
         <td>${displayDate(a.commissionEligibilityEndDate)}</td>
       </tr>`;
     }
 
-    html += `</tbody></table>`;
-    container.innerHTML = html;
+    container.innerHTML = html + `</tbody></table>`;
   }
 
-  // ═════════════════════════════════════════
-  // View affiliate detail
-  // ═════════════════════════════════════════
+  // ═══════════════════════════
+  // Detail view
+  // ═══════════════════════════
   function viewAffiliate(id) {
     currentAffiliate = affiliates.find(a => a.id === id);
     if (!currentAffiliate) return;
@@ -1027,30 +907,29 @@
   }
 
   const FIELD_MAP = [
-    { key: "medium", label: "Primary Medium" },
-    { key: "channelName", label: "Channel Name" },
-    { key: "channelUrl", label: "Channel URL", link: true },
-    { key: "email", label: "Email" },
-    { key: "businessEntity", label: "Business Entity" },
-    { key: "paypal", label: "PayPal Address" },
-    { key: "offerCode", label: "Offer Code" },
-    { key: "portalCode", label: "Portal Code" },
-    { key: "commissionPct", label: "Commission %", suffix: "%" },
+    { key: "medium",                      label: "Primary Medium" },
+    { key: "channelName",                 label: "Channel Name" },
+    { key: "channelUrl",                  label: "Channel URL", link: true },
+    { key: "email",                       label: "Email" },
+    { key: "businessEntity",              label: "Business Entity" },
+    { key: "paypal",                      label: "PayPal Address" },
+    { key: "offerCode",                   label: "Offer Code" },
+    { key: "portalCode",                  label: "Portal Code" },
+    { key: "commissionPct",               label: "Commission %", suffix: "%" },
     { key: "commissionEligibilityPeriod", label: "Eligibility Period", suffix: " days" },
-    { key: "lastPromoDate", label: "Last Qualified Promotion Date", date: true },
-    { key: "lastPromoUrl", label: "Last Qualified Promotion URL", link: true },
-    { key: "lastPromoTimestamp", label: "Last Qualified Promotion Timestamp" },
-    { key: "commissionEligibilityEndDate", label: "Commission Eligibility End", date: true },
-    { key: "status", label: "Status" },
+    { key: "lastPromoDate",               label: "Last Qualified Promotion Date", date: true },
+    { key: "lastPromoUrl",                label: "Last Qualified Promotion URL", link: true },
+    { key: "lastPromoTimestamp",          label: "Last Qualified Promotion Timestamp" },
+    { key: "commissionEligibilityEndDate",label: "Commission Eligibility End", date: true },
+    { key: "status",                      label: "Status" },
   ];
 
   function renderDetail() {
     const a = currentAffiliate;
-    document.getElementById("detail-name").textContent = `${a.firstName || ""} ${a.lastName || ""}`;
-
-    const statusClass = (a.status || "ACTIVE") === "ACTIVE" ? "active" : "inactive";
+    document.getElementById("detail-name").textContent = `${a.firstName||""} ${a.lastName||""}`;
+    const sc = (a.status||"ACTIVE") === "ACTIVE" ? "active" : "inactive";
     document.getElementById("detail-status-badge").outerHTML =
-      `<span class="status-badge ${statusClass}" id="detail-status-badge">${a.status || "ACTIVE"}</span>`;
+      `<span class="status-badge ${sc}" id="detail-status-badge">${a.status||"ACTIVE"}</span>`;
 
     let gridHtml = "";
     for (const f of FIELD_MAP) {
@@ -1059,11 +938,7 @@
       if (f.suffix && val !== "—") val = val + f.suffix;
       if (f.link && val !== "—") val = `<a href="${esc(a[f.key])}" target="_blank">${esc(a[f.key])}</a>`;
       else val = esc(String(val));
-
-      gridHtml += `<div class="info-cell">
-        <div class="cell-label">${f.label}</div>
-        <div class="cell-value">${val}</div>
-      </div>`;
+      gridHtml += `<div class="info-cell"><div class="cell-label">${f.label}</div><div class="cell-value">${val}</div></div>`;
     }
 
     document.getElementById("detail-info-grid").innerHTML = gridHtml;
@@ -1071,43 +946,42 @@
     document.getElementById("detail-edit").style.display = "none";
   }
 
-  // ═════════════════════════════════════════
+  // ═══════════════════════════
   // Edit mode
-  // ═════════════════════════════════════════
+  // ═══════════════════════════
   function enterEditMode() {
     const a = currentAffiliate;
     const EDIT_FIELDS = [
-      { key: "medium", label: "Primary Medium", type: "select", options: ["YouTube","Blog","Instagram","TikTok"] },
-      { key: "channelName", label: "Channel Name" },
-      { key: "channelUrl", label: "Channel URL", full: true },
-      { key: "firstName", label: "First Name" },
-      { key: "lastName", label: "Last Name" },
-      { key: "businessEntity", label: "Business Entity" },
-      { key: "email", label: "Email", type: "email" },
-      { key: "paypal", label: "PayPal Address", type: "email" },
-      { key: "offerCode", label: "Offer Code", readonly: true },
-      { key: "portalCode", label: "Portal Code", readonly: true },
-      { key: "commissionPct", label: "Commission %", type: "number" },
-      { key: "commissionEligibilityPeriod", label: "Eligibility Period (days)", type: "number" },
-      { key: "lastPromoDate", label: "Last Qualified Promotion Date", type: "date" },
-      { key: "lastPromoUrl", label: "Last Qualified Promotion URL", full: true },
-      { key: "lastPromoTimestamp", label: "Last Qualified Promotion Timestamp" },
+      { key: "medium",                       label: "Primary Medium", type: "select", options: ["YouTube","Blog","Instagram","TikTok"] },
+      { key: "channelName",                  label: "Channel Name" },
+      { key: "channelUrl",                   label: "Channel URL", full: true },
+      { key: "firstName",                    label: "First Name" },
+      { key: "lastName",                     label: "Last Name" },
+      { key: "businessEntity",              label: "Business Entity" },
+      { key: "email",                        label: "Email", type: "email" },
+      { key: "paypal",                       label: "PayPal Address", type: "email" },
+      { key: "offerCode",                    label: "Offer Code", readonly: true },
+      { key: "portalCode",                   label: "Portal Code", readonly: true },
+      { key: "commissionPct",                label: "Commission %", type: "number" },
+      { key: "commissionEligibilityPeriod",  label: "Eligibility Period (days)", type: "number" },
+      { key: "lastPromoDate",                label: "Last Qualified Promotion Date", type: "date" },
+      { key: "lastPromoUrl",                 label: "Last Qualified Promotion URL", full: true },
+      { key: "lastPromoTimestamp",           label: "Last Qualified Promotion Timestamp" },
       { key: "commissionEligibilityEndDate", label: "Commission Eligibility End", type: "date", readonly: true },
-      { key: "status", label: "Status", type: "select", options: ["ACTIVE","INACTIVE"] },
+      { key: "status",                       label: "Status", type: "select", options: ["ACTIVE","INACTIVE"] },
     ];
 
     let html = "";
     for (const f of EDIT_FIELDS) {
       const val = a[f.key] || "";
       const cls = f.full ? "form-group full-width" : "form-group";
-      const ro = f.readonly ? "readonly style='opacity:0.6'" : "";
+      const ro  = f.readonly ? "readonly style='opacity:0.6'" : "";
 
       if (f.type === "select") {
-        let opts = f.options.map(o => `<option value="${o}" ${val === o ? "selected" : ""}>${o}</option>`).join("");
-        html += `<div class="${cls}"><label>${f.label}</label><select id="edit-${f.key}" ${f.readonly ? "disabled" : ""}>${opts}</select></div>`;
+        const opts = f.options.map(o => `<option value="${o}" ${val===o?"selected":""}>${o}</option>`).join("");
+        html += `<div class="${cls}"><label>${f.label}</label><select id="edit-${f.key}" ${f.readonly?"disabled":""}>${opts}</select></div>`;
       } else {
-        const t = f.type || "text";
-        html += `<div class="${cls}"><label>${f.label}</label><input type="${t}" id="edit-${f.key}" value="${esc(String(val))}" ${ro} /></div>`;
+        html += `<div class="${cls}"><label>${f.label}</label><input type="${f.type||"text"}" id="edit-${f.key}" value="${esc(String(val))}" ${ro} /></div>`;
       }
     }
 
@@ -1120,17 +994,16 @@
     document.getElementById("detail-view").style.display = "none";
     document.getElementById("detail-edit").style.display = "block";
 
-    const promoEl = document.getElementById("edit-lastPromoDate");
+    const promoEl  = document.getElementById("edit-lastPromoDate");
     const periodEl = document.getElementById("edit-commissionEligibilityPeriod");
     if (promoEl && periodEl) {
       const recalc = () => {
-        const d = promoEl.value;
-        const p = parseInt(periodEl.value) || 90;
+        const d = promoEl.value, p = parseInt(periodEl.value) || 90;
         if (d) {
           const dt = new Date(d + "T00:00:00");
           dt.setDate(dt.getDate() + p);
-          const endEl = document.getElementById("edit-commissionEligibilityEndDate");
-          if (endEl) endEl.value = fmtDate(dt);
+          const el = document.getElementById("edit-commissionEligibilityEndDate");
+          if (el) el.value = fmtDate(dt);
         }
       };
       promoEl.addEventListener("change", recalc);
@@ -1138,9 +1011,7 @@
     }
   }
 
-  function cancelEdit() {
-    renderDetail();
-  }
+  function cancelEdit() { renderDetail(); }
 
   async function saveEdit() {
     const a = currentAffiliate;
@@ -1172,24 +1043,20 @@
     }
   }
 
-  // ═════════════════════════════════════════
+  // ═══════════════════════════
   // Add new affiliate
-  // ═════════════════════════════════════════
+  // ═══════════════════════════
   async function saveNewAffiliate() {
     const offerCode = (document.getElementById("add-offerCode").value || "").toUpperCase().trim();
     if (!offerCode) { toast("Offer code is required.", "error"); return; }
 
-    const firstName = gev("add-firstName");
-    const lastName = gev("add-lastName");
-    const email = gev("add-email");
+    const firstName = gev("add-firstName"), lastName = gev("add-lastName"), email = gev("add-email");
     if (!firstName || !lastName || !email) {
-      toast("First name, last name, and email are required.", "error");
-      return;
+      toast("First name, last name, and email are required.", "error"); return;
     }
 
     const lastPromoDate = gev("add-lastPromoDate");
-    const eligPeriod = parseInt(gev("add-eligibilityPeriod")) || 90;
-
+    const eligPeriod    = parseInt(gev("add-eligibilityPeriod")) || 90;
     let endDate = "";
     if (lastPromoDate) {
       const d = new Date(lastPromoDate + "T00:00:00");
@@ -1198,41 +1065,28 @@
     }
 
     const data = {
-      medium: gev("add-medium"),
-      channelName: gev("add-channelName"),
-      channelUrl: gev("add-channelUrl"),
-      firstName,
-      lastName,
-      businessEntity: gev("add-businessEntity"),
-      email,
-      paypal: gev("add-paypal"),
-      offerCode,
-      portalCode: generatePortalCode(offerCode),
+      medium: gev("add-medium"), channelName: gev("add-channelName"), channelUrl: gev("add-channelUrl"),
+      firstName, lastName, businessEntity: gev("add-businessEntity"), email, paypal: gev("add-paypal"),
+      offerCode, portalCode: generatePortalCode(offerCode),
       commissionPct: parseFloat(gev("add-commissionPct")) || 25,
       commissionEligibilityPeriod: eligPeriod,
-      lastPromoDate: lastPromoDate,
-      lastPromoUrl: "",
-      lastPromoTimestamp: "",
+      lastPromoDate, lastPromoUrl: "", lastPromoTimestamp: "",
       commissionEligibilityEndDate: endDate,
-      status: "ACTIVE",
-      createdAt: new Date().toISOString(),
+      status: "ACTIVE", createdAt: new Date().toISOString(),
     };
 
     try {
       const existing = await db.collection(COLLECTION).doc(offerCode).get();
-      if (existing.exists) {
-        toast("An affiliate with this offer code already exists.", "error");
-        return;
-      }
+      if (existing.exists) { toast("An affiliate with this offer code already exists.", "error"); return; }
 
       await db.collection(COLLECTION).doc(offerCode).set(data);
       affiliates.push({ id: offerCode, ...data });
-      affiliates.sort((a, b) => (a.lastName || "").localeCompare(b.lastName || ""));
+      affiliates.sort((a, b) => (a.lastName||"").localeCompare(b.lastName||""));
 
-      ["add-channelName","add-channelUrl","add-firstName","add-lastName","add-businessEntity","add-email","add-paypal","add-offerCode","add-portalCode","add-lastPromoDate","add-eligibilityEnd"].forEach(id => {
-        document.getElementById(id).value = "";
-      });
-      document.getElementById("add-commissionPct").value = "25";
+      ["add-channelName","add-channelUrl","add-firstName","add-lastName","add-businessEntity",
+       "add-email","add-paypal","add-offerCode","add-portalCode","add-lastPromoDate","add-eligibilityEnd"]
+        .forEach(id => { document.getElementById(id).value = ""; });
+      document.getElementById("add-commissionPct").value    = "25";
       document.getElementById("add-eligibilityPeriod").value = "90";
 
       toast("Affiliate added successfully.", "success");
@@ -1243,106 +1097,192 @@
     }
   }
 
-  // ═════════════════════════════════════════
+  // ═══════════════════════════
+  // Affiliate Activities
+  // ═══════════════════════════
+  let activitiesLoaded = false;
+
+  async function loadActivities() {
+    if (activitiesLoaded) return;
+    activitiesLoaded = true;
+
+    document.getElementById("recent-promos-container").innerHTML =
+      `<div class="empty-state"><span class="loading-spinner"></span> Loading...</div>`;
+    document.getElementById("most-active-container").innerHTML =
+      `<div class="empty-state"><span class="loading-spinner"></span> Loading...</div>`;
+
+    try {
+      // ── Recent Promotions: last 30 days via collection group ──
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - 30);
+      const cutoffISO = cutoff.toISOString();
+
+      const recentSnap = await db.collectionGroup("promotions")
+        .where("submittedAt", ">=", cutoffISO)
+        .orderBy("submittedAt", "desc")
+        .get();
+
+      const recentPromos = [];
+      recentSnap.forEach(doc => recentPromos.push({ id: doc.id, ...doc.data() }));
+      renderRecentPromos(recentPromos);
+
+      // ── Most Active: all promotions, count by offerCode ──
+      const allSnap = await db.collectionGroup("promotions")
+        .orderBy("submittedAt", "desc")
+        .get();
+
+      const countsByCode = {};
+      allSnap.forEach(doc => {
+        const code = doc.data().offerCode || "";
+        if (code) countsByCode[code] = (countsByCode[code] || 0) + 1;
+      });
+
+      const ranked = Object.entries(countsByCode)
+        .map(([offerCode, count]) => {
+          const aff = affiliates.find(a => a.id === offerCode);
+          return {
+            offerCode,
+            channelName: aff ? (aff.channelName || `${aff.firstName||""} ${aff.lastName||""}`.trim()) : offerCode,
+            count,
+          };
+        })
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 20);
+
+      renderMostActive(ranked);
+
+    } catch (e) {
+      console.error("Error loading activities:", e);
+      const msg = `<div class="empty-state" style="color:var(--red)">Error: ${esc(e.message)}</div>`;
+      document.getElementById("recent-promos-container").innerHTML = msg;
+      document.getElementById("most-active-container").innerHTML   = msg;
+    }
+  }
+
+  function renderRecentPromos(promos) {
+    const container = document.getElementById("recent-promos-container");
+
+    if (promos.length === 0) {
+      container.innerHTML = `<div class="empty-state">No promotions submitted in the last 30 days.</div>`;
+      return;
+    }
+
+    let html = `<table class="act-table"><thead><tr>
+      <th>Submitted</th>
+      <th>Channel</th>
+      <th>Promotion Date</th>
+      <th>Promotion URL</th>
+    </tr></thead><tbody>`;
+
+    for (const p of promos) {
+      html += `<tr>
+        <td style="white-space:nowrap">${esc(displayDateTime(p.submittedAt))}</td>
+        <td>${esc(p.channelName || p.offerCode || "—")}</td>
+        <td style="white-space:nowrap">${esc(displayDate(p.promoDate))}</td>
+        <td class="url-cell">${
+          p.promoUrl
+            ? `<a href="${esc(p.promoUrl)}" target="_blank" rel="noopener">${esc(p.promoUrl)}</a>`
+            : "—"
+        }</td>
+      </tr>`;
+    }
+
+    container.innerHTML = html + `</tbody></table>`;
+  }
+
+  function renderMostActive(ranked) {
+    const container = document.getElementById("most-active-container");
+
+    if (ranked.length === 0) {
+      container.innerHTML = `<div class="empty-state">No promotion history yet.</div>`;
+      return;
+    }
+
+    let html = `<table class="act-table"><thead><tr>
+      <th>#</th><th>Channel</th><th>Promotions</th>
+    </tr></thead><tbody>`;
+
+    ranked.forEach((r, i) => {
+      html += `<tr>
+        <td><span class="${i < 3 ? "rank-num top3" : "rank-num"}">${i + 1}</span></td>
+        <td>${esc(r.channelName)}</td>
+        <td><span class="count-badge">${r.count}</span></td>
+      </tr>`;
+    });
+
+    container.innerHTML = html + `</tbody></table>`;
+  }
+
+  // ═══════════════════════════
   // Payment Reports
-  // ═════════════════════════════════════════
+  // ═══════════════════════════
   let reportsLoaded = false;
 
   async function loadPaymentReports() {
-    if (reportsLoaded) return; // Don't reload unless explicitly refreshed
+    if (reportsLoaded) return;
     reportsLoaded = true;
-    renderReports(null); // Show loading state
+    renderReports(null);
 
     try {
-      const snap = await db.collection("PaymentReports")
-        .orderBy("paymentMonth", "desc")
-        .get();
-
+      const snap = await db.collection("PaymentReports").orderBy("paymentMonth", "desc").get();
       const reports = [];
       snap.forEach(doc => reports.push({ id: doc.id, ...doc.data() }));
       renderReports(reports);
     } catch (e) {
-      console.error("Error loading payment reports:", e);
       document.getElementById("reports-container").innerHTML =
-        `<div class="empty-state" style="color:var(--red)">Error loading reports: ${esc(e.message)}</div>`;
+        `<div class="empty-state" style="color:var(--red)">Error: ${esc(e.message)}</div>`;
     }
   }
 
   function renderReports(reports) {
     const container = document.getElementById("reports-container");
+    if (reports === null) { container.innerHTML = `<div class="empty-state">Loading reports...</div>`; return; }
+    if (reports.length === 0) { container.innerHTML = `<div class="empty-state">No payment reports yet.</div>`; return; }
 
-    if (reports === null) {
-      container.innerHTML = `<div class="empty-state">Loading reports...</div>`;
-      return;
-    }
-
-    if (reports.length === 0) {
-      container.innerHTML = `<div class="empty-state">No payment reports yet. Run the scheduled job or trigger it manually.</div>`;
-      return;
-    }
-
-    let html = `<table class="reports-table">
-      <thead><tr>
-        <th>Payment Month</th>
-        <th>Payments to Issue</th>
-        <th>Pay Date</th>
-        <th>Report ID</th>
-      </tr></thead><tbody>`;
+    let html = `<table class="reports-table"><thead><tr>
+      <th>Payment Month</th><th>Payments to Issue</th><th>Pay Date</th><th>Report ID</th>
+    </tr></thead><tbody>`;
 
     for (const r of reports) {
-      html += `<tr class="clickable-row" onclick="downloadReport('${esc(r.csvUrl)}', '${esc(r.id)}')">
-        <td>
-          ${esc(displayMonth(r.paymentMonth))}
-        </td>
+      html += `<tr class="clickable-row" onclick="downloadReport('${esc(r.csvUrl)}')">
+        <td>${esc(displayMonth(r.paymentMonth))}</td>
         <td>${r.paymentCount ?? "—"}</td>
         <td>${displayDate(r.payDate)}</td>
         <td style="font-family:monospace;font-size:11px;color:var(--muted)">${esc(r.id)}</td>
       </tr>`;
     }
 
-    html += `</tbody></table>`;
-    html += `<div style="margin-top:1rem;text-align:right;">
-      <button class="btn-secondary" onclick="reportsLoaded=false; loadPaymentReports()">↻ Refresh</button>
-    </div>`;
-
-    container.innerHTML = html;
+    container.innerHTML = html + `</tbody></table>
+      <div style="margin-top:1rem;text-align:right;">
+        <button class="btn-secondary" onclick="reportsLoaded=false; loadPaymentReports()">↻ Refresh</button>
+      </div>`;
   }
 
-  function downloadReport(csvUrl, reportId) {
-    if (!csvUrl) {
-      toast("No CSV URL found for this report.", "error");
-      return;
-    }
-    // Open signed URL in new tab — browser will prompt download
+  function downloadReport(csvUrl) {
+    if (!csvUrl) { toast("No CSV URL found for this report.", "error"); return; }
     window.open(csvUrl, "_blank");
   }
 
   async function runTestReport() {
     const refDateStr = document.getElementById("test-report-date").value;
-    if (!refDateStr) {
-      toast("Please select a reference date.", "error");
-      return;
-    }
+    if (!refDateStr) { toast("Please select a reference date.", "error"); return; }
 
-    const btn = document.getElementById("test-report-btn");
+    const btn    = document.getElementById("test-report-btn");
     const status = document.getElementById("test-report-status");
-
     btn.disabled = true;
     status.innerHTML = `<span class="loading-spinner"></span> Generating test report — this may take up to 60 seconds...`;
 
     try {
-      const url = `${FUNCTIONS_BASE_URL}/runPaymentReport?test=true&refDate=${encodeURIComponent(refDateStr)}`;
-      const response = await fetch(url, {
-        method: "GET",
-        headers: { "x-api-key": PORTAL_API_KEY },
-      });
+      const response = await fetch(
+        `${FUNCTIONS_BASE_URL}/runPaymentReport?test=true&refDate=${encodeURIComponent(refDateStr)}`,
+        { method: "GET", headers: { "x-api-key": PORTAL_API_KEY } }
+      );
 
       if (!response.ok) {
         const err = await response.json().catch(() => ({ error: response.statusText }));
         throw new Error(err.error || response.statusText);
       }
 
-      // Trigger CSV download from blob
       const blob = await response.blob();
       const blobUrl = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -1363,27 +1303,20 @@
     }
   }
 
-  // ═════════════════════════════════════════
+  // ═══════════════════════════
   // Tab switching
-  // ═════════════════════════════════════════
+  // ═══════════════════════════
   function switchTab(name) {
     document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.tab === name));
     document.querySelectorAll(".tab-content").forEach(t => t.classList.toggle("active", t.id === "tab-" + name));
   }
 
-  // ═════════════════════════════════════════
+  // ═══════════════════════════
   // Helpers
-  // ═════════════════════════════════════════
-  function gev(id) {
-    const el = document.getElementById(id);
-    return el ? (el.value || "").trim() : "";
-  }
+  // ═══════════════════════════
+  function gev(id) { const el = document.getElementById(id); return el ? (el.value||"").trim() : ""; }
 
-  function esc(s) {
-    const d = document.createElement("div");
-    d.textContent = s;
-    return d.innerHTML;
-  }
+  function esc(s) { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
 
   function toast(msg, type) {
     const el = document.getElementById("toast");
@@ -1392,9 +1325,7 @@
     setTimeout(() => el.classList.remove("show"), 3500);
   }
 
-  function closeModal() {
-    document.getElementById("confirm-modal").classList.remove("show");
-  }
+  function closeModal() { document.getElementById("confirm-modal").classList.remove("show"); }
 </script>
 
 </body>
