@@ -510,6 +510,109 @@
       justify-content: flex-end;
     }
 
+    /* ── PAYMENT REPORTS TAB ── */
+    .reports-toolbar {
+      display: flex;
+      align-items: flex-end;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .reports-toolbar .form-group {
+      margin: 0;
+    }
+
+    .reports-toolbar label {
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      display: block;
+      margin-bottom: 0.35rem;
+    }
+
+    .reports-toolbar input[type="date"] {
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      padding: 0.6rem 0.75rem;
+      font-family: inherit;
+      font-size: 13px;
+      color: var(--ink);
+      outline: none;
+      color-scheme: dark;
+      transition: border-color 0.2s;
+    }
+
+    .reports-toolbar input[type="date"]:focus { border-color: var(--gold); }
+
+    .reports-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid var(--border);
+    }
+
+    .reports-table th {
+      background: rgba(255,255,255,0.05);
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 0.75rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    .reports-table td {
+      padding: 0.65rem 1rem;
+      border-bottom: 1px solid rgba(31,110,140,0.4);
+      font-size: 12px;
+    }
+
+    .reports-table tr.clickable-row:hover td {
+      background: rgba(255,255,255,0.03);
+      cursor: pointer;
+    }
+
+    .test-badge {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      font-size: 9px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-weight: 600;
+      background: rgba(201,168,76,0.15);
+      color: var(--gold);
+      border: 1px solid rgba(201,168,76,0.3);
+      margin-left: 0.5rem;
+      vertical-align: middle;
+    }
+
+    .loading-spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255,255,255,0.2);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 0.4rem;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .section-divider {
+      font-size: 10px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--gold);
+      padding-bottom: 0.25rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 1.25rem;
+    }
+
     /* ── RESPONSIVE ── */
     @media (max-width: 700px) {
       .form-grid { grid-template-columns: 1fr; }
@@ -519,6 +622,8 @@
       main { padding: 1.5rem 1rem; }
       .aff-table { font-size: 11px; }
       .aff-table th, .aff-table td { padding: 0.5rem 0.6rem; }
+      .reports-table { font-size: 11px; }
+      .reports-table th, .reports-table td { padding: 0.5rem 0.6rem; }
     }
   </style>
 </head>
@@ -551,6 +656,7 @@
     <div class="tab-bar">
       <button class="tab-btn active" data-tab="list" onclick="switchTab('list')">Affiliates</button>
       <button class="tab-btn" data-tab="add" onclick="switchTab('add')">Add New</button>
+      <button class="tab-btn" data-tab="reports" onclick="switchTab('reports'); loadPaymentReports()">Payment Reports</button>
     </div>
 
     <!-- ── LIST TAB ── -->
@@ -651,6 +757,28 @@
       </div>
     </div>
 
+    <!-- ── PAYMENT REPORTS TAB ── -->
+    <div class="tab-content" id="tab-reports">
+
+      <!-- Test Report Section -->
+      <div class="section-divider">Run Test Report</div>
+      <div class="reports-toolbar">
+        <div class="form-group">
+          <label>Reference Date (simulates the 7th of a month)</label>
+          <input type="date" id="test-report-date" />
+        </div>
+        <button class="btn-secondary" id="test-report-btn" onclick="runTestReport()">Download Test CSV</button>
+      </div>
+      <div id="test-report-status" style="font-size:12px;color:var(--muted);margin-bottom:2rem;min-height:1.2rem;"></div>
+
+      <!-- Saved Reports Section -->
+      <div class="section-divider">Saved Reports</div>
+      <div id="reports-container">
+        <div class="empty-state">Loading reports...</div>
+      </div>
+
+    </div>
+
     <!-- ── DETAIL TAB (hidden tab) ── -->
     <div class="tab-content" id="tab-detail">
       <div class="detail-header">
@@ -708,7 +836,6 @@
 
   firebase.initializeApp(firebaseConfig);
 
-  // App Check — reCAPTCHA Enterprise attestation
   firebase.appCheck().activate(
     new firebase.appCheck.ReCaptchaEnterpriseProvider('6LfIBXQsAAAAAH2P3fLRotftf3DdpW-kda9Ed-U1'),
     true
@@ -717,13 +844,22 @@
   const db = firebase.firestore();
   const COLLECTION = "affiliates";
 
+  // ─────────────────────────────────────────
+  // IMPORTANT: Replace with your deployed Cloud Function base URL
+  // e.g. https://us-central1-wander-eab4e.cloudfunctions.net
+  // ─────────────────────────────────────────
+  const FUNCTIONS_BASE_URL = "https://us-central1-wander-eab4e.cloudfunctions.net";
+
+  // ─────────────────────────────────────────
+  // IMPORTANT: Replace with your PORTAL_API_KEY secret value
+  // This is only in the admin portal and never exposed to affiliates
+  // ─────────────────────────────────────────
+  const PORTAL_API_KEY = "REPLACE_WITH_YOUR_PORTAL_API_KEY";
+
   // ═════════════════════════════════════════
-  // Auth - simple password hash
+  // Auth
   // ═════════════════════════════════════════
-  // Password hash is checked client-side with SHA-256.
-  // This is NOT a secure auth system but provides basic gating.
-  // The Firestore security rules should be the real guard.
-  const PW_HASH = "1942822b210e12d2323bf6b039fcfcb5dda5d2cb5b03a12b3f03fcd4172e82cf"; // Set this to SHA-256 hash of your password
+  const PW_HASH = "1942822b210e12d2323bf6b039fcfcb5dda5d2cb5b03a12b3f03fcd4172e82cf";
 
   async function sha256(str) {
     const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
@@ -733,8 +869,6 @@
   async function doLogin() {
     const pw = document.getElementById("login-pw").value;
     const hash = await sha256(pw);
-
-    // Store the hash and check
     if (hash === PW_HASH) {
       sessionStorage.setItem("wander_admin", "1");
       showApp();
@@ -759,6 +893,10 @@
     if (sessionStorage.getItem("wander_admin") === "1") {
       showApp();
     }
+
+    // Default test report date to today
+    const today = new Date().toISOString().split("T")[0];
+    document.getElementById("test-report-date").value = today;
   });
 
   // ═════════════════════════════════════════
@@ -774,14 +912,12 @@
     }).join("");
   }
 
-  // Wire up auto-generation of portal code
   document.getElementById("add-offerCode").addEventListener("input", function() {
     const code = this.value.toUpperCase();
     this.value = code;
     document.getElementById("add-portalCode").value = code ? generatePortalCode(code) : "";
   });
 
-  // Wire up auto eligibility end date
   document.getElementById("add-lastPromoDate").addEventListener("change", calcAddEndDate);
   document.getElementById("add-eligibilityPeriod").addEventListener("input", calcAddEndDate);
 
@@ -805,8 +941,16 @@
     return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   }
 
+  function displayMonth(monthLabel) {
+    // monthLabel: "2026-01"
+    if (!monthLabel) return "—";
+    const [year, month] = monthLabel.split("-");
+    const d = new Date(parseInt(year), parseInt(month) - 1, 1);
+    return d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+  }
+
   // ═════════════════════════════════════════
-  // Data
+  // Affiliate data
   // ═════════════════════════════════════════
   let affiliates = [];
   let currentAffiliate = null;
@@ -976,7 +1120,6 @@
     document.getElementById("detail-view").style.display = "none";
     document.getElementById("detail-edit").style.display = "block";
 
-    // Wire edit auto-calc
     const promoEl = document.getElementById("edit-lastPromoDate");
     const periodEl = document.getElementById("edit-commissionEligibilityPeriod");
     if (promoEl && periodEl) {
@@ -1076,7 +1219,6 @@
     };
 
     try {
-      // Check if doc already exists
       const existing = await db.collection(COLLECTION).doc(offerCode).get();
       if (existing.exists) {
         toast("An affiliate with this offer code already exists.", "error");
@@ -1087,7 +1229,6 @@
       affiliates.push({ id: offerCode, ...data });
       affiliates.sort((a, b) => (a.lastName || "").localeCompare(b.lastName || ""));
 
-      // Clear form
       ["add-channelName","add-channelUrl","add-firstName","add-lastName","add-businessEntity","add-email","add-paypal","add-offerCode","add-portalCode","add-lastPromoDate","add-eligibilityEnd"].forEach(id => {
         document.getElementById(id).value = "";
       });
@@ -1099,6 +1240,126 @@
       renderList();
     } catch (e) {
       toast("Error saving affiliate: " + e.message, "error");
+    }
+  }
+
+  // ═════════════════════════════════════════
+  // Payment Reports
+  // ═════════════════════════════════════════
+  let reportsLoaded = false;
+
+  async function loadPaymentReports() {
+    if (reportsLoaded) return; // Don't reload unless explicitly refreshed
+    reportsLoaded = true;
+    renderReports(null); // Show loading state
+
+    try {
+      const snap = await db.collection("PaymentReports")
+        .orderBy("paymentMonth", "desc")
+        .get();
+
+      const reports = [];
+      snap.forEach(doc => reports.push({ id: doc.id, ...doc.data() }));
+      renderReports(reports);
+    } catch (e) {
+      console.error("Error loading payment reports:", e);
+      document.getElementById("reports-container").innerHTML =
+        `<div class="empty-state" style="color:var(--red)">Error loading reports: ${esc(e.message)}</div>`;
+    }
+  }
+
+  function renderReports(reports) {
+    const container = document.getElementById("reports-container");
+
+    if (reports === null) {
+      container.innerHTML = `<div class="empty-state">Loading reports...</div>`;
+      return;
+    }
+
+    if (reports.length === 0) {
+      container.innerHTML = `<div class="empty-state">No payment reports yet. Run the scheduled job or trigger it manually.</div>`;
+      return;
+    }
+
+    let html = `<table class="reports-table">
+      <thead><tr>
+        <th>Payment Month</th>
+        <th>Payments to Issue</th>
+        <th>Pay Date</th>
+        <th>Report ID</th>
+      </tr></thead><tbody>`;
+
+    for (const r of reports) {
+      html += `<tr class="clickable-row" onclick="downloadReport('${esc(r.csvUrl)}', '${esc(r.id)}')">
+        <td>
+          ${esc(displayMonth(r.paymentMonth))}
+        </td>
+        <td>${r.paymentCount ?? "—"}</td>
+        <td>${displayDate(r.payDate)}</td>
+        <td style="font-family:monospace;font-size:11px;color:var(--muted)">${esc(r.id)}</td>
+      </tr>`;
+    }
+
+    html += `</tbody></table>`;
+    html += `<div style="margin-top:1rem;text-align:right;">
+      <button class="btn-secondary" onclick="reportsLoaded=false; loadPaymentReports()">↻ Refresh</button>
+    </div>`;
+
+    container.innerHTML = html;
+  }
+
+  function downloadReport(csvUrl, reportId) {
+    if (!csvUrl) {
+      toast("No CSV URL found for this report.", "error");
+      return;
+    }
+    // Open signed URL in new tab — browser will prompt download
+    window.open(csvUrl, "_blank");
+  }
+
+  async function runTestReport() {
+    const refDateStr = document.getElementById("test-report-date").value;
+    if (!refDateStr) {
+      toast("Please select a reference date.", "error");
+      return;
+    }
+
+    const btn = document.getElementById("test-report-btn");
+    const status = document.getElementById("test-report-status");
+
+    btn.disabled = true;
+    status.innerHTML = `<span class="loading-spinner"></span> Generating test report — this may take up to 60 seconds...`;
+
+    try {
+      const url = `${FUNCTIONS_BASE_URL}/runPaymentReport?test=true&refDate=${encodeURIComponent(refDateStr)}`;
+      const response = await fetch(url, {
+        method: "GET",
+        headers: { "x-api-key": PORTAL_API_KEY },
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({ error: response.statusText }));
+        throw new Error(err.error || response.statusText);
+      }
+
+      // Trigger CSV download from blob
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = `payment-report-TEST-${refDateStr}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+
+      status.textContent = `✓ Test report downloaded for reference date ${refDateStr}.`;
+    } catch (e) {
+      status.style.color = "var(--red)";
+      status.textContent = `Error: ${e.message}`;
+      toast("Test report failed: " + e.message, "error");
+    } finally {
+      btn.disabled = false;
     }
   }
 
