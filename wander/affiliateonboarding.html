@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wander — Affiliate Onboarding</title>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
+  <style>
+    :root {
+      --ink:      #ffffff;
+      --paper:    #175873;
+      --gold:     #c9a84c;
+      --muted:    #a8c8d8;
+      --border:   #1f6e8c;
+      --green:    #5dd4a0;
+      --red:      #ff6b6b;
+      --deep:     #0f3d4f;
+      --input-bg: rgba(255,255,255,0.08);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      min-height: 100%;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem 2.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo img { height: 36px; display: block; }
+
+    .portal-label {
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    main {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 3rem 2rem;
+    }
+
+    /* ── LOADING / ERROR / COMPLETE STATES ── */
+    .state-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 60vh;
+      text-align: center;
+      gap: 1rem;
+    }
+
+    .state-icon {
+      font-size: 3rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .state-title {
+      font-size: 1.5rem;
+      font-weight: 300;
+      letter-spacing: 0.05em;
+    }
+
+    .state-body {
+      color: var(--muted);
+      max-width: 420px;
+      line-height: 1.7;
+    }
+
+    /* ── ONBOARDING FORM ── */
+    #onboarding-screen { display: none; }
+
+    .page-title {
+      font-size: 1.6rem;
+      font-weight: 300;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.5rem;
+    }
+
+    .page-subtitle {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 2.5rem;
+    }
+
+    .section-label {
+      font-size: 10px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--gold);
+      padding-bottom: 0.25rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 1.25rem;
+      margin-top: 2rem;
+    }
+
+    /* ── CONTRACT ── */
+    .contract-box {
+      background: rgba(0,0,0,0.2);
+      border: 1px solid var(--border);
+      padding: 2rem 2.5rem;
+      font-size: 12px;
+      line-height: 1.8;
+      color: rgba(255,255,255,0.85);
+      max-height: 500px;
+      overflow-y: auto;
+      margin-bottom: 1.25rem;
+    }
+
+    .contract-box h3 {
+      font-size: 13px;
+      font-weight: 600;
+      margin-top: 1.25rem;
+      margin-bottom: 0.25rem;
+      color: var(--ink);
+    }
+
+    .contract-box h3:first-child { margin-top: 0; }
+
+    .contract-box p { margin-bottom: 0.75rem; }
+
+    .contract-box ul {
+      margin: 0.5rem 0 0.75rem 1.5rem;
+    }
+
+    .contract-box ul li { margin-bottom: 0.25rem; }
+
+    .contract-box .exhibit {
+      margin-top: 1.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .contract-box .highlight {
+      color: var(--gold);
+      font-weight: 600;
+    }
+
+    /* ── FORM FIELDS ── */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+    .form-group { display: flex; flex-direction: column; gap: 0.35rem; }
+    .form-group.full-width { grid-column: 1 / -1; }
+
+    .form-group label {
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .form-group input,
+    .form-group select {
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      padding: 0.65rem 0.75rem;
+      font-family: inherit;
+      font-size: 14px;
+      color: var(--ink);
+      outline: none;
+      transition: border-color 0.2s;
+      width: 100%;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus { border-color: var(--gold); }
+
+    .form-group select {
+      appearance: none;
+      cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23a8c8d8'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.75rem center;
+      padding-right: 2rem;
+    }
+
+    .form-group select option { background: var(--deep); color: var(--ink); }
+
+    /* Signature field */
+    .signature-input {
+      font-family: 'Georgia', serif;
+      font-size: 1.4rem;
+      font-style: italic;
+      letter-spacing: 0.02em;
+      border-bottom: 2px solid var(--border) !important;
+      border-top: none !important;
+      border-left: none !important;
+      border-right: none !important;
+      background: transparent !important;
+      padding: 0.5rem 0 !important;
+      color: var(--gold) !important;
+    }
+
+    .signature-input:focus { border-bottom-color: var(--gold) !important; }
+
+    /* File input */
+    .file-input-wrapper { position: relative; }
+    .file-input-wrapper input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .file-input-display {
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      padding: 0.65rem 0.75rem;
+      font-family: inherit;
+      font-size: 13px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: border-color 0.2s;
+      min-height: 2.6rem;
+    }
+
+    .file-input-display:hover { border-color: var(--gold); }
+    .file-input-display.has-file { color: var(--ink); }
+
+    .file-browse {
+      font-size: 9px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--gold);
+      flex-shrink: 0;
+      margin-left: 0.75rem;
+    }
+
+    /* Checkbox */
+    .checkbox-group {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      margin-top: 0.25rem;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      margin-top: 0.15rem;
+      accent-color: var(--gold);
+      cursor: pointer;
+    }
+
+    .checkbox-group label {
+      font-size: 12px;
+      color: var(--muted);
+      cursor: pointer;
+      line-height: 1.5;
+    }
+
+    /* Submit */
+    .submit-area {
+      margin-top: 2.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .btn-primary {
+      padding: 0.75rem 2.5rem;
+      background: var(--gold);
+      color: #0f0e0d;
+      border: none;
+      font-family: inherit;
+      font-size: 12px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      font-weight: 600;
+    }
+
+    .btn-primary:hover:not(:disabled) { opacity: 0.85; }
+    .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .submit-status {
+      font-size: 12px;
+      color: var(--muted);
+      min-height: 1.2rem;
+    }
+
+    .submit-status.error { color: var(--red); }
+
+    .loading-spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255,255,255,0.2);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 0.4rem;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .field-hint {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 0.25rem;
+    }
+
+    @media (max-width: 600px) {
+      .form-grid { grid-template-columns: 1fr; }
+      header { padding: 1rem; }
+      main { padding: 2rem 1rem; }
+      .contract-box { padding: 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <img src="appTitle.png" alt="Wander" />
+  </div>
+  <span class="portal-label">Affiliate Onboarding</span>
+</header>
+
+<!-- LOADING -->
+<div id="loading-screen" class="state-screen">
+  <div class="state-icon">⏳</div>
+  <div class="state-title">Loading your onboarding...</div>
+</div>
+
+<!-- ERROR -->
+<div id="error-screen" class="state-screen" style="display:none">
+  <div class="state-icon">⚠️</div>
+  <div class="state-title" id="error-title">Something went wrong</div>
+  <div class="state-body" id="error-body">This onboarding link may be invalid or expired. Please contact affiliates@dainware.com.</div>
+</div>
+
+<!-- ALREADY COMPLETE -->
+<div id="complete-screen" class="state-screen" style="display:none">
+  <div class="state-icon">✅</div>
+  <div class="state-title">Onboarding Complete</div>
+  <div class="state-body">You've already completed the onboarding process. If you need to make any changes, please contact affiliates@dainware.com.</div>
+</div>
+
+<!-- ONBOARDING FORM -->
+<div id="onboarding-screen">
+  <main>
+    <div class="page-title" id="page-title">Welcome to the Wander Affiliate Program</div>
+    <div class="page-subtitle">Please review your partnership agreement below, complete the required fields, and submit to finalize your onboarding.</div>
+
+    <!-- CONTRACT -->
+    <div class="section-label">Partnership Agreement</div>
+    <div class="contract-box" id="contract-box">
+      <!-- Rendered by JS -->
+    </div>
+
+    <!-- AFFILIATE INFO -->
+    <div class="section-label">Your Information</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>First Name</label>
+        <input type="text" id="ob-firstName" />
+      </div>
+      <div class="form-group">
+        <label>Last Name</label>
+        <input type="text" id="ob-lastName" />
+      </div>
+      <div class="form-group full-width">
+        <label>Business Entity <span style="color:var(--muted);font-size:9px;">(if applicable — leave blank if signing as an individual)</span></label>
+        <input type="text" id="ob-businessEntity" placeholder="e.g. My Channel LLC" />
+      </div>
+      <div class="form-group full-width">
+        <label>Physical Address</label>
+        <input type="text" id="ob-address" placeholder="Street, City, State/Province, Postal Code, Country" />
+      </div>
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="ob-email" />
+      </div>
+      <div class="form-group">
+        <label>PayPal Address</label>
+        <input type="email" id="ob-paypal" placeholder="PayPal email for commission payments" />
+      </div>
+      <div class="form-group full-width">
+        <label>YouTube Channel URL</label>
+        <input type="text" id="ob-channelUrl" placeholder="https://youtube.com/@yourchannel" />
+      </div>
+    </div>
+
+    <!-- TAX FORM -->
+    <div class="section-label">Tax Documentation</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Tax Form Type</label>
+        <select id="ob-taxFormType">
+          <option value="">Select...</option>
+          <option value="W-9">W-9 (US residents)</option>
+          <option value="W-8BEN">W-8BEN (Non-US residents)</option>
+        </select>
+        <div class="field-hint">W-9 for US persons. W-8BEN for non-US persons. Download the form from irs.gov, complete it, and upload it below.</div>
+      </div>
+      <div class="form-group">
+        <label>Upload Completed Tax Form (PDF)</label>
+        <div class="file-input-wrapper">
+          <input type="file" id="ob-taxForm" accept="application/pdf" onchange="handleTaxFormChange(this)" />
+          <div class="file-input-display" id="ob-taxForm-display">
+            <span id="ob-taxForm-filename">No file selected</span>
+            <span class="file-browse">Browse</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SIGNATURE -->
+    <div class="section-label">Electronic Signature</div>
+    <div class="form-grid">
+      <div class="form-group full-width">
+        <label>Type your full legal name as your electronic signature</label>
+        <input type="text" id="ob-signature" class="signature-input" placeholder="Your full legal name" autocomplete="off" />
+        <div class="field-hint">By typing your name above, you agree that this constitutes your legally binding electronic signature in accordance with the E-SIGN Act.</div>
+      </div>
+      <div class="form-group full-width">
+        <div class="checkbox-group">
+          <input type="checkbox" id="ob-agree" />
+          <label for="ob-agree">I have read and agree to all terms of the Wander Affiliate Partnership Agreement above, including the commission structure, eligibility requirements, and all other provisions.</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUBMIT -->
+    <div class="submit-area">
+      <button class="btn-primary" id="submit-btn" onclick="submitOnboarding()">Submit Onboarding</button>
+      <div class="submit-status" id="submit-status"></div>
+    </div>
+  </main>
+</div>
+
+<!-- SUCCESS -->
+<div id="success-screen" class="state-screen" style="display:none">
+  <div class="state-icon">🎉</div>
+  <div class="state-title">Onboarding Complete!</div>
+  <div class="state-body">Thank you! Your signed agreement and tax documentation have been received. Ryan will review your submission and be in touch to confirm your affiliate account is active.</div>
+</div>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCL63-Rsfg_IhcwB17YpdfpczD1CmoRWI4",
+    authDomain: "wander-eab4e.firebaseapp.com",
+    projectId: "wander-eab4e",
+    storageBucket: "wander-eab4e.firebasestorage.app",
+    messagingSenderId: "679842398896",
+    appId: "1:679842398896:web:97763db575ecca5f09b175"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  firebase.appCheck().activate(
+    new firebase.appCheck.ReCaptchaEnterpriseProvider('6LfIBXQsAAAAAH2P3fLRotftf3DdpW-kda9Ed-U1'),
+    true
+  );
+
+  const db      = firebase.firestore();
+  const storage = firebase.storage();
+  const FUNCTIONS_BASE = "https://us-central1-wander-eab4e.cloudfunctions.net";
+
+  let leadData = null;
+  let leadId   = null;
+
+  // ─────────────────────────────────────────────────────────────────
+  // Decode onboarding code back to offer code
+  // ─────────────────────────────────────────────────────────────────
+  function decodeOnboardingCode(code) {
+    return code.toUpperCase().split("").map(ch => {
+      if (/[B-Z]/.test(ch)) return String.fromCharCode(ch.charCodeAt(0) - 1);
+      if (ch === "A") return "Z";
+      if (/[1-9]/.test(ch)) return String(Number(ch) - 1);
+      if (ch === "0") return "9";
+      return ch;
+    }).join("");
+  }
+
+  // ─────────────────────────────────────────────────────────────────
+  // Load lead on page load
+  // ─────────────────────────────────────────────────────────────────
+  window.addEventListener("load", async () => {
+    const params = new URLSearchParams(window.location.search);
+    const code   = params.get("code");
+
+    if (!code) {
+      showError("Invalid Link", "This onboarding link is missing a required parameter. Please contact affiliates@dainware.com.");
+      return;
+    }
+
+    // Decode code to offer code = lead document ID
+    const offerCode = decodeOnboardingCode(code);
+    leadId = offerCode;
+
+    try {
+      const doc = await db.collection("leads").doc(offerCode).get();
+
+      if (!doc.exists) {
+        showError("Link Not Found", "This onboarding link is invalid or has been removed. Please contact affiliates@dainware.com.");
+        return;
+      }
+
+      leadData = doc.data();
+
+      // Check if already completed
+      if (leadData.onboardingStatus === "completed") {
+        showScreen("complete-screen");
+        return;
+      }
+
+      // Check if onboarding is enabled
+      if (leadData.onboardingEnabled === false) {
+        showError("Link Not Active", "This onboarding link is not currently active. Please contact affiliates@dainware.com.");
+        return;
+      }
+
+      // Pre-fill known fields
+      if (leadData.firstName) document.getElementById("ob-firstName").value = leadData.firstName;
+      if (leadData.lastName)  document.getElementById("ob-lastName").value  = leadData.lastName;
+      if (leadData.email)     document.getElementById("ob-email").value     = leadData.email;
+      if (leadData.channelUrl) document.getElementById("ob-channelUrl").value = leadData.channelUrl;
+
+      // Render the contract
+      renderContract(leadData);
+
+      // Update page title
+      const firstName = leadData.firstName || "there";
+      document.getElementById("page-title").textContent = `Welcome, ${firstName}!`;
+
+      showScreen("onboarding-screen");
+
+    } catch (e) {
+      console.error("Error loading lead:", e);
+      showError("Error Loading Page", "An unexpected error occurred. Please try refreshing, or contact affiliates@dainware.com.");
+    }
+  });
+
+  // ─────────────────────────────────────────────────────────────────
+  // Render contract
+  // ─────────────────────────────────────────────────────────────────
+  function renderContract(lead) {
+    const offerCode    = lead.offerCode || "—";
+    const commPct      = lead.commissionPct || 25;
+    const eligDays     = lead.commissionEligibilityPeriod || 90;
+    const channelUrl   = lead.channelUrl || "[Affiliate to enter URL]";
+    const effectiveDate = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+
+    // Net proceeds example calculation
+    const retailPrice  = 19.99;
+    const discounted   = (retailPrice * 0.90).toFixed(2);
+    const appStoreFee  = 0.15;
+    const netProceeds  = (discounted * (1 - appStoreFee)).toFixed(2);
+    const commission   = (netProceeds * commPct / 100).toFixed(2);
+
+    document.getElementById("contract-box").innerHTML = `
+<h3>WANDER AFFILIATE PARTNERSHIP AGREEMENT</h3>
+<p>This Agreement is entered into as of <span class="highlight">${effectiveDate}</span> ("Effective Date") between:</p>
+<p><strong>Dainware LLC ("Wander")</strong><br>900 NW High Point Dr., Lee's Summit, MO 64081 USA<br>ryan.cofer@dainware.com</p>
+<p>and <strong>[Affiliate]</strong> identified by signature below ("Affiliate")</p>
+
+<h3>1. PARTNERSHIP OVERVIEW</h3>
+<p>Dainware grants Affiliate the right to promote Wander (the "App") using the tracking tools provided by Dainware, including a unique promo code (identified in Exhibit A), QR code, and affiliate URL (collectively, the "Offer Code"), in exchange for commission payments as outlined in this Agreement.</p>
+
+<h3>2. COMMISSION STRUCTURE</h3>
+<p>2.1 The Offer Code applies exclusively to the in-app purchase with Reference Name "3 Tour Credits." The Offer Code may only be redeemed by users who have not previously made any purchase within the Wander app. The Offer Code provides redeemers with a 10% discount off the retail price so long as the Offer Code remains active.</p>
+<p>2.2 Dainware will pay Affiliate a <span class="highlight">${commPct}% commission</span> on all net proceeds generated from purchases made using the Offer Code.</p>
+<p>2.3 Net proceeds are defined as amounts actually received by Dainware from Apple or Google after all platform fees, discounts, refunds, and adjustments.</p>
+<p>2.4 Example calculation: Retail price: $${retailPrice} → after 10% discount: $${discounted} → after 15% App Store fee: $${netProceeds} → Affiliate commission (${commPct}%): <span class="highlight">$${commission}</span></p>
+<p>2.5 Apple, Google or other platforms may at any time raise or lower the fee they charge developers, affecting net proceeds. The retail price is set at Dainware's sole discretion and may change at any time. Commission percentages remain fixed as described in Section 2.2.</p>
+
+<h3>3. PAYMENTS</h3>
+<p>3.1 Commissions are paid monthly, approximately 1 calendar month plus 7 days following the sale month (e.g., January sales paid on or around March 7th), aligning with Apple's payout schedule.</p>
+<p>3.2 Payments are issued only if total commission due exceeds $25. Amounts below $25 roll over. Payments require valid tax documentation (W-9 or W-8BEN) on file and are issued via PayPal to the address identified in Exhibit A.</p>
+<p>3.3 Dainware reserves the right to adjust, withhold, or deduct commissions for refunded transactions, chargebacks, or fraudulent activity.</p>
+<p>3.4 Dainware reserves the right to correct commission calculation errors.</p>
+<p>3.5 Dainware will not withhold or reduce commissions except as explicitly described in this Agreement.</p>
+
+<h3>4. CURRENCY & PRICING</h3>
+<p>Affiliate commissions are calculated using net proceeds in USD received by Dainware from the applicable platform.</p>
+
+<h3>5. COMMISSION ELIGIBILITY PERIOD</h3>
+<p>5.1 Affiliate earns commissions on all sales made using the Offer Code during the Commission Eligibility Period.</p>
+<p>5.2 The Commission Eligibility Period begins with the published date of the Affiliate's first Qualifying Promotion and extends for <span class="highlight">${eligDays} days</span> after the most recent Qualifying Promotion.</p>
+<p>5.3 Rolling expiration: Each new Qualifying Promotion extends the Commission Eligibility Period for an additional ${eligDays} days.</p>
+<p>5.4 The Offer Code may remain active for customer use indefinitely, but Affiliate will not earn commissions after the Commission Eligibility Period has expired.</p>
+<p>5.5 Reactivation requires a new agreement and a new Offer Code.</p>
+
+<h3>6. QUALIFYING PROMOTIONS</h3>
+<p>6.1 A "Qualifying Promotion" includes: a verbal mention of Wander with the Offer Code text AND Wander app icon displayed on screen for at least 7 seconds, OR a verbal mention of Wander with the QR code AND Wander app icon displayed on screen for at least 7 seconds, AND the unaltered affiliate URL in the video description.</p>
+<p>6.2 Affiliate must self-report each Qualifying Promotion via the Affiliate Portal within 48 hours of publishing, including a link to the video and the approximate minute mark of the promotion.</p>
+<p>6.3 Affiliate must ensure all Qualifying Promotions remain publicly accessible for the duration of the Commission Eligibility Period. Removal or alteration immediately terminates commission eligibility.</p>
+
+<h3>7. DISTRIBUTION CHANNELS</h3>
+<p>Affiliate may promote Wander on any of their preferred channels. The Commission Eligibility Period is only initiated and extended by Qualifying Promotions as defined in Section 6.</p>
+
+<h3>8. REPORTING & TRACKING</h3>
+<p>Dainware will provide Affiliate with access to an Affiliate Portal to track Offer Code usage. Report accuracy is on a best-effort basis and depends on third parties. In the event of a discrepancy, official platform data (Apple App Store Connect, Google Play Console, etc.) shall serve as the authoritative basis for commission calculations.</p>
+
+<h3>9. TERM & TERMINATION</h3>
+<p>This Agreement begins on the Effective Date and continues until explicitly terminated by either party, or until ${eligDays} days have elapsed since the last Qualifying Promotion (Passive Termination). Either party may terminate with written notice. Upon termination, Affiliate earns commissions for the remainder of the Commission Eligibility Period unless Affiliate has violated this Agreement.</p>
+
+<h3>10. REPRESENTATIONS & WARRANTIES</h3>
+<p>Affiliate represents they have the right to promote the App on their platforms. Affiliate is solely responsible for complying with all applicable laws and disclosure requirements (including FTC requirements). Affiliate agrees not to engage in fraudulent activity or make false statements about the App or Dainware LLC.</p>
+
+<h3>11–19. STANDARD TERMS</h3>
+<p>Limitation of Liability: Dainware's total liability shall not exceed total commissions paid in the twelve months preceding any claim. No earnings are guaranteed. Affiliate is granted a limited license to use Wander branding solely for promotional purposes. Affiliate is an independent contractor. Dainware may modify non-essential terms with 30 days' written notice. Disputes resolved in the courts of Missouri. This Agreement is governed by the laws of the State of Missouri.</p>
+
+<h3>20. ELECTRONIC SIGNATURES</h3>
+<p>Electronic signatures, including typed names and dates, are legally binding and have the same legal effect as handwritten signatures, in accordance with the Electronic Signatures in Global and National Commerce Act (E-SIGN Act) and applicable international equivalents.</p>
+
+<div class="exhibit">
+  <h3>EXHIBIT A — AFFILIATE INFORMATION</h3>
+  <p><strong>Promo Code:</strong> <span class="highlight">${esc(offerCode)}</span></p>
+  <p><strong>Affiliate YouTube Channel URL:</strong> ${esc(channelUrl)}</p>
+  <p><strong>Affiliate PayPal address:</strong> [Provided in onboarding form above]</p>
+</div>
+    `;
+  }
+
+  // ─────────────────────────────────────────────────────────────────
+  // Tax form file input
+  // ─────────────────────────────────────────────────────────────────
+  function handleTaxFormChange(input) {
+    const display  = document.getElementById("ob-taxForm-display");
+    const filename = document.getElementById("ob-taxForm-filename");
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      if (file.type !== "application/pdf") {
+        alert("Only PDF files are accepted.");
+        input.value = "";
+        filename.textContent = "No file selected";
+        display.classList.remove("has-file");
+        return;
+      }
+      filename.textContent = file.name;
+      display.classList.add("has-file");
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────
+  // Submit
+  // ─────────────────────────────────────────────────────────────────
+  async function submitOnboarding() {
+    const firstName   = v("ob-firstName");
+    const lastName    = v("ob-lastName");
+    const address     = v("ob-address");
+    const email       = v("ob-email");
+    const paypal      = v("ob-paypal");
+    const channelUrl  = v("ob-channelUrl");
+    const taxFormType = document.getElementById("ob-taxFormType").value;
+    const signature   = v("ob-signature");
+    const agreed      = document.getElementById("ob-agree").checked;
+    const taxFile     = document.getElementById("ob-taxForm").files[0];
+    const status      = document.getElementById("submit-status");
+
+    // Validation
+    if (!firstName || !lastName) { setStatus("Please enter your first and last name.", true); return; }
+    if (!address)    { setStatus("Please enter your physical address.", true); return; }
+    if (!email)      { setStatus("Please enter your email address.", true); return; }
+    if (!paypal)     { setStatus("Please enter your PayPal address.", true); return; }
+    if (!channelUrl) { setStatus("Please enter your YouTube channel URL.", true); return; }
+    if (!taxFormType){ setStatus("Please select your tax form type.", true); return; }
+    if (!taxFile)    { setStatus("Please upload your completed tax form PDF.", true); return; }
+    if (!signature)  { setStatus("Please type your full legal name as your electronic signature.", true); return; }
+    if (!agreed)     { setStatus("Please check the agreement checkbox to proceed.", true); return; }
+
+    const btn = document.getElementById("submit-btn");
+    btn.disabled = true;
+    setStatus(`<span class="loading-spinner"></span> Uploading tax form...`);
+
+    try {
+      // 1. Upload tax form to Firebase Storage
+      const safeName     = taxFile.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+      const storagePath  = `affiliate-tax-forms/${leadId}/${safeName}`;
+      const storageRef   = storage.ref(storagePath);
+      const snapshot     = await storageRef.put(taxFile, { contentType: "application/pdf" });
+      const taxFormUrl   = await snapshot.ref.getDownloadURL();
+
+      setStatus(`<span class="loading-spinner"></span> Saving your information...`);
+
+      // 2. Capture contract snapshot text
+      const contractSnapshot = document.getElementById("contract-box").innerText;
+
+      // 3. Update lead record in Firestore
+      const submittedAt = new Date().toISOString();
+      await db.collection("leads").doc(leadId).update({
+        // Affiliate-provided info
+        firstName,
+        lastName,
+        businessEntity: v("ob-businessEntity"),
+        address,
+        email,
+        paypal,
+        channelUrl,
+        // Tax form
+        taxFormType,
+        taxFormStoragePath: storagePath,
+        taxFormUrl,
+        // Signature & agreement
+        signatureName: signature,
+        signatureAgreed: true,
+        contractSnapshot,
+        // Status
+        onboardingStatus:      "completed",
+        onboardingEnabled:     false,
+        onboardingCompletedAt: submittedAt,
+      });
+
+      setStatus(`<span class="loading-spinner"></span> Sending confirmation...`);
+
+      // 4. Trigger email notification
+      try {
+        await fetch(`${FUNCTIONS_BASE}/notifyOnboardingComplete`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ leadId }),
+        });
+      } catch (emailErr) {
+        // Non-fatal — onboarding is still complete even if email fails
+        console.warn("Email notification failed:", emailErr.message);
+      }
+
+      // 5. Show success
+      showScreen("success-screen");
+
+    } catch (err) {
+      console.error("Submission error:", err);
+      setStatus("An error occurred: " + err.message + ". Please try again or contact affiliates@dainware.com.", true);
+      btn.disabled = false;
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────
+  // Helpers
+  // ─────────────────────────────────────────────────────────────────
+  function v(id) {
+    const el = document.getElementById(id);
+    return el ? el.value.trim() : "";
+  }
+
+  function esc(s) {
+    const d = document.createElement("div");
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  function setStatus(msg, isError = false) {
+    const el = document.getElementById("submit-status");
+    el.innerHTML = msg;
+    el.className = "submit-status" + (isError ? " error" : "");
+  }
+
+  function showScreen(id) {
+    ["loading-screen","error-screen","complete-screen","onboarding-screen","success-screen"]
+      .forEach(s => {
+        const el = document.getElementById(s);
+        if (el) el.style.display = s === id ? (s === "onboarding-screen" ? "block" : "flex") : "none";
+      });
+  }
+
+  function showError(title, body) {
+    document.getElementById("error-title").textContent = title;
+    document.getElementById("error-body").textContent  = body;
+    showScreen("error-screen");
+  }
+</script>
+
+</body>
+</html>
