@@ -1172,6 +1172,7 @@
       <th>Channel</th>
       <th>Promotion Date</th>
       <th>Promotion URL</th>
+      <th>Minute Marker</th>
     </tr></thead><tbody>`;
 
     for (const p of promos) {
@@ -1184,6 +1185,7 @@
             ? `<a href="${esc(p.promoUrl)}" target="_blank" rel="noopener">${esc(p.promoUrl)}</a>`
             : "—"
         }</td>
+        <td>${esc(p.promoTimestamp || "—")}</td>
       </tr>`;
     }
 
