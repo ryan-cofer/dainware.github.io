@@ -758,6 +758,10 @@
         <div class="detail-name" id="detail-name"></div>
         <div style="margin:0.5rem 0 1.5rem;"><span id="detail-status-badge"></span></div>
         <div class="info-grid" id="detail-info-grid"></div>
+        <div class="section-divider" style="margin-top:2rem;">
+          Promotion Submission History
+        </div>
+        <div id="promo-history-container"></div>
       </div>
       <div id="detail-edit" style="display:none">
         <div class="form-grid" id="edit-form"></div>
@@ -983,12 +987,55 @@
   // ═══════════════════════════
   // Detail view
   // ═══════════════════════════
-  function viewAffiliate(id) {
+  async function viewAffiliate(id) {
     currentAffiliate = affiliates.find(a => a.id === id);
     if (!currentAffiliate) return;
     renderDetail();
     switchTab("detail");
+    await loadAffiliatePromotions(id);
   }
+
+  async function loadAffiliatePromotions(offerCode) {
+  const container = document.getElementById("promo-history-container");
+  container.innerHTML = `<div class="empty-state"><span class="loading-spinner"></span> Loading...</div>`;
+
+  try {
+    const snap = await db.collection(COLLECTION).doc(offerCode)
+      .collection("promotions")
+      .orderBy("submittedAt", "desc")
+      .get();
+
+    if (snap.empty) {
+      container.innerHTML = `<div class="empty-state">No promotion submissions on record.</div>`;
+      return;
+    }
+
+    let html = `<table class="act-table"><thead><tr>
+      <th>Submitted</th>
+      <th>Promotion Date</th>
+      <th>Minute Marker</th>
+      <th>Promotion URL</th>
+    </tr></thead><tbody>`;
+
+    snap.forEach(doc => {
+      const p = doc.data();
+      html += `<tr>
+        <td style="white-space:nowrap">${esc(displayDateTime(p.submittedAt))}</td>
+        <td style="white-space:nowrap">${esc(displayDate(p.promoDate))}</td>
+        <td>${esc(p.promoTimestamp || "—")}</td>
+        <td class="url-cell">${
+          p.promoUrl
+            ? `<a href="${esc(p.promoUrl)}" target="_blank" rel="noopener">${esc(p.promoUrl)}</a>`
+            : "—"
+        }</td>
+      </tr>`;
+    });
+
+    container.innerHTML = html + `</tbody></table>`;
+  } catch (e) {
+    container.innerHTML = `<div class="empty-state" style="color:var(--red)">Error: ${esc(e.message)}</div>`;
+  }
+}
 
   const FIELD_MAP = [
     { key: "medium",                       label: "Primary Medium" },
