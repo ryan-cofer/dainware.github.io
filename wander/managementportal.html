@@ -6,6 +6,7 @@
   <title>Wander — Affiliate Management</title>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
   <style>
     :root {
@@ -228,6 +229,47 @@
 
     .form-group select option { background: var(--deep); color: var(--ink); }
     .form-group input[type="date"] { color-scheme: dark; }
+
+    /* ── FILE INPUT ── */
+    .file-input-wrapper {
+      position: relative;
+    }
+
+    .file-input-wrapper input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .file-input-display {
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      padding: 0.6rem 0.75rem;
+      font-family: inherit;
+      font-size: 13px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: border-color 0.2s;
+      min-height: 2.4rem;
+    }
+
+    .file-input-display:hover { border-color: var(--gold); }
+    .file-input-display.has-file { color: var(--ink); }
+
+    .file-input-display .file-browse {
+      font-size: 9px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--gold);
+      flex-shrink: 0;
+      margin-left: 0.75rem;
+    }
 
     .form-actions { grid-column: 1 / -1; display: flex; gap: 1rem; margin-top: 0.5rem; }
 
@@ -641,8 +683,19 @@
           <label>Commission Eligibility End Date (auto)</label>
           <input type="date" id="add-eligibilityEnd" readonly style="opacity:0.6" />
         </div>
+        <div class="form-section-title">Contract</div>
+        <div class="form-group full-width">
+          <label>Signed Contract PDF <span style="color:var(--muted);font-size:9px;">(optional)</span></label>
+          <div class="file-input-wrapper">
+            <input type="file" id="add-contract" accept="application/pdf" onchange="handleContractFileChange(this)" />
+            <div class="file-input-display" id="add-contract-display">
+              <span id="add-contract-filename">No file selected</span>
+              <span class="file-browse">Browse</span>
+            </div>
+          </div>
+        </div>
         <div class="form-actions">
-          <button class="btn-primary" onclick="saveNewAffiliate()">Save Affiliate</button>
+          <button class="btn-primary" id="save-affiliate-btn" onclick="saveNewAffiliate()">Save Affiliate</button>
         </div>
       </div>
     </div>
@@ -653,7 +706,6 @@
         <button class="btn-secondary" onclick="activitiesLoaded=false; loadActivities()">↻ Refresh</button>
       </div>
 
-      <!-- Recent Promotions — full width -->
       <div class="section-divider">
         Recent Promotions
         <span style="font-size:9px; color:var(--muted); letter-spacing:0.1em; margin-left:0.5rem;">(last 30 days, sorted by submission date)</span>
@@ -662,7 +714,6 @@
         <div class="empty-state">Loading...</div>
       </div>
 
-      <!-- Two-column lower sections -->
       <div class="activities-two-col">
         <div>
           <div class="section-divider" style="margin-top:0;">
@@ -673,7 +724,6 @@
             <div class="empty-state">Loading...</div>
           </div>
         </div>
-        <!-- Right column reserved for future use -->
         <div></div>
       </div>
     </div>
@@ -746,7 +796,8 @@
     true
   );
 
-  const db = firebase.firestore();
+  const db      = firebase.firestore();
+  const storage = firebase.storage();
   const COLLECTION = "affiliates";
   const FUNCTIONS_BASE_URL = "https://us-central1-wander-eab4e.cloudfunctions.net";
   const PORTAL_API_KEY = "wander-affiliateportal";
@@ -785,6 +836,39 @@
     if (sessionStorage.getItem("wander_admin") === "1") showApp();
     document.getElementById("test-report-date").value = new Date().toISOString().split("T")[0];
   });
+
+  // ═══════════════════════════
+  // Contract file input
+  // ═══════════════════════════
+  function handleContractFileChange(input) {
+    const display  = document.getElementById("add-contract-display");
+    const filename = document.getElementById("add-contract-filename");
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      if (file.type !== "application/pdf") {
+        toast("Only PDF files are accepted.", "error");
+        input.value = "";
+        filename.textContent = "No file selected";
+        display.classList.remove("has-file");
+        return;
+      }
+      filename.textContent = file.name;
+      display.classList.add("has-file");
+    } else {
+      filename.textContent = "No file selected";
+      display.classList.remove("has-file");
+    }
+  }
+
+  // Upload contract PDF to Firebase Storage, return { contractUrl, contractStoragePath }
+  async function uploadContract(offerCode, file) {
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+    const path     = `affiliate-contracts/${offerCode}/${safeName}`;
+    const ref      = storage.ref(path);
+    const snapshot = await ref.put(file, { contentType: "application/pdf" });
+    const url      = await snapshot.ref.getDownloadURL();
+    return { contractUrl: url, contractStoragePath: path };
+  }
 
   // ═══════════════════════════
   // Portal code
@@ -907,21 +991,22 @@
   }
 
   const FIELD_MAP = [
-    { key: "medium",                      label: "Primary Medium" },
-    { key: "channelName",                 label: "Channel Name" },
-    { key: "channelUrl",                  label: "Channel URL", link: true },
-    { key: "email",                       label: "Email" },
+    { key: "medium",                       label: "Primary Medium" },
+    { key: "channelName",                  label: "Channel Name" },
+    { key: "channelUrl",                   label: "Channel URL", link: true },
+    { key: "email",                        label: "Email" },
     { key: "businessEntity",              label: "Business Entity" },
-    { key: "paypal",                      label: "PayPal Address" },
-    { key: "offerCode",                   label: "Offer Code" },
-    { key: "portalCode",                  label: "Portal Code" },
-    { key: "commissionPct",               label: "Commission %", suffix: "%" },
-    { key: "commissionEligibilityPeriod", label: "Eligibility Period", suffix: " days" },
-    { key: "lastPromoDate",               label: "Last Qualified Promotion Date", date: true },
-    { key: "lastPromoUrl",                label: "Last Qualified Promotion URL", link: true },
-    { key: "lastPromoTimestamp",          label: "Last Qualified Promotion Timestamp" },
-    { key: "commissionEligibilityEndDate",label: "Commission Eligibility End", date: true },
-    { key: "status",                      label: "Status" },
+    { key: "paypal",                       label: "PayPal Address" },
+    { key: "offerCode",                    label: "Offer Code" },
+    { key: "portalCode",                   label: "Portal Code" },
+    { key: "commissionPct",                label: "Commission %", suffix: "%" },
+    { key: "commissionEligibilityPeriod",  label: "Eligibility Period", suffix: " days" },
+    { key: "lastPromoDate",                label: "Last Qualified Promotion Date", date: true },
+    { key: "lastPromoUrl",                 label: "Last Qualified Promotion URL", link: true },
+    { key: "lastPromoTimestamp",           label: "Last Qualified Promotion Timestamp" },
+    { key: "commissionEligibilityEndDate", label: "Commission Eligibility End", date: true },
+    { key: "status",                       label: "Status" },
+    { key: "contractUrl",                  label: "Signed Contract", contract: true },
   ];
 
   function renderDetail() {
@@ -933,11 +1018,23 @@
 
     let gridHtml = "";
     for (const f of FIELD_MAP) {
-      let val = a[f.key] || "—";
-      if (f.date && val !== "—") val = displayDate(val);
-      if (f.suffix && val !== "—") val = val + f.suffix;
-      if (f.link && val !== "—") val = `<a href="${esc(a[f.key])}" target="_blank">${esc(a[f.key])}</a>`;
-      else val = esc(String(val));
+      let val;
+
+      if (f.contract) {
+        // Contract field: special rendering
+        if (a.contractUrl) {
+          val = `<a href="${esc(a.contractUrl)}" target="_blank" rel="noopener">Download PDF</a>`;
+        } else {
+          val = `<span style="color:var(--muted);font-size:11px;">No contract on file</span>`;
+        }
+      } else {
+        const raw = a[f.key] || "—";
+        if (f.date && raw !== "—") val = esc(displayDate(raw));
+        else if (f.suffix && raw !== "—") val = esc(raw + f.suffix);
+        else if (f.link && raw !== "—") val = `<a href="${esc(a[f.key])}" target="_blank">${esc(a[f.key])}</a>`;
+        else val = esc(String(raw));
+      }
+
       gridHtml += `<div class="info-cell"><div class="cell-label">${f.label}</div><div class="cell-value">${val}</div></div>`;
     }
 
@@ -985,6 +1082,22 @@
       }
     }
 
+    // Contract upload in edit mode
+    const contractLabel = a.contractUrl
+      ? `Replace Contract PDF <span style="color:var(--muted);font-size:9px;">(optional — leave blank to keep existing)</span>`
+      : `Upload Contract PDF <span style="color:var(--muted);font-size:9px;">(optional)</span>`;
+
+    html += `<div class="form-group full-width" style="grid-column:1/-1">
+      <label>${contractLabel}</label>
+      <div class="file-input-wrapper">
+        <input type="file" id="edit-contract" accept="application/pdf" onchange="handleEditContractFileChange(this)" />
+        <div class="file-input-display" id="edit-contract-display">
+          <span id="edit-contract-filename">${a.contractUrl ? "Current contract on file" : "No file selected"}</span>
+          <span class="file-browse">Browse</span>
+        </div>
+      </div>
+    </div>`;
+
     html += `<div class="form-actions">
       <button class="btn-primary" onclick="saveEdit()">Save Changes</button>
       <button class="btn-secondary" onclick="cancelEdit()">Cancel</button>
@@ -1011,6 +1124,23 @@
     }
   }
 
+  function handleEditContractFileChange(input) {
+    const display  = document.getElementById("edit-contract-display");
+    const filename = document.getElementById("edit-contract-filename");
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      if (file.type !== "application/pdf") {
+        toast("Only PDF files are accepted.", "error");
+        input.value = "";
+        filename.textContent = currentAffiliate.contractUrl ? "Current contract on file" : "No file selected";
+        display.classList.remove("has-file");
+        return;
+      }
+      filename.textContent = file.name;
+      display.classList.add("has-file");
+    }
+  }
+
   function cancelEdit() { renderDetail(); }
 
   async function saveEdit() {
@@ -1033,7 +1163,18 @@
       status: gev("edit-status"),
     };
 
+    // Check if a new contract file was selected
+    const contractInput = document.getElementById("edit-contract");
+    const contractFile  = contractInput && contractInput.files[0];
+
     try {
+      if (contractFile) {
+        toast("Uploading contract...", "success");
+        const { contractUrl, contractStoragePath } = await uploadContract(a.id, contractFile);
+        data.contractUrl         = contractUrl;
+        data.contractStoragePath = contractStoragePath;
+      }
+
       await db.collection(COLLECTION).doc(a.id).update(data);
       Object.assign(a, data);
       renderDetail();
@@ -1075,25 +1216,52 @@
       status: "ACTIVE", createdAt: new Date().toISOString(),
     };
 
+    // Check for contract file
+    const contractInput = document.getElementById("add-contract");
+    const contractFile  = contractInput && contractInput.files[0];
+
+    const btn = document.getElementById("save-affiliate-btn");
+    btn.disabled = true;
+
     try {
       const existing = await db.collection(COLLECTION).doc(offerCode).get();
-      if (existing.exists) { toast("An affiliate with this offer code already exists.", "error"); return; }
+      if (existing.exists) {
+        toast("An affiliate with this offer code already exists.", "error");
+        btn.disabled = false;
+        return;
+      }
 
+      // Upload contract first if provided
+      if (contractFile) {
+        btn.textContent = "Uploading contract...";
+        const { contractUrl, contractStoragePath } = await uploadContract(offerCode, contractFile);
+        data.contractUrl         = contractUrl;
+        data.contractStoragePath = contractStoragePath;
+      }
+
+      btn.textContent = "Saving...";
       await db.collection(COLLECTION).doc(offerCode).set(data);
       affiliates.push({ id: offerCode, ...data });
       affiliates.sort((a, b) => (a.lastName||"").localeCompare(b.lastName||""));
 
+      // Reset form
       ["add-channelName","add-channelUrl","add-firstName","add-lastName","add-businessEntity",
        "add-email","add-paypal","add-offerCode","add-portalCode","add-lastPromoDate","add-eligibilityEnd"]
         .forEach(id => { document.getElementById(id).value = ""; });
-      document.getElementById("add-commissionPct").value    = "25";
+      document.getElementById("add-commissionPct").value     = "25";
       document.getElementById("add-eligibilityPeriod").value = "90";
+      contractInput.value = "";
+      document.getElementById("add-contract-filename").textContent = "No file selected";
+      document.getElementById("add-contract-display").classList.remove("has-file");
 
       toast("Affiliate added successfully.", "success");
       switchTab("list");
       renderList();
     } catch (e) {
       toast("Error saving affiliate: " + e.message, "error");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Save Affiliate";
     }
   }
 
@@ -1112,7 +1280,6 @@
       `<div class="empty-state"><span class="loading-spinner"></span> Loading...</div>`;
 
     try {
-      // ── Recent Promotions: last 30 days via collection group ──
       const cutoff = new Date();
       cutoff.setDate(cutoff.getDate() - 30);
       const cutoffISO = cutoff.toISOString();
@@ -1126,7 +1293,6 @@
       recentSnap.forEach(doc => recentPromos.push({ id: doc.id, ...doc.data() }));
       renderRecentPromos(recentPromos);
 
-      // ── Most Active: all promotions, count by offerCode ──
       const allSnap = await db.collectionGroup("promotions")
         .orderBy("submittedAt", "desc")
         .get();
@@ -1171,8 +1337,8 @@
       <th>Submitted</th>
       <th>Channel</th>
       <th>Promotion Date</th>
-      <th>Promotion URL</th>
       <th>Minute Marker</th>
+      <th>Promotion URL</th>
     </tr></thead><tbody>`;
 
     for (const p of promos) {
@@ -1180,12 +1346,12 @@
         <td style="white-space:nowrap">${esc(displayDateTime(p.submittedAt))}</td>
         <td>${esc(p.channelName || p.offerCode || "—")}</td>
         <td style="white-space:nowrap">${esc(displayDate(p.promoDate))}</td>
+        <td>${esc(p.promoTimestamp || "—")}</td>
         <td class="url-cell">${
           p.promoUrl
             ? `<a href="${esc(p.promoUrl)}" target="_blank" rel="noopener">${esc(p.promoUrl)}</a>`
             : "—"
         }</td>
-        <td>${esc(p.promoTimestamp || "—")}</td>
       </tr>`;
     }
 
