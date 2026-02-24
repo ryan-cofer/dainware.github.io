@@ -8,6 +8,8 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
+  <!-- QR code generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     :root {
       --ink:      #ffffff;
@@ -192,7 +194,6 @@
 
     .btn-danger:hover { background: rgba(255,107,107,0.1); }
 
-    /* Promote button — gold outline style */
     .btn-promote {
       padding: 0.5rem 1.2rem;
       background: none;
@@ -321,7 +322,6 @@
       border: 1px solid rgba(255,107,107,0.3);
     }
 
-    /* Lead-specific status badges */
     .status-badge.pending {
       background: rgba(168,200,216,0.1);
       color: var(--muted);
@@ -385,6 +385,46 @@
     .detail-back:hover { color: var(--gold); }
     .detail-name { font-size: 1.4rem; font-weight: 300; }
 
+    /* ── Promo assets panel ── */
+    .promo-assets {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      margin-bottom: 1.5rem;
+    }
+
+    .promo-asset-cell {
+      background: rgba(201,168,76,0.06);
+      padding: 1.25rem 1.5rem;
+    }
+
+    .promo-asset-label {
+      font-size: 9px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 0.5rem;
+    }
+
+    .promo-asset-value {
+      font-size: 12px;
+      color: var(--ink);
+      word-break: break-all;
+    }
+
+    .promo-asset-value a { color: var(--gold); text-decoration: none; }
+    .promo-asset-value a:hover { text-decoration: underline; }
+
+    .promo-code-text {
+      font-family: monospace;
+      font-size: 1.1rem;
+      letter-spacing: 0.12em;
+      color: var(--gold);
+      font-weight: 600;
+    }
+
     .info-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -408,7 +448,6 @@
     .info-cell .cell-value a { color: var(--gold); text-decoration: none; }
     .info-cell .cell-value a:hover { text-decoration: underline; }
 
-    /* Promote confirmation banner */
     .promote-banner {
       background: rgba(201,168,76,0.08);
       border: 1px solid rgba(201,168,76,0.3);
@@ -454,7 +493,6 @@
     .modal-body { font-size: 13px; color: var(--muted); margin-bottom: 1.5rem; line-height: 1.7; }
     .modal-actions { display: flex; gap: 1rem; justify-content: flex-end; }
 
-    /* ── PAYMENT REPORTS ── */
     .reports-toolbar { display: flex; align-items: flex-end; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
 
     .reports-toolbar label {
@@ -526,7 +564,6 @@
       margin-bottom: 1.25rem;
     }
 
-    /* ── ACTIVITIES TAB ── */
     .act-table { width: 100%; border-collapse: collapse; border: 1px solid var(--border); }
 
     .act-table th {
@@ -557,12 +594,7 @@
       white-space: nowrap;
     }
 
-    .act-table .url-cell a {
-      color: var(--gold);
-      text-decoration: none;
-      font-size: 11px;
-    }
-
+    .act-table .url-cell a { color: var(--gold); text-decoration: none; font-size: 11px; }
     .act-table .url-cell a:hover { text-decoration: underline; }
 
     .rank-num { font-size: 11px; color: var(--muted); font-weight: 600; min-width: 1.5rem; display: inline-block; }
@@ -585,11 +617,20 @@
       margin-top: 2rem;
     }
 
+    /* Off-screen container for QR canvas rendering */
+    #qr-render-container {
+      position: absolute;
+      left: -9999px;
+      top: -9999px;
+      visibility: hidden;
+    }
+
     @media (max-width: 800px) { .activities-two-col { grid-template-columns: 1fr; } }
 
     @media (max-width: 700px) {
       .form-grid { grid-template-columns: 1fr; }
       .info-grid { grid-template-columns: 1fr; }
+      .promo-assets { grid-template-columns: 1fr; }
       header { padding: 1rem; flex-wrap: wrap; gap: 0.75rem; }
       .header-right { gap: 0.75rem; }
       main { padding: 1.5rem 1rem; }
@@ -601,6 +642,9 @@
   </style>
 </head>
 <body>
+
+<!-- Off-screen div used to render QR codes before extracting as PNG -->
+<div id="qr-render-container"></div>
 
 <header>
   <div class="logo">
@@ -719,11 +763,10 @@
           <button class="btn-secondary" onclick="enterLeadEditMode()">Edit</button>
         </div>
       </div>
-      <!-- Promote confirmation banner (shown after clicking promote, before confirming) -->
       <div class="promote-banner" id="promote-banner" style="display:none">
         <div class="promote-banner-text">
           <strong>Confirm Promotion</strong>
-          This will create an affiliate record from this lead. <code>lastPromoDate</code> will be set to today and <code>commissionEligibilityEndDate</code> calculated from today. This action cannot be undone.
+          This will create an affiliate record, generate the promo URL, and upload a QR code PNG to storage. <code>lastPromoDate</code> will be set to today and <code>commissionEligibilityEndDate</code> calculated from today. This action cannot be undone.
         </div>
         <div style="display:flex;gap:0.75rem;flex-shrink:0;">
           <button class="btn-primary" id="promote-confirm-btn" onclick="executePromote()">Yes, Promote</button>
@@ -745,24 +788,18 @@
       <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;">
         <button class="btn-secondary" onclick="activitiesLoaded=false; loadActivities()">↻ Refresh</button>
       </div>
-
       <div class="section-divider">
         Recent Promotions
         <span style="font-size:9px; color:var(--muted); letter-spacing:0.1em; margin-left:0.5rem;">(last 30 days, sorted by submission date)</span>
       </div>
-      <div id="recent-promos-container">
-        <div class="empty-state">Loading...</div>
-      </div>
-
+      <div id="recent-promos-container"><div class="empty-state">Loading...</div></div>
       <div class="activities-two-col">
         <div>
           <div class="section-divider" style="margin-top:0;">
             Most Active Affiliates
             <span style="font-size:9px; color:var(--muted); letter-spacing:0.1em; margin-left:0.5rem;">(by promotions submitted, all time)</span>
           </div>
-          <div id="most-active-container">
-            <div class="empty-state">Loading...</div>
-          </div>
+          <div id="most-active-container"><div class="empty-state">Loading...</div></div>
         </div>
         <div></div>
       </div>
@@ -779,11 +816,8 @@
         <button class="btn-secondary" id="test-report-btn" onclick="runTestReport()">Download Test CSV</button>
       </div>
       <div id="test-report-status" style="font-size:12px;color:var(--muted);margin-bottom:2rem;min-height:1.2rem;"></div>
-
       <div class="section-divider">Saved Reports</div>
-      <div id="reports-container">
-        <div class="empty-state">Loading reports...</div>
-      </div>
+      <div id="reports-container"><div class="empty-state">Loading reports...</div></div>
     </div>
 
     <!-- ── AFFILIATE DETAIL TAB ── -->
@@ -797,6 +831,8 @@
       <div id="detail-view">
         <div class="detail-name" id="detail-name"></div>
         <div style="margin:0.5rem 0 1.5rem;"><span id="detail-status-badge"></span></div>
+        <!-- Promo assets panel injected here by renderDetail() -->
+        <div id="detail-promo-assets"></div>
         <div class="info-grid" id="detail-info-grid"></div>
       </div>
       <div id="detail-edit" style="display:none">
@@ -838,9 +874,9 @@
 
   const db      = firebase.firestore();
   const storage = firebase.storage();
-  const COLLECTION     = "affiliates";
+  const COLLECTION         = "affiliates";
   const FUNCTIONS_BASE_URL = "https://us-central1-wander-eab4e.cloudfunctions.net";
-  const PORTAL_API_KEY = "wander-affiliateportal";
+  const PORTAL_API_KEY     = "wander-affiliateportal";
 
   // ═══════════════════════════
   // Auth
@@ -853,7 +889,7 @@
   }
 
   async function doLogin() {
-    const pw = document.getElementById("login-pw").value;
+    const pw   = document.getElementById("login-pw").value;
     const hash = await sha256(pw);
     if (hash === PW_HASH) {
       sessionStorage.setItem("wander_admin", "1");
@@ -867,8 +903,8 @@
 
   function showApp() {
     document.getElementById("login-screen").style.display = "none";
-    document.getElementById("app-screen").style.display = "block";
-    document.getElementById("logout-btn").style.display = "block";
+    document.getElementById("app-screen").style.display   = "block";
+    document.getElementById("logout-btn").style.display   = "block";
     loadAffiliates();
   }
 
@@ -880,48 +916,87 @@
   // ═══════════════════════════
   // Date helpers
   // ═══════════════════════════
-  function fmtDate(d) { return d.toISOString().split("T")[0]; }
+  function fmtDate(d)        { return d.toISOString().split("T")[0]; }
+  function todayStr()        { return fmtDate(new Date()); }
+  function addDaysToToday(n) { const d = new Date(); d.setDate(d.getDate() + n); return fmtDate(d); }
 
-  function todayStr() { return fmtDate(new Date()); }
-
-  function addDaysToToday(days) {
-    const d = new Date();
-    d.setDate(d.getDate() + days);
-    return fmtDate(d);
+  function displayDate(s) {
+    if (!s) return "—";
+    return new Date(s + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   }
-
-  function displayDate(dateStr) {
-    if (!dateStr) return "—";
-    const d = new Date(dateStr + "T00:00:00");
-    return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-  }
-
-  function displayDateTime(isoStr) {
-    if (!isoStr) return "—";
-    const d = new Date(isoStr);
+  function displayDateTime(s) {
+    if (!s) return "—";
+    const d = new Date(s);
     return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) +
            " " + d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
   }
+  function displayMonth(m) {
+    if (!m) return "—";
+    const [y, mo] = m.split("-");
+    return new Date(+y, +mo - 1, 1).toLocaleDateString("en-US", { month: "long", year: "numeric" });
+  }
 
-  function displayMonth(monthLabel) {
-    if (!monthLabel) return "—";
-    const [year, month] = monthLabel.split("-");
-    const d = new Date(parseInt(year), parseInt(month) - 1, 1);
-    return d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+  // ═══════════════════════════
+  // Promo URL
+  // ═══════════════════════════
+  function buildPromoUrl(offerCode) {
+    return `https://apps.apple.com/redeem?ctx=offercodes&id=6759094813&code=${encodeURIComponent(offerCode)}`;
+  }
+
+  // ═══════════════════════════
+  // QR code → PNG Blob
+  // Renders into an off-screen div via QRCode.js, extracts canvas as PNG.
+  // ═══════════════════════════
+  function generateQrBlob(url) {
+    return new Promise((resolve, reject) => {
+      const container = document.getElementById("qr-render-container");
+      container.innerHTML = "";
+
+      new QRCode(container, {
+        text:         url,
+        width:        512,
+        height:       512,
+        colorDark:    "#000000",
+        colorLight:   "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H,
+      });
+
+      // QRCode.js renders synchronously to a <canvas> (with an <img> fallback)
+      const canvas = container.querySelector("canvas");
+      if (canvas) {
+        canvas.toBlob(blob => {
+          if (blob) resolve(blob);
+          else reject(new Error("canvas.toBlob returned null"));
+        }, "image/png");
+        return;
+      }
+
+      // Fallback: QRCode.js created an <img> with a data-URL src
+      const img = container.querySelector("img");
+      if (img && img.src) {
+        fetch(img.src)
+          .then(r => r.blob())
+          .then(resolve)
+          .catch(reject);
+        return;
+      }
+
+      reject(new Error("QRCode.js did not produce a canvas or img element"));
+    });
   }
 
   // ═══════════════════════════
   // Affiliate data
   // ═══════════════════════════
-  let affiliates = [];
+  let affiliates       = [];
   let currentAffiliate = null;
 
   async function loadAffiliates() {
     try {
       const snap = await db.collection(COLLECTION).get();
-      affiliates = [];
+      affiliates  = [];
       snap.forEach(doc => affiliates.push({ id: doc.id, ...doc.data() }));
-      affiliates.sort((a, b) => (a.lastName || "").localeCompare(b.lastName || ""));
+      affiliates.sort((a, b) => (a.lastName||"").localeCompare(b.lastName||""));
       renderList();
     } catch (e) {
       console.error("Error loading affiliates:", e);
@@ -933,17 +1008,16 @@
   // Affiliates list
   // ═══════════════════════════
   function renderList() {
-    const q = (document.getElementById("search-input").value || "").toLowerCase();
-    const filtered = affiliates.filter(a => {
-      if (!q) return true;
-      return [a.firstName, a.lastName, a.offerCode, a.channelName, a.email, a.medium]
-        .filter(Boolean).join(" ").toLowerCase().includes(q);
-    });
+    const q        = (document.getElementById("search-input").value || "").toLowerCase();
+    const filtered = affiliates.filter(a => !q ||
+      [a.firstName, a.lastName, a.offerCode, a.channelName, a.email, a.medium]
+        .filter(Boolean).join(" ").toLowerCase().includes(q));
 
     const container = document.getElementById("list-container");
-
     if (filtered.length === 0) {
-      container.innerHTML = `<div class="empty-state">${affiliates.length === 0 ? "No affiliates yet. Promote a completed lead to create one." : "No affiliates match your search."}</div>`;
+      container.innerHTML = `<div class="empty-state">${affiliates.length === 0
+        ? "No affiliates yet. Promote a completed lead to create one."
+        : "No affiliates match your search."}</div>`;
       return;
     }
 
@@ -952,7 +1026,7 @@
     </tr></thead><tbody>`;
 
     for (const a of filtered) {
-      const sc = (a.status || "ACTIVE") === "ACTIVE" ? "active" : "inactive";
+      const sc = (a.status||"ACTIVE") === "ACTIVE" ? "active" : "inactive";
       html += `<tr onclick="viewAffiliate('${a.id}')">
         <td>${esc(a.firstName||"")} ${esc(a.lastName||"")}</td>
         <td style="font-family:monospace;letter-spacing:0.05em">${esc(a.offerCode||a.id)}</td>
@@ -1003,10 +1077,40 @@
     document.getElementById("detail-status-badge").outerHTML =
       `<span class="status-badge ${sc}" id="detail-status-badge">${a.status||"ACTIVE"}</span>`;
 
+    // ── Promo assets panel ───────────────────────────────────────
+    const offerCode = a.offerCode || a.id;
+    const promoUrl  = a.promoUrl  || buildPromoUrl(offerCode);
+    const qrUrl     = a.promoQrUrl || "";
+
+    document.getElementById("detail-promo-assets").innerHTML = `
+      <div class="promo-assets">
+        <div class="promo-asset-cell">
+          <div class="promo-asset-label">Promo Code</div>
+          <div class="promo-asset-value">
+            <span class="promo-code-text">${esc(offerCode)}</span>
+          </div>
+        </div>
+        <div class="promo-asset-cell">
+          <div class="promo-asset-label">Promo URL</div>
+          <div class="promo-asset-value" style="font-size:11px;">
+            <a href="${esc(promoUrl)}" target="_blank" rel="noopener">${esc(promoUrl)}</a>
+          </div>
+        </div>
+        <div class="promo-asset-cell">
+          <div class="promo-asset-label">Promo QR Code</div>
+          <div class="promo-asset-value">
+            ${qrUrl
+              ? `<a href="${esc(qrUrl)}" target="_blank" rel="noopener" download="${esc(offerCode)}_qr.png">Download PNG</a>`
+              : `<span style="color:var(--muted);font-size:11px;">Not generated yet</span>`
+            }
+          </div>
+        </div>
+      </div>`;
+
+    // ── Info grid ────────────────────────────────────────────────
     let gridHtml = "";
     for (const f of FIELD_MAP) {
       let val;
-
       if (f.contract) {
         val = a.contractUrl
           ? `<a href="${esc(a.contractUrl)}" target="_blank" rel="noopener">Download PDF</a>`
@@ -1015,18 +1119,16 @@
         val = esc(displayDateTime(a[f.key]));
       } else {
         const raw = a[f.key] || "—";
-        if (f.date && raw !== "—") val = esc(displayDate(raw));
+        if (f.date && raw !== "—")        val = esc(displayDate(raw));
         else if (f.suffix && raw !== "—") val = esc(raw + f.suffix);
-        else if (f.link && raw !== "—") val = `<a href="${esc(a[f.key])}" target="_blank">${esc(a[f.key])}</a>`;
-        else val = esc(String(raw));
+        else if (f.link && raw !== "—")   val = `<a href="${esc(a[f.key])}" target="_blank">${esc(a[f.key])}</a>`;
+        else                              val = esc(String(raw));
       }
-
       gridHtml += `<div class="info-cell"><div class="cell-label">${f.label}</div><div class="cell-value">${val}</div></div>`;
     }
-
     document.getElementById("detail-info-grid").innerHTML = gridHtml;
-    document.getElementById("detail-view").style.display = "block";
-    document.getElementById("detail-edit").style.display = "none";
+    document.getElementById("detail-view").style.display  = "block";
+    document.getElementById("detail-edit").style.display  = "none";
   }
 
   // ═══════════════════════════
@@ -1059,7 +1161,6 @@
       const val = a[f.key] || "";
       const cls = f.full ? "form-group full-width" : "form-group";
       const ro  = f.readonly ? "readonly style='opacity:0.6'" : "";
-
       if (f.type === "select") {
         const opts = f.options.map(o => `<option value="${o}" ${val===o?"selected":""}>${o}</option>`).join("");
         html += `<div class="${cls}"><label>${f.label}</label><select id="edit-${f.key}" ${f.readonly?"disabled":""}>${opts}</select></div>`;
@@ -1073,7 +1174,7 @@
       <button class="btn-secondary" onclick="cancelEdit()">Cancel</button>
     </div>`;
 
-    document.getElementById("edit-form").innerHTML = html;
+    document.getElementById("edit-form").innerHTML       = html;
     document.getElementById("detail-view").style.display = "none";
     document.getElementById("detail-edit").style.display = "block";
 
@@ -1090,32 +1191,31 @@
         }
       };
       promoEl.addEventListener("change", recalc);
-      periodEl.addEventListener("input", recalc);
+      periodEl.addEventListener("input",  recalc);
     }
   }
 
   function cancelEdit() { renderDetail(); }
 
   async function saveEdit() {
-    const a = currentAffiliate;
+    const a    = currentAffiliate;
     const data = {
-      medium: gev("edit-medium"),
-      channelName: gev("edit-channelName"),
-      channelUrl: gev("edit-channelUrl"),
-      firstName: gev("edit-firstName"),
-      lastName: gev("edit-lastName"),
-      businessEntity: gev("edit-businessEntity"),
-      email: gev("edit-email"),
-      paypal: gev("edit-paypal"),
-      commissionPct: parseFloat(gev("edit-commissionPct")) || 25,
+      medium:                      gev("edit-medium"),
+      channelName:                 gev("edit-channelName"),
+      channelUrl:                  gev("edit-channelUrl"),
+      firstName:                   gev("edit-firstName"),
+      lastName:                    gev("edit-lastName"),
+      businessEntity:              gev("edit-businessEntity"),
+      email:                       gev("edit-email"),
+      paypal:                      gev("edit-paypal"),
+      commissionPct:               parseFloat(gev("edit-commissionPct")) || 25,
       commissionEligibilityPeriod: parseInt(gev("edit-commissionEligibilityPeriod")) || 90,
-      lastPromoDate: gev("edit-lastPromoDate"),
-      lastPromoUrl: gev("edit-lastPromoUrl"),
-      lastPromoTimestamp: gev("edit-lastPromoTimestamp"),
+      lastPromoDate:               gev("edit-lastPromoDate"),
+      lastPromoUrl:                gev("edit-lastPromoUrl"),
+      lastPromoTimestamp:          gev("edit-lastPromoTimestamp"),
       commissionEligibilityEndDate: gev("edit-commissionEligibilityEndDate"),
-      status: gev("edit-status"),
+      status:                      gev("edit-status"),
     };
-
     try {
       await db.collection(COLLECTION).doc(a.id).update(data);
       Object.assign(a, data);
@@ -1143,10 +1243,9 @@
     try {
       const cutoff = new Date();
       cutoff.setDate(cutoff.getDate() - 30);
-      const cutoffISO = cutoff.toISOString();
 
       const recentSnap = await db.collectionGroup("promotions")
-        .where("submittedAt", ">=", cutoffISO)
+        .where("submittedAt", ">=", cutoff.toISOString())
         .orderBy("submittedAt", "desc")
         .get();
 
@@ -1154,32 +1253,24 @@
       recentSnap.forEach(doc => recentPromos.push({ id: doc.id, ...doc.data() }));
       renderRecentPromos(recentPromos);
 
-      const allSnap = await db.collectionGroup("promotions")
-        .orderBy("submittedAt", "desc")
-        .get();
-
-      const countsByCode = {};
+      const allSnap = await db.collectionGroup("promotions").orderBy("submittedAt", "desc").get();
+      const counts  = {};
       allSnap.forEach(doc => {
         const code = doc.data().offerCode || "";
-        if (code) countsByCode[code] = (countsByCode[code] || 0) + 1;
+        if (code) counts[code] = (counts[code] || 0) + 1;
       });
 
-      const ranked = Object.entries(countsByCode)
+      const ranked = Object.entries(counts)
         .map(([offerCode, count]) => {
           const aff = affiliates.find(a => a.id === offerCode);
-          return {
-            offerCode,
-            channelName: aff ? (aff.channelName || `${aff.firstName||""} ${aff.lastName||""}`.trim()) : offerCode,
-            count,
-          };
+          return { offerCode, count,
+            channelName: aff ? (aff.channelName || `${aff.firstName||""} ${aff.lastName||""}`.trim()) : offerCode };
         })
         .sort((a, b) => b.count - a.count)
         .slice(0, 20);
 
       renderMostActive(ranked);
-
     } catch (e) {
-      console.error("Error loading activities:", e);
       const msg = `<div class="empty-state" style="color:var(--red)">Error: ${esc(e.message)}</div>`;
       document.getElementById("recent-promos-container").innerHTML = msg;
       document.getElementById("most-active-container").innerHTML   = msg;
@@ -1187,44 +1278,27 @@
   }
 
   function renderRecentPromos(promos) {
-    const container = document.getElementById("recent-promos-container");
-    if (promos.length === 0) {
-      container.innerHTML = `<div class="empty-state">No promotions submitted in the last 30 days.</div>`;
-      return;
-    }
-
+    const c = document.getElementById("recent-promos-container");
+    if (!promos.length) { c.innerHTML = `<div class="empty-state">No promotions submitted in the last 30 days.</div>`; return; }
     let html = `<table class="act-table"><thead><tr>
       <th>Submitted</th><th>Channel</th><th>Promotion Date</th><th>Minute Marker</th><th>Promotion URL</th>
     </tr></thead><tbody>`;
-
     for (const p of promos) {
       html += `<tr>
         <td style="white-space:nowrap">${esc(displayDateTime(p.submittedAt))}</td>
         <td>${esc(p.channelName || p.offerCode || "—")}</td>
         <td style="white-space:nowrap">${esc(displayDate(p.promoDate))}</td>
         <td>${esc(p.promoTimestamp || "—")}</td>
-        <td class="url-cell">${
-          p.promoUrl
-            ? `<a href="${esc(p.promoUrl)}" target="_blank" rel="noopener">${esc(p.promoUrl)}</a>`
-            : "—"
-        }</td>
+        <td class="url-cell">${p.promoUrl ? `<a href="${esc(p.promoUrl)}" target="_blank" rel="noopener">${esc(p.promoUrl)}</a>` : "—"}</td>
       </tr>`;
     }
-
-    container.innerHTML = html + `</tbody></table>`;
+    c.innerHTML = html + `</tbody></table>`;
   }
 
   function renderMostActive(ranked) {
-    const container = document.getElementById("most-active-container");
-    if (ranked.length === 0) {
-      container.innerHTML = `<div class="empty-state">No promotion history yet.</div>`;
-      return;
-    }
-
-    let html = `<table class="act-table"><thead><tr>
-      <th>#</th><th>Channel</th><th>Promotions</th>
-    </tr></thead><tbody>`;
-
+    const c = document.getElementById("most-active-container");
+    if (!ranked.length) { c.innerHTML = `<div class="empty-state">No promotion history yet.</div>`; return; }
+    let html = `<table class="act-table"><thead><tr><th>#</th><th>Channel</th><th>Promotions</th></tr></thead><tbody>`;
     ranked.forEach((r, i) => {
       html += `<tr>
         <td><span class="${i < 3 ? "rank-num top3" : "rank-num"}">${i + 1}</span></td>
@@ -1232,8 +1306,7 @@
         <td><span class="count-badge">${r.count}</span></td>
       </tr>`;
     });
-
-    container.innerHTML = html + `</tbody></table>`;
+    c.innerHTML = html + `</tbody></table>`;
   }
 
   // ═══════════════════════════
@@ -1245,7 +1318,6 @@
     if (reportsLoaded) return;
     reportsLoaded = true;
     renderReports(null);
-
     try {
       const snap = await db.collection("PaymentReports").orderBy("paymentMonth", "desc").get();
       const reports = [];
@@ -1258,14 +1330,12 @@
   }
 
   function renderReports(reports) {
-    const container = document.getElementById("reports-container");
-    if (reports === null) { container.innerHTML = `<div class="empty-state">Loading reports...</div>`; return; }
-    if (reports.length === 0) { container.innerHTML = `<div class="empty-state">No payment reports yet.</div>`; return; }
-
+    const c = document.getElementById("reports-container");
+    if (reports === null)  { c.innerHTML = `<div class="empty-state">Loading reports...</div>`; return; }
+    if (!reports.length)   { c.innerHTML = `<div class="empty-state">No payment reports yet.</div>`; return; }
     let html = `<table class="reports-table"><thead><tr>
       <th>Payment Month</th><th>Payments to Issue</th><th>Pay Date</th><th>Report ID</th>
     </tr></thead><tbody>`;
-
     for (const r of reports) {
       html += `<tr class="clickable-row" onclick="downloadReport('${esc(r.csvUrl)}')">
         <td>${esc(displayMonth(r.paymentMonth))}</td>
@@ -1274,8 +1344,7 @@
         <td style="font-family:monospace;font-size:11px;color:var(--muted)">${esc(r.id)}</td>
       </tr>`;
     }
-
-    container.innerHTML = html + `</tbody></table>
+    c.innerHTML = html + `</tbody></table>
       <div style="margin-top:1rem;text-align:right;">
         <button class="btn-secondary" onclick="reportsLoaded=false; loadPaymentReports()">↻ Refresh</button>
       </div>`;
@@ -1289,33 +1358,25 @@
   async function runTestReport() {
     const refDateStr = document.getElementById("test-report-date").value;
     if (!refDateStr) { toast("Please select a reference date.", "error"); return; }
-
     const btn    = document.getElementById("test-report-btn");
     const status = document.getElementById("test-report-status");
     btn.disabled = true;
     status.innerHTML = `<span class="loading-spinner"></span> Generating test report — this may take up to 60 seconds...`;
-
     try {
       const response = await fetch(
         `${FUNCTIONS_BASE_URL}/runPaymentReport?test=true&refDate=${encodeURIComponent(refDateStr)}`,
         { method: "GET", headers: { "x-api-key": PORTAL_API_KEY } }
       );
-
       if (!response.ok) {
         const err = await response.json().catch(() => ({ error: response.statusText }));
         throw new Error(err.error || response.statusText);
       }
-
-      const blob    = await response.blob();
-      const blobUrl = URL.createObjectURL(blob);
-      const a       = document.createElement("a");
-      a.href        = blobUrl;
-      a.download    = `payment-report-TEST-${refDateStr}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(blobUrl);
-
+      const blob = await response.blob();
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement("a");
+      a.href = url; a.download = `payment-report-TEST-${refDateStr}.csv`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(url);
       status.textContent = `✓ Test report downloaded for reference date ${refDateStr}.`;
     } catch (e) {
       status.style.color = "var(--red)";
@@ -1338,11 +1399,11 @@
   // Helpers
   // ═══════════════════════════
   function gev(id) { const el = document.getElementById(id); return el ? (el.value||"").trim() : ""; }
-  function esc(s) { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
+  function esc(s)  { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
   function toast(msg, type) {
     const el = document.getElementById("toast");
     el.textContent = msg;
-    el.className = "toast " + type + " show";
+    el.className   = "toast " + type + " show";
     setTimeout(() => el.classList.remove("show"), 3500);
   }
   function closeModal() { document.getElementById("confirm-modal").classList.remove("show"); }
@@ -1350,7 +1411,7 @@
   // ═══════════════════════════════════════════════════════════
   // Leads
   // ═══════════════════════════════════════════════════════════
-  let leads = [];
+  let leads       = [];
   let currentLead = null;
   let leadsLoaded = false;
 
@@ -1366,9 +1427,7 @@
     }).join("");
   }
 
-  function generatePortalCode(offerCode) {
-    return generateOnboardingCode(offerCode); // same Caesar-shift logic
-  }
+  function generatePortalCode(offerCode) { return generateOnboardingCode(offerCode); }
 
   function getOnboardingUrl(offerCode) {
     if (!offerCode) return "";
@@ -1398,26 +1457,23 @@
       const snap = await db.collection("leads").get();
       leads = [];
       snap.forEach(doc => leads.push({ id: doc.id, ...doc.data() }));
-      leads.sort((a, b) => (a.lastName || "").localeCompare(b.lastName || ""));
+      leads.sort((a, b) => (a.lastName||"").localeCompare(b.lastName||""));
       renderLeadsList();
     } catch (e) {
-      console.error("Error loading leads:", e);
       document.getElementById("leads-list-container").innerHTML =
         `<div class="empty-state" style="color:var(--red)">Error loading leads: ${esc(e.message)}</div>`;
     }
   }
 
   function renderLeadsList() {
-    const q = (document.getElementById("leads-search-input").value || "").toLowerCase();
-    const filtered = leads.filter(l => {
-      if (!q) return true;
-      return [l.firstName, l.lastName, l.offerCode, l.channelName, l.email]
-        .filter(Boolean).join(" ").toLowerCase().includes(q);
-    });
+    const q        = (document.getElementById("leads-search-input").value || "").toLowerCase();
+    const filtered = leads.filter(l => !q ||
+      [l.firstName, l.lastName, l.offerCode, l.channelName, l.email]
+        .filter(Boolean).join(" ").toLowerCase().includes(q));
 
-    const container = document.getElementById("leads-list-container");
-    if (filtered.length === 0) {
-      container.innerHTML = `<div class="empty-state">${leads.length === 0 ? "No leads yet." : "No leads match your search."}</div>`;
+    const c = document.getElementById("leads-list-container");
+    if (!filtered.length) {
+      c.innerHTML = `<div class="empty-state">${leads.length === 0 ? "No leads yet." : "No leads match your search."}</div>`;
       return;
     }
 
@@ -1426,26 +1482,21 @@
     </tr></thead><tbody>`;
 
     for (const l of filtered) {
-      const status = l.onboardingStatus || "pending";
-      // Map status to badge class
-      const badgeClass = status === "completed" ? "completed"
-                       : status === "promoted"  ? "promoted"
-                       : "pending";
-      const onboardingUrl = getOnboardingUrl(l.offerCode || l.id);
+      const status     = l.onboardingStatus || "pending";
+      const badgeClass = status === "completed" ? "completed" : status === "promoted" ? "promoted" : "pending";
+      const url        = getOnboardingUrl(l.offerCode || l.id);
       html += `<tr>
         <td onclick="viewLead('${l.id}')" style="cursor:pointer">${esc(l.firstName||"")}&nbsp;${esc(l.lastName||"")}</td>
         <td onclick="viewLead('${l.id}')" style="cursor:pointer;font-family:monospace;letter-spacing:0.05em">${esc(l.offerCode||l.id)}</td>
         <td onclick="viewLead('${l.id}')" style="cursor:pointer">${esc(l.channelName||"—")}</td>
         <td onclick="viewLead('${l.id}')" style="cursor:pointer"><span class="status-badge ${badgeClass}">${status}</span></td>
-        <td>${
-          status === "promoted"
-            ? `<span style="font-size:10px;color:var(--muted);">—</span>`
-            : `<button class="btn-secondary" style="font-size:9px;padding:0.3rem 0.7rem" onclick="copyLeadUrl('${esc(onboardingUrl)}', this)">Copy Link</button>`
+        <td>${status === "promoted"
+          ? `<span style="font-size:10px;color:var(--muted);">—</span>`
+          : `<button class="btn-secondary" style="font-size:9px;padding:0.3rem 0.7rem" onclick="copyLeadUrl('${esc(url)}', this)">Copy Link</button>`
         }</td>
       </tr>`;
     }
-
-    container.innerHTML = html + `</tbody></table>`;
+    c.innerHTML = html + `</tbody></table>`;
   }
 
   function copyLeadUrl(url, btn) {
@@ -1487,20 +1538,14 @@
   ];
 
   function renderLeadDetail() {
-    const l = currentLead;
+    const l      = currentLead;
     document.getElementById("lead-detail-name").textContent = `${l.firstName||""} ${l.lastName||""}`;
-    const status = l.onboardingStatus || "pending";
-    const badgeClass = status === "completed" ? "completed"
-                     : status === "promoted"  ? "promoted"
-                     : "pending";
+    const status     = l.onboardingStatus || "pending";
+    const badgeClass = status === "completed" ? "completed" : status === "promoted" ? "promoted" : "pending";
     document.getElementById("lead-detail-status-badge").outerHTML =
       `<span class="status-badge ${badgeClass}" id="lead-detail-status-badge">${status}</span>`;
 
-    // Show promote button only for completed (not yet promoted) leads
-    const promoteBtn = document.getElementById("promote-btn");
-    promoteBtn.style.display = status === "completed" ? "inline-block" : "none";
-
-    // Hide the confirmation banner when re-rendering
+    document.getElementById("promote-btn").style.display    = status === "completed" ? "inline-block" : "none";
     document.getElementById("promote-banner").style.display = "none";
 
     let gridHtml = "";
@@ -1517,7 +1562,8 @@
       } else if (f.onboardingurl) {
         const url = getOnboardingUrl(l.offerCode || l.id);
         val = `<span style="font-size:11px;word-break:break-all">${esc(url)}</span>
-          <button class="btn-secondary" style="margin-top:0.5rem;font-size:9px;padding:0.25rem 0.6rem" onclick="navigator.clipboard.writeText('${esc(url)}').then(()=>toast('Copied!','success'))">Copy</button>`;
+          <button class="btn-secondary" style="margin-top:0.5rem;font-size:9px;padding:0.25rem 0.6rem"
+            onclick="navigator.clipboard.writeText('${esc(url)}').then(()=>toast('Copied!','success'))">Copy</button>`;
       } else if (f.datetime) {
         val = esc(l[f.key] ? displayDateTime(l[f.key]) : "—");
       } else if (f.link) {
@@ -1533,22 +1579,21 @@
       gridHtml += `<div class="info-cell"><div class="cell-label">${f.label}</div><div class="cell-value">${val}</div></div>`;
     }
     document.getElementById("lead-detail-info-grid").innerHTML = gridHtml;
-    document.getElementById("lead-detail-view").style.display = "block";
-    document.getElementById("lead-detail-edit").style.display = "none";
+    document.getElementById("lead-detail-view").style.display  = "block";
+    document.getElementById("lead-detail-edit").style.display  = "none";
   }
 
   // ═══════════════════════════════════════════════════════════
   // Promote lead to affiliate
   // ═══════════════════════════════════════════════════════════
   function confirmPromote() {
-    // Show the inline confirmation banner, hide the promote button
-    document.getElementById("promote-btn").style.display = "none";
+    document.getElementById("promote-btn").style.display    = "none";
     document.getElementById("promote-banner").style.display = "flex";
   }
 
   function cancelPromote() {
     document.getElementById("promote-banner").style.display = "none";
-    document.getElementById("promote-btn").style.display = "inline-block";
+    document.getElementById("promote-btn").style.display    = "inline-block";
   }
 
   async function executePromote() {
@@ -1557,57 +1602,72 @@
 
     const confirmBtn = document.getElementById("promote-confirm-btn");
     confirmBtn.disabled = true;
-    confirmBtn.textContent = "Promoting...";
 
     try {
+      const offerCode      = l.offerCode || l.id;
       const today          = todayStr();
       const eligDays       = parseInt(l.commissionEligibilityPeriod) || 90;
       const eligibilityEnd = addDaysToToday(eligDays);
       const promotedAt     = new Date().toISOString();
 
-      // Build the affiliate document from the lead
+      // 1. Build promo URL
+      const promoUrl = buildPromoUrl(offerCode);
+
+      // 2. Generate QR code PNG blob
+      confirmBtn.textContent = "Generating QR code...";
+      const qrBlob = await generateQrBlob(promoUrl);
+
+      // 3. Upload QR PNG to Firebase Storage
+      confirmBtn.textContent    = "Uploading QR code...";
+      const qrStoragePath       = `affiliate-qr-codes/${offerCode}/${offerCode}_promo_qr.png`;
+      const qrRef               = storage.ref(qrStoragePath);
+      const qrSnapshot          = await qrRef.put(qrBlob, { contentType: "image/png" });
+      const promoQrUrl          = await qrSnapshot.ref.getDownloadURL();
+
+      // 4. Build and write affiliate document
+      confirmBtn.textContent = "Saving affiliate...";
       const affiliateData = {
-        // Channel & identity
-        medium:           l.medium          || "",
-        channelName:      l.channelName     || "",
-        channelUrl:       l.channelUrl      || "",
-        firstName:        l.firstName       || "",
-        lastName:         l.lastName        || "",
-        businessEntity:   l.businessEntity  || "",
-        address:          l.address         || "",
-        email:            l.email           || "",
-        paypal:           l.paypal          || "",
-        // Codes
-        offerCode:        l.offerCode       || l.id,
-        portalCode:       generatePortalCode(l.offerCode || l.id),
+        medium:           l.medium         || "",
+        channelName:      l.channelName    || "",
+        channelUrl:       l.channelUrl     || "",
+        firstName:        l.firstName      || "",
+        lastName:         l.lastName       || "",
+        businessEntity:   l.businessEntity || "",
+        address:          l.address        || "",
+        email:            l.email          || "",
+        paypal:           l.paypal         || "",
+        offerCode,
+        portalCode:       generatePortalCode(offerCode),
+        // Promo assets
+        promoUrl,
+        promoQrUrl,
+        promoQrStoragePath: qrStoragePath,
         // Commission
         commissionPct:               parseFloat(l.commissionPct) || 25,
         commissionEligibilityPeriod: eligDays,
-        // Promo dates — set to today on promotion
+        // Promo dates
         lastPromoDate:                today,
         lastPromoUrl:                 "",
         lastPromoTimestamp:           "",
         commissionEligibilityEndDate: eligibilityEnd,
         // Contract & tax (carried over from lead)
-        contractUrl:          l.contractUrl          || "",
-        contractStoragePath:  l.contractStoragePath  || "",
-        taxFormType:          l.taxFormType           || "",
-        taxFormUrl:           l.taxFormUrl            || "",
-        taxFormStoragePath:   l.taxFormStoragePath    || "",
-        // Signature info (carried over)
-        signatureName:    l.signatureName    || "",
-        signatureAgreed:  l.signatureAgreed  || false,
+        contractUrl:         l.contractUrl         || "",
+        contractStoragePath: l.contractStoragePath  || "",
+        taxFormType:         l.taxFormType          || "",
+        taxFormUrl:          l.taxFormUrl           || "",
+        taxFormStoragePath:  l.taxFormStoragePath   || "",
+        // Signature
+        signatureName:   l.signatureName   || "",
+        signatureAgreed: l.signatureAgreed || false,
         // Metadata
-        status:      "ACTIVE",
+        status:    "ACTIVE",
         promotedAt,
-        createdAt:   promotedAt,
+        createdAt: promotedAt,
       };
 
-      // Write affiliate doc (use offer code as document ID, matching existing pattern)
-      const affiliateId = l.offerCode || l.id;
-      await db.collection(COLLECTION).doc(affiliateId).set(affiliateData);
+      await db.collection(COLLECTION).doc(offerCode).set(affiliateData);
 
-      // Update lead status to "promoted"
+      // 5. Update lead status
       await db.collection("leads").doc(l.id).update({
         onboardingStatus:  "promoted",
         onboardingEnabled: false,
@@ -1616,20 +1676,16 @@
 
       // Update local state
       Object.assign(l, { onboardingStatus: "promoted", onboardingEnabled: false, promotedAt });
-
-      // Add to local affiliates array and re-sort
-      affiliates.push({ id: affiliateId, ...affiliateData });
+      affiliates.push({ id: offerCode, ...affiliateData });
       affiliates.sort((a, b) => (a.lastName||"").localeCompare(b.lastName||""));
 
       toast(`${l.firstName} ${l.lastName} has been promoted to affiliate.`, "success");
-
-      // Re-render lead detail (will hide promote button, show promoted badge)
       renderLeadDetail();
 
     } catch (e) {
       console.error("Promote error:", e);
       toast("Error promoting lead: " + e.message, "error");
-      confirmBtn.disabled = false;
+      confirmBtn.disabled    = false;
       confirmBtn.textContent = "Yes, Promote";
     }
   }
@@ -1657,10 +1713,9 @@
     for (const f of LEAD_EDIT_FIELDS) {
       let val = l[f.key];
       if (val === undefined || val === null) val = "";
-      val = String(val);
+      val     = String(val);
       const cls = f.full ? "form-group full-width" : "form-group";
       const ro  = f.readonly ? "readonly style='opacity:0.6'" : "";
-
       if (f.type === "select") {
         const opts = f.options.map(o => `<option value="${o}" ${val===o?"selected":""}>${o}</option>`).join("");
         html += `<div class="${cls}"><label>${f.label}</label><select id="lead-edit-${f.key}" ${f.readonly?"disabled":""}>${opts}</select></div>`;
@@ -1674,8 +1729,8 @@
       <button class="btn-secondary" onclick="cancelLeadEdit()">Cancel</button>
     </div>`;
 
-    document.getElementById("lead-edit-form").innerHTML = html;
-    document.getElementById("promote-banner").style.display = "none";
+    document.getElementById("lead-edit-form").innerHTML       = html;
+    document.getElementById("promote-banner").style.display   = "none";
     document.getElementById("lead-detail-view").style.display = "none";
     document.getElementById("lead-detail-edit").style.display = "block";
   }
@@ -1683,7 +1738,7 @@
   function cancelLeadEdit() { renderLeadDetail(); }
 
   async function saveLeadEdit() {
-    const l = currentLead;
+    const l                    = currentLead;
     const onboardingEnabledStr = document.getElementById("lead-edit-onboardingEnabled")?.value;
     const data = {
       medium:                      document.getElementById("lead-edit-medium")?.value || "",
@@ -1697,7 +1752,6 @@
       onboardingStatus:            document.getElementById("lead-edit-onboardingStatus")?.value || "pending",
       onboardingEnabled:           onboardingEnabledStr === "true",
     };
-
     try {
       await db.collection("leads").doc(l.id).update(data);
       Object.assign(l, data);
@@ -1724,8 +1778,7 @@
       medium:                      document.getElementById("lead-medium").value,
       channelName:                 gev("lead-channelName"),
       channelUrl:                  gev("lead-channelUrl"),
-      firstName, lastName, email,
-      offerCode,
+      firstName, lastName, email, offerCode,
       commissionPct:               parseFloat(gev("lead-commissionPct")) || 25,
       commissionEligibilityPeriod: parseInt(gev("lead-eligibilityPeriod")) || 90,
       onboardingStatus:            "pending",
@@ -1747,7 +1800,6 @@
       leads.push({ id: offerCode, ...data });
       leads.sort((a, b) => (a.lastName||"").localeCompare(b.lastName||""));
 
-      // Reset form
       ["lead-channelName","lead-channelUrl","lead-firstName","lead-lastName","lead-email","lead-offerCode","lead-onboardingUrl"]
         .forEach(id => { const el = document.getElementById(id); if (el) el.value = ""; });
       document.getElementById("lead-commissionPct").value     = "25";
