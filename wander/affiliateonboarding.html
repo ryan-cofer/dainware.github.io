@@ -524,7 +524,7 @@
 
       leadData = doc.data();
 
-      if (leadData.onboardingStatus === "completed") {
+      if (leadData.onboardingStatus === "completed" || leadData.onboardingStatus === "promoted") {
         showScreen("complete-screen");
         return;
       }
