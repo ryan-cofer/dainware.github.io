@@ -104,11 +104,7 @@
       line-height: 1.8;
     }
 
-    .inactive-sub a {
-      color: var(--gold);
-      text-decoration: none;
-    }
-
+    .inactive-sub a { color: var(--gold); text-decoration: none; }
     .inactive-sub a:hover { text-decoration: underline; }
 
     main {
@@ -127,6 +123,47 @@
       border-bottom: 1px solid var(--border);
     }
 
+    /* ── Promo assets panel ── */
+    .promo-assets {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      margin-bottom: 1.5rem;
+    }
+
+    .promo-asset-cell {
+      background: rgba(201,168,76,0.06);
+      padding: 1.25rem 1.5rem;
+    }
+
+    .promo-asset-label {
+      font-size: 9px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 0.5rem;
+    }
+
+    .promo-asset-value {
+      font-size: 12px;
+      color: var(--ink);
+      word-break: break-all;
+    }
+
+    .promo-asset-value a { color: var(--gold); text-decoration: none; }
+    .promo-asset-value a:hover { text-decoration: underline; }
+
+    .promo-code-text {
+      font-family: monospace;
+      font-size: 1.15rem;
+      letter-spacing: 0.12em;
+      color: var(--gold);
+      font-weight: 600;
+    }
+
+    /* ── rest of original styles ── */
     .controls {
       display: flex;
       flex-wrap: wrap;
@@ -301,10 +338,7 @@
       gap: 0.35rem;
     }
 
-    .promo-form .form-group.full-width {
-      grid-column: 1 / -1;
-    }
-
+    .promo-form .form-group.full-width { grid-column: 1 / -1; }
     .promo-form .form-group input { width: 100%; }
 
     .promo-form .form-actions {
@@ -319,11 +353,7 @@
       line-height: 1.7;
     }
 
-    .promo-help a {
-      color: var(--gold);
-      text-decoration: none;
-    }
-
+    .promo-help a { color: var(--gold); text-decoration: none; }
     .promo-help a:hover { text-decoration: underline; }
 
     .form-section-label {
@@ -360,14 +390,10 @@
       margin-bottom: 0.25rem;
     }
 
-    .elig-cell .cell-value {
-      font-size: 14px;
-      color: var(--ink);
-    }
-
-    .elig-cell .cell-value.gold { color: var(--gold); }
+    .elig-cell .cell-value { font-size: 14px; color: var(--ink); }
+    .elig-cell .cell-value.gold  { color: var(--gold); }
     .elig-cell .cell-value.green { color: var(--green); }
-    .elig-cell .cell-value.red { color: var(--red); }
+    .elig-cell .cell-value.red   { color: var(--red); }
 
     @media (max-width: 600px) {
       .summary-grid { grid-template-columns: 1fr; }
@@ -378,6 +404,7 @@
       .header-right { align-items: flex-start; }
       .promo-form .form-grid { grid-template-columns: 1fr; }
       .elig-bar { flex-direction: column; }
+      .promo-assets { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -405,6 +432,26 @@
 <div id="portal-screen" style="display:none">
   <main>
 
+    <!-- ── Promo Assets ── -->
+    <div class="section-title" id="promo-assets-title" style="display:none">Your Promo Assets</div>
+    <div class="promo-assets" id="promo-assets-panel" style="display:none">
+      <div class="promo-asset-cell">
+        <div class="promo-asset-label">Promo Code</div>
+        <div class="promo-asset-value">
+          <span class="promo-code-text" id="asset-code"></span>
+        </div>
+      </div>
+      <div class="promo-asset-cell">
+        <div class="promo-asset-label">Promo URL</div>
+        <div class="promo-asset-value" style="font-size:11px;" id="asset-url"></div>
+      </div>
+      <div class="promo-asset-cell">
+        <div class="promo-asset-label">Promo QR Code</div>
+        <div class="promo-asset-value" id="asset-qr"></div>
+      </div>
+    </div>
+
+    <!-- ── Eligibility Bar ── -->
     <div class="elig-bar" id="elig-bar" style="display:none">
       <div class="elig-cell">
         <div class="cell-label">Commission Rate</div>
@@ -571,8 +618,8 @@
     }).join("");
   }
 
-  var PORTAL_CODE = getPortalCode();
-  var OFFER_CODE = PORTAL_CODE ? portalCodeToOfferCode(PORTAL_CODE) : null;
+  var PORTAL_CODE  = getPortalCode();
+  var OFFER_CODE   = PORTAL_CODE ? portalCodeToOfferCode(PORTAL_CODE) : null;
   var affiliateData = null;
 
   window.addEventListener("load", function() {
@@ -600,14 +647,16 @@
       }
 
       document.getElementById("portal-screen").style.display = "block";
+
+      populatePromoAssets();
       populateEligibilityBar();
 
       var today = new Date();
       var thirtyBack = new Date();
       thirtyBack.setDate(today.getDate() - 30);
-      document.getElementById("end-date").value = fmt(today);
+      document.getElementById("end-date").value   = fmt(today);
       document.getElementById("start-date").value = fmt(thirtyBack);
-      document.getElementById("promo-date").max = fmt(today);
+      document.getElementById("promo-date").max   = fmt(today);
 
     }).catch(function(e) {
       console.error("Error loading affiliate:", e);
@@ -615,6 +664,39 @@
     });
   });
 
+  // ── Promo assets panel ────────────────────────────────────────────
+  function populatePromoAssets() {
+    if (!affiliateData) return;
+
+    var offerCode = affiliateData.offerCode || OFFER_CODE || "";
+    var promoUrl  = affiliateData.promoUrl  || "";
+    var qrUrl     = affiliateData.promoQrUrl || "";
+
+    // Always show the panel — at minimum show the offer code
+    document.getElementById("promo-assets-title").style.display = "block";
+    document.getElementById("promo-assets-panel").style.display = "grid";
+
+    // Promo Code
+    document.getElementById("asset-code").textContent = offerCode;
+
+    // Promo URL
+    var urlEl = document.getElementById("asset-url");
+    if (promoUrl) {
+      urlEl.innerHTML = '<a href="' + escHtml(promoUrl) + '" target="_blank" rel="noopener">' + escHtml(promoUrl) + '</a>';
+    } else {
+      urlEl.innerHTML = '<span style="color:var(--muted);font-size:11px;">Not available yet — contact us.</span>';
+    }
+
+    // QR Code download
+    var qrEl = document.getElementById("asset-qr");
+    if (qrUrl) {
+      qrEl.innerHTML = '<a href="' + escHtml(qrUrl) + '" target="_blank" rel="noopener" download="' + escHtml(offerCode) + '_qr.png">Download PNG</a>';
+    } else {
+      qrEl.innerHTML = '<span style="color:var(--muted);font-size:11px;">Not available yet — contact us.</span>';
+    }
+  }
+
+  // ── Eligibility bar ───────────────────────────────────────────────
   function populateEligibilityBar() {
     if (!affiliateData) return;
     var bar = document.getElementById("elig-bar");
@@ -626,7 +708,7 @@
     document.getElementById("elig-last-promo").textContent = lastPromo ? displayDate(lastPromo) : "\u2014";
 
     var endDate = affiliateData.commissionEligibilityEndDate;
-    var endEl = document.getElementById("elig-end-date");
+    var endEl   = document.getElementById("elig-end-date");
     endEl.textContent = endDate ? displayDate(endDate) : "\u2014";
 
     if (endDate) {
@@ -636,12 +718,10 @@
 
     var statusEl = document.getElementById("elig-status");
     statusEl.textContent = affiliateData.status || "ACTIVE";
-    statusEl.className = affiliateData.status === "ACTIVE" ? "cell-value green" : "cell-value red";
+    statusEl.className   = affiliateData.status === "ACTIVE" ? "cell-value green" : "cell-value red";
   }
 
-  function fmt(d) {
-    return d.toISOString().split("T")[0];
-  }
+  function fmt(d) { return d.toISOString().split("T")[0]; }
 
   function displayDate(dateStr) {
     if (!dateStr) return "\u2014";
@@ -649,12 +729,18 @@
     return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   }
 
+  function escHtml(s) {
+    var d = document.createElement("div");
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
   function fetchReport() {
     var startDate = document.getElementById("start-date").value;
-    var endDate = document.getElementById("end-date").value;
+    var endDate   = document.getElementById("end-date").value;
 
     if (!startDate || !endDate) { showError("Please select both a start and end date."); return; }
-    if (startDate > endDate) { showError("Start date must be before end date."); return; }
+    if (startDate > endDate)    { showError("Start date must be before end date."); return; }
 
     hideError();
     setLoading(true);
@@ -679,17 +765,17 @@
   }
 
   function render(data) {
-    document.getElementById("initial-box").style.display = "none";
+    document.getElementById("initial-box").style.display    = "none";
     document.getElementById("results-section").style.display = "block";
-    document.getElementById("stat-redemptions").textContent = data.redemptions.toLocaleString();
-    document.getElementById("stat-days").textContent = data.activeDays.toLocaleString();
-    document.getElementById("meta-range").textContent = data.startDate + " \u2192 " + data.endDate;
-    document.getElementById("meta-reports").textContent = data.reportsFound + " of " + data.reportsChecked + " days had data";
-    document.getElementById("no-data-box").style.display = data.redemptions === 0 ? "block" : "none";
+    document.getElementById("stat-redemptions").textContent  = data.redemptions.toLocaleString();
+    document.getElementById("stat-days").textContent         = data.activeDays.toLocaleString();
+    document.getElementById("meta-range").textContent        = data.startDate + " \u2192 " + data.endDate;
+    document.getElementById("meta-reports").textContent      = data.reportsFound + " of " + data.reportsChecked + " days had data";
+    document.getElementById("no-data-box").style.display     = data.redemptions === 0 ? "block" : "none";
   }
 
   function setLoading(on) {
-    document.getElementById("fetch-btn").disabled = on;
+    document.getElementById("fetch-btn").disabled    = on;
     document.getElementById("fetch-btn").textContent = on ? "Fetching..." : "Run Report";
     document.getElementById("loading-box").style.display = on ? "block" : "none";
     if (on) document.getElementById("initial-box").style.display = "none";
@@ -697,13 +783,11 @@
 
   function showError(msg) {
     var el = document.getElementById("error-box");
-    el.textContent = msg;
-    el.style.display = "block";
+    el.textContent    = msg;
+    el.style.display  = "block";
   }
 
-  function hideError() {
-    document.getElementById("error-box").style.display = "none";
-  }
+  function hideError() { document.getElementById("error-box").style.display = "none"; }
 
   function submitPromotion() {
     var errEl = document.getElementById("promo-error");
@@ -711,35 +795,30 @@
     errEl.style.display = "none";
     sucEl.style.display = "none";
 
-    var email   = (document.getElementById("promo-email").value || "").trim().toLowerCase();
-    var paypal  = (document.getElementById("promo-paypal").value || "").trim().toLowerCase();
+    var email          = (document.getElementById("promo-email").value     || "").trim().toLowerCase();
+    var paypal         = (document.getElementById("promo-paypal").value    || "").trim().toLowerCase();
     var promoDate      = document.getElementById("promo-date").value;
-    var promoUrl       = (document.getElementById("promo-url").value || "").trim();
+    var promoUrl       = (document.getElementById("promo-url").value       || "").trim();
     var promoTimestamp = (document.getElementById("promo-timestamp").value || "").trim();
 
     if (!email || !paypal) {
-      showPromoError("Please enter both your email and PayPal address for security verification.");
-      return;
+      showPromoError("Please enter both your email and PayPal address for security verification."); return;
     }
     if (!promoDate) {
-      showPromoError("Please enter the date the promotion was published.");
-      return;
+      showPromoError("Please enter the date the promotion was published."); return;
     }
 
-    var today = new Date();
-    today.setHours(23, 59, 59, 999);
+    var today  = new Date(); today.setHours(23, 59, 59, 999);
     var promoD = new Date(promoDate + "T00:00:00");
     if (promoD > today) {
-      showPromoError("The promotion date cannot be a date in the future.");
-      return;
+      showPromoError("The promotion date cannot be a date in the future."); return;
     }
 
     var existingPromoDate = affiliateData.lastPromoDate;
     if (existingPromoDate) {
       var existingD = new Date(existingPromoDate + "T00:00:00");
       if (promoD <= existingD) {
-        showPromoError("The promotion date must be after your last qualified promotion date (" + displayDate(existingPromoDate) + ").");
-        return;
+        showPromoError("The promotion date must be after your last qualified promotion date (" + displayDate(existingPromoDate) + ")."); return;
       }
     }
 
@@ -747,23 +826,20 @@
     var filePaypal = (affiliateData.paypal || "").trim().toLowerCase();
 
     if (email !== fileEmail || paypal !== filePaypal) {
-      showPromoError("The information you entered doesn't match what's on file. Please contact " + CONTACT_EMAIL + " for assistance.");
-      return;
+      showPromoError("The information you entered doesn't match what's on file. Please contact " + CONTACT_EMAIL + " for assistance."); return;
     }
 
     var btn = document.getElementById("promo-submit-btn");
-    btn.disabled = true;
+    btn.disabled    = true;
     btn.textContent = "Submitting...";
 
-    var eligPeriod  = affiliateData.commissionEligibilityPeriod || 90;
-    var newEndDate  = new Date(promoDate + "T00:00:00");
+    var eligPeriod   = affiliateData.commissionEligibilityPeriod || 90;
+    var newEndDate   = new Date(promoDate + "T00:00:00");
     newEndDate.setDate(newEndDate.getDate() + eligPeriod);
     var newEndDateStr = fmt(newEndDate);
 
-    // Timestamp of this submission (server-side via Firestore)
     var submittedAt = new Date().toISOString();
 
-    // Build the promotion record for the subcollection audit log
     var promotionRecord = {
       promoDate:      promoDate,
       promoUrl:       promoUrl,
@@ -774,14 +850,11 @@
       medium:         affiliateData.medium || "",
     };
 
-    // Write both the subcollection record and the parent doc update atomically
     var batch = db.batch();
 
-    // 1. Add to promotions subcollection (auto-generated doc ID)
     var promoRef = db.collection(COLLECTION).doc(OFFER_CODE).collection("promotions").doc();
     batch.set(promoRef, promotionRecord);
 
-    // 2. Update parent affiliate document
     var affiliateRef = db.collection(COLLECTION).doc(OFFER_CODE);
     batch.update(affiliateRef, {
       lastPromoDate:                promoDate,
@@ -792,7 +865,6 @@
     });
 
     batch.commit().then(function() {
-      // Update local cache
       affiliateData.lastPromoDate                = promoDate;
       affiliateData.lastPromoUrl                 = promoUrl;
       affiliateData.lastPromoTimestamp           = promoTimestamp;
@@ -807,19 +879,19 @@
       document.getElementById("promo-url").value       = "";
       document.getElementById("promo-timestamp").value = "";
 
-      sucEl.textContent = "Promotion submitted successfully! Your commission eligibility has been extended to " + displayDate(newEndDateStr) + ", pending review.";
+      sucEl.textContent   = "Promotion submitted successfully! Your commission eligibility has been extended to " + displayDate(newEndDateStr) + ", pending review.";
       sucEl.style.display = "block";
     }).catch(function(e) {
       showPromoError("Error submitting promotion: " + e.message);
     }).finally(function() {
-      btn.disabled = false;
+      btn.disabled    = false;
       btn.textContent = "Submit Promotion";
     });
   }
 
   function showPromoError(msg) {
     var el = document.getElementById("promo-error");
-    el.textContent = msg;
+    el.textContent   = msg;
     el.style.display = "block";
   }
 </script>
