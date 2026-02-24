@@ -433,7 +433,6 @@
   <main>
 
     <!-- ── Promo Assets ── -->
-    <div class="section-title" id="promo-assets-title" style="display:none">Your Promo Assets</div>
     <div class="promo-assets" id="promo-assets-panel" style="display:none">
       <div class="promo-asset-cell">
         <div class="promo-asset-label">Promo Code</div>
@@ -537,18 +536,6 @@
         <div class="success-box" id="promo-success"></div>
 
         <div class="form-grid">
-          <div class="form-section-label">Verification</div>
-
-          <div class="form-group">
-            <label>Your Email Address</label>
-            <input type="email" id="promo-email" placeholder="Must match your email on file" />
-          </div>
-
-          <div class="form-group">
-            <label>Your PayPal Address</label>
-            <input type="email" id="promo-paypal" placeholder="Must match your PayPal on file" />
-          </div>
-
           <div class="form-section-label">Promotion Details</div>
 
           <div class="form-group">
@@ -676,16 +663,20 @@
     var qrUrl     = affiliateData.promoQrUrl || "";
 
     // Always show the panel — at minimum show the offer code
-    document.getElementById("promo-assets-title").style.display = "block";
     document.getElementById("promo-assets-panel").style.display = "grid";
 
     // Promo Code
     document.getElementById("asset-code").textContent = offerCode;
 
-    // Promo URL
+    // Promo URL — plain text with copy icon
     var urlEl = document.getElementById("asset-url");
     if (promoUrl) {
-      urlEl.innerHTML = '<a href="' + escHtml(promoUrl) + '" target="_blank" rel="noopener">' + escHtml(promoUrl) + '</a>';
+      urlEl.innerHTML =
+        '<span style="word-break:break-all;">' + escHtml(promoUrl) + '</span>' +
+        '<button onclick="copyPromoUrl()" title="Copy to clipboard" style="' +
+          'background:none;border:none;cursor:pointer;padding:0 0 0 0.5rem;' +
+          'color:var(--gold);vertical-align:middle;font-size:14px;line-height:1;" ' +
+          'id="copy-url-btn">&#x2398;</button>';
     } else {
       urlEl.innerHTML = '<span style="color:var(--muted);font-size:11px;">Not available yet — contact us.</span>';
     }
@@ -693,14 +684,14 @@
     // QR Code download
     var qrEl = document.getElementById("asset-qr");
     if (qrUrl) {
-      qrEl.innerHTML = '<a href="' + escHtml(qrUrl) + '" target="_blank" rel="noopener" download="' + escHtml(offerCode) + '_qr.png">Download PNG</a>';
+      qrEl.innerHTML = '<a href="' + escHtml(qrUrl) + '" download="' + escHtml(offerCode) + '_qr.png">Download</a>';
     } else {
       qrEl.innerHTML = '<span style="color:var(--muted);font-size:11px;">Not available yet — contact us.</span>';
     }
 
     // App Icon download
     document.getElementById("asset-icon").innerHTML =
-      '<a href="/wander/appIconRounded.png" target="_blank" rel="noopener" download="wander_appIcon.png">Download PNG</a>';
+      '<a href="/wander/appIconRounded.png" download="wander_appIcon.png">Download</a>';
   }
 
   // ── Eligibility bar ───────────────────────────────────────────────
@@ -802,15 +793,10 @@
     errEl.style.display = "none";
     sucEl.style.display = "none";
 
-    var email          = (document.getElementById("promo-email").value     || "").trim().toLowerCase();
-    var paypal         = (document.getElementById("promo-paypal").value    || "").trim().toLowerCase();
     var promoDate      = document.getElementById("promo-date").value;
     var promoUrl       = (document.getElementById("promo-url").value       || "").trim();
     var promoTimestamp = (document.getElementById("promo-timestamp").value || "").trim();
 
-    if (!email || !paypal) {
-      showPromoError("Please enter both your email and PayPal address for security verification."); return;
-    }
     if (!promoDate) {
       showPromoError("Please enter the date the promotion was published."); return;
     }
@@ -900,6 +886,20 @@
     var el = document.getElementById("promo-error");
     el.textContent   = msg;
     el.style.display = "block";
+  }
+
+  function copyPromoUrl() {
+    var promoUrl = affiliateData ? (affiliateData.promoUrl || "") : "";
+    if (!promoUrl) return;
+    navigator.clipboard.writeText(promoUrl).then(function() {
+      var btn = document.getElementById("copy-url-btn");
+      btn.innerHTML = "&#x2713;";
+      btn.style.color = "var(--green)";
+      setTimeout(function() {
+        btn.innerHTML = "&#x2398;";
+        btn.style.color = "var(--gold)";
+      }, 2000);
+    });
   }
 </script>
 
