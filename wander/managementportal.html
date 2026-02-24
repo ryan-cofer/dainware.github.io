@@ -1781,9 +1781,9 @@
     if (!offerCode) { toast("Offer code is required.", "error"); return; }
 
     const firstName = gev("lead-firstName"), lastName = gev("lead-lastName"), email = gev("lead-email");
-    if (!firstName || !lastName || !email) {
-      toast("First name, last name, and email are required.", "error"); return;
-    }
+    //if (!firstName || !lastName || !email) {
+      //toast("First name, last name, and email are required.", "error"); return;
+    //}
 
     const data = {
       medium:                      document.getElementById("lead-medium").value,
