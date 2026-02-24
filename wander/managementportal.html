@@ -192,6 +192,24 @@
 
     .btn-danger:hover { background: rgba(255,107,107,0.1); }
 
+    /* Promote button — gold outline style */
+    .btn-promote {
+      padding: 0.5rem 1.2rem;
+      background: none;
+      color: var(--gold);
+      border: 1px solid rgba(201,168,76,0.5);
+      font-family: inherit;
+      font-size: 10px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 600;
+    }
+
+    .btn-promote:hover { background: rgba(201,168,76,0.1); border-color: var(--gold); }
+    .btn-promote:disabled { opacity: 0.45; cursor: not-allowed; }
+
     .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
     .form-group { display: flex; flex-direction: column; gap: 0.35rem; }
     .form-group.full-width { grid-column: 1 / -1; }
@@ -229,47 +247,6 @@
 
     .form-group select option { background: var(--deep); color: var(--ink); }
     .form-group input[type="date"] { color-scheme: dark; }
-
-    /* ── FILE INPUT ── */
-    .file-input-wrapper {
-      position: relative;
-    }
-
-    .file-input-wrapper input[type="file"] {
-      position: absolute;
-      inset: 0;
-      opacity: 0;
-      cursor: pointer;
-      width: 100%;
-      height: 100%;
-    }
-
-    .file-input-display {
-      background: var(--input-bg);
-      border: 1px solid var(--border);
-      padding: 0.6rem 0.75rem;
-      font-family: inherit;
-      font-size: 13px;
-      color: var(--muted);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      cursor: pointer;
-      transition: border-color 0.2s;
-      min-height: 2.4rem;
-    }
-
-    .file-input-display:hover { border-color: var(--gold); }
-    .file-input-display.has-file { color: var(--ink); }
-
-    .file-input-display .file-browse {
-      font-size: 9px;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--gold);
-      flex-shrink: 0;
-      margin-left: 0.75rem;
-    }
 
     .form-actions { grid-column: 1 / -1; display: flex; gap: 1rem; margin-top: 0.5rem; }
 
@@ -344,6 +321,25 @@
       border: 1px solid rgba(255,107,107,0.3);
     }
 
+    /* Lead-specific status badges */
+    .status-badge.pending {
+      background: rgba(168,200,216,0.1);
+      color: var(--muted);
+      border: 1px solid rgba(168,200,216,0.3);
+    }
+
+    .status-badge.completed {
+      background: rgba(93,212,160,0.15);
+      color: var(--green);
+      border: 1px solid rgba(93,212,160,0.3);
+    }
+
+    .status-badge.promoted {
+      background: rgba(201,168,76,0.12);
+      color: var(--gold);
+      border: 1px solid rgba(201,168,76,0.3);
+    }
+
     .empty-state {
       text-align: center;
       padding: 3rem;
@@ -411,6 +407,34 @@
     .info-cell .cell-value { font-size: 13px; color: var(--ink); word-break: break-all; }
     .info-cell .cell-value a { color: var(--gold); text-decoration: none; }
     .info-cell .cell-value a:hover { text-decoration: underline; }
+
+    /* Promote confirmation banner */
+    .promote-banner {
+      background: rgba(201,168,76,0.08);
+      border: 1px solid rgba(201,168,76,0.3);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .promote-banner-text {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .promote-banner-text strong {
+      color: var(--gold);
+      display: block;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 0.25rem;
+    }
 
     .modal-overlay {
       display: none;
@@ -603,103 +627,18 @@
   <main>
     <div class="tab-bar">
       <button class="tab-btn active" data-tab="list"       onclick="switchTab('list')">Affiliates</button>
-      <button class="tab-btn"        data-tab="add"        onclick="switchTab('add')">Add Affiliate</button>
       <button class="tab-btn"        data-tab="leads"      onclick="switchTab('leads'); loadLeads()">Leads</button>
       <button class="tab-btn"        data-tab="add-lead"   onclick="switchTab('add-lead')">Add Lead</button>
       <button class="tab-btn"        data-tab="activities" onclick="switchTab('activities'); loadActivities()">Affiliate Activities</button>
       <button class="tab-btn"        data-tab="reports"    onclick="switchTab('reports'); loadPaymentReports()">Payment Reports</button>
     </div>
 
-    <!-- ── LIST TAB ── -->
+    <!-- ── AFFILIATES LIST TAB ── -->
     <div class="tab-content active" id="tab-list">
       <div class="search-bar">
         <input type="text" id="search-input" placeholder="Search by name, code, channel, or email..." oninput="renderList()" />
       </div>
       <div id="list-container"></div>
-    </div>
-
-    <!-- ── ADD TAB ── -->
-    <div class="tab-content" id="tab-add">
-      <div class="form-grid" id="add-form">
-        <div class="form-section-title">Channel Information</div>
-        <div class="form-group">
-          <label>Primary Medium</label>
-          <select id="add-medium">
-            <option value="YouTube">YouTube</option>
-            <option value="Blog">Blog</option>
-            <option value="Instagram">Instagram</option>
-            <option value="TikTok">TikTok</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Channel Name</label>
-          <input type="text" id="add-channelName" placeholder="e.g. Nomadic Matt" />
-        </div>
-        <div class="form-group full-width">
-          <label>Channel URL</label>
-          <input type="text" id="add-channelUrl" placeholder="https://..." />
-        </div>
-        <div class="form-section-title">Affiliate Details</div>
-        <div class="form-group">
-          <label>First Name</label>
-          <input type="text" id="add-firstName" />
-        </div>
-        <div class="form-group">
-          <label>Last Name</label>
-          <input type="text" id="add-lastName" />
-        </div>
-        <div class="form-group">
-          <label>Business Entity</label>
-          <input type="text" id="add-businessEntity" placeholder="(optional)" />
-        </div>
-        <div class="form-group">
-          <label>Email Address</label>
-          <input type="email" id="add-email" />
-        </div>
-        <div class="form-group">
-          <label>PayPal Address</label>
-          <input type="email" id="add-paypal" />
-        </div>
-        <div class="form-group">
-          <label>Assigned Offer Code</label>
-          <input type="text" id="add-offerCode" placeholder="e.g. WANDER25" style="text-transform:uppercase" />
-        </div>
-        <div class="form-group">
-          <label>Portal Code (auto-generated)</label>
-          <input type="text" id="add-portalCode" readonly style="opacity:0.6" />
-        </div>
-        <div class="form-section-title">Commission Settings</div>
-        <div class="form-group">
-          <label>Commission Percentage (%)</label>
-          <input type="number" id="add-commissionPct" value="25" min="0" max="100" step="1" />
-        </div>
-        <div class="form-group">
-          <label>Commission Eligibility Period (days)</label>
-          <input type="number" id="add-eligibilityPeriod" value="90" min="1" />
-        </div>
-        <div class="form-group">
-          <label>Last Qualified Promotion Date</label>
-          <input type="date" id="add-lastPromoDate" />
-        </div>
-        <div class="form-group">
-          <label>Commission Eligibility End Date (auto)</label>
-          <input type="date" id="add-eligibilityEnd" readonly style="opacity:0.6" />
-        </div>
-        <div class="form-section-title">Contract</div>
-        <div class="form-group full-width">
-          <label>Signed Contract PDF <span style="color:var(--muted);font-size:9px;">(optional)</span></label>
-          <div class="file-input-wrapper">
-            <input type="file" id="add-contract" accept="application/pdf" onchange="handleContractFileChange(this)" />
-            <div class="file-input-display" id="add-contract-display">
-              <span id="add-contract-filename">No file selected</span>
-              <span class="file-browse">Browse</span>
-            </div>
-          </div>
-        </div>
-        <div class="form-actions">
-          <button class="btn-primary" id="save-affiliate-btn" onclick="saveNewAffiliate()">Save Affiliate</button>
-        </div>
-      </div>
     </div>
 
     <!-- ── LEADS TAB ── -->
@@ -775,8 +714,20 @@
     <div class="tab-content" id="tab-lead-detail">
       <div class="detail-header">
         <button class="detail-back" onclick="switchTab('leads')">← Back to leads</button>
-        <div style="display:flex;gap:0.75rem;">
+        <div style="display:flex;gap:0.75rem;align-items:center;">
+          <button class="btn-promote" id="promote-btn" onclick="confirmPromote()" style="display:none">⬆ Promote to Affiliate</button>
           <button class="btn-secondary" onclick="enterLeadEditMode()">Edit</button>
+        </div>
+      </div>
+      <!-- Promote confirmation banner (shown after clicking promote, before confirming) -->
+      <div class="promote-banner" id="promote-banner" style="display:none">
+        <div class="promote-banner-text">
+          <strong>Confirm Promotion</strong>
+          This will create an affiliate record from this lead. <code>lastPromoDate</code> will be set to today and <code>commissionEligibilityEndDate</code> calculated from today. This action cannot be undone.
+        </div>
+        <div style="display:flex;gap:0.75rem;flex-shrink:0;">
+          <button class="btn-primary" id="promote-confirm-btn" onclick="executePromote()">Yes, Promote</button>
+          <button class="btn-secondary" onclick="cancelPromote()">Cancel</button>
         </div>
       </div>
       <div id="lead-detail-view">
@@ -835,7 +786,7 @@
       </div>
     </div>
 
-    <!-- ── DETAIL TAB ── -->
+    <!-- ── AFFILIATE DETAIL TAB ── -->
     <div class="tab-content" id="tab-detail">
       <div class="detail-header">
         <button class="detail-back" onclick="switchTab('list')">← Back to list</button>
@@ -887,7 +838,7 @@
 
   const db      = firebase.firestore();
   const storage = firebase.storage();
-  const COLLECTION = "affiliates";
+  const COLLECTION     = "affiliates";
   const FUNCTIONS_BASE_URL = "https://us-central1-wander-eab4e.cloudfunctions.net";
   const PORTAL_API_KEY = "wander-affiliateportal";
 
@@ -927,71 +878,17 @@
   });
 
   // ═══════════════════════════
-  // Contract file input
+  // Date helpers
   // ═══════════════════════════
-  function handleContractFileChange(input) {
-    const display  = document.getElementById("add-contract-display");
-    const filename = document.getElementById("add-contract-filename");
-    if (input.files && input.files[0]) {
-      const file = input.files[0];
-      if (file.type !== "application/pdf") {
-        toast("Only PDF files are accepted.", "error");
-        input.value = "";
-        filename.textContent = "No file selected";
-        display.classList.remove("has-file");
-        return;
-      }
-      filename.textContent = file.name;
-      display.classList.add("has-file");
-    } else {
-      filename.textContent = "No file selected";
-      display.classList.remove("has-file");
-    }
-  }
-
-  // Upload contract PDF to Firebase Storage, return { contractUrl, contractStoragePath }
-  async function uploadContract(offerCode, file) {
-    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-    const path     = `affiliate-contracts/${offerCode}/${safeName}`;
-    const ref      = storage.ref(path);
-    const snapshot = await ref.put(file, { contentType: "application/pdf" });
-    const url      = await snapshot.ref.getDownloadURL();
-    return { contractUrl: url, contractStoragePath: path };
-  }
-
-  // ═══════════════════════════
-  // Portal code
-  // ═══════════════════════════
-  function generatePortalCode(offerCode) {
-    return offerCode.toUpperCase().split("").map(ch => {
-      if (/[A-Y]/i.test(ch)) return String.fromCharCode(ch.charCodeAt(0) + 1);
-      if (ch === "Z" || ch === "z") return "A";
-      if (/[0-8]/.test(ch)) return String(Number(ch) + 1);
-      if (ch === "9") return "0";
-      return ch;
-    }).join("");
-  }
-
-  document.getElementById("add-offerCode").addEventListener("input", function() {
-    const code = this.value.toUpperCase();
-    this.value = code;
-    document.getElementById("add-portalCode").value = code ? generatePortalCode(code) : "";
-  });
-
-  document.getElementById("add-lastPromoDate").addEventListener("change", calcAddEndDate);
-  document.getElementById("add-eligibilityPeriod").addEventListener("input", calcAddEndDate);
-
-  function calcAddEndDate() {
-    const dateStr = document.getElementById("add-lastPromoDate").value;
-    const days = parseInt(document.getElementById("add-eligibilityPeriod").value) || 90;
-    if (dateStr) {
-      const d = new Date(dateStr + "T00:00:00");
-      d.setDate(d.getDate() + days);
-      document.getElementById("add-eligibilityEnd").value = fmtDate(d);
-    }
-  }
-
   function fmtDate(d) { return d.toISOString().split("T")[0]; }
+
+  function todayStr() { return fmtDate(new Date()); }
+
+  function addDaysToToday(days) {
+    const d = new Date();
+    d.setDate(d.getDate() + days);
+    return fmtDate(d);
+  }
 
   function displayDate(dateStr) {
     if (!dateStr) return "—";
@@ -1033,7 +930,7 @@
   }
 
   // ═══════════════════════════
-  // List
+  // Affiliates list
   // ═══════════════════════════
   function renderList() {
     const q = (document.getElementById("search-input").value || "").toLowerCase();
@@ -1046,7 +943,7 @@
     const container = document.getElementById("list-container");
 
     if (filtered.length === 0) {
-      container.innerHTML = `<div class="empty-state">${affiliates.length === 0 ? "No affiliates yet." : "No affiliates match your search."}</div>`;
+      container.innerHTML = `<div class="empty-state">${affiliates.length === 0 ? "No affiliates yet. Promote a completed lead to create one." : "No affiliates match your search."}</div>`;
       return;
     }
 
@@ -1070,7 +967,7 @@
   }
 
   // ═══════════════════════════
-  // Detail view
+  // Affiliate detail view
   // ═══════════════════════════
   function viewAffiliate(id) {
     currentAffiliate = affiliates.find(a => a.id === id);
@@ -1094,6 +991,7 @@
     { key: "lastPromoUrl",                 label: "Last Qualified Promotion URL", link: true },
     { key: "lastPromoTimestamp",           label: "Last Qualified Promotion Timestamp" },
     { key: "commissionEligibilityEndDate", label: "Commission Eligibility End", date: true },
+    { key: "promotedAt",                   label: "Promoted At", datetime: true },
     { key: "status",                       label: "Status" },
     { key: "contractUrl",                  label: "Signed Contract", contract: true },
   ];
@@ -1110,12 +1008,11 @@
       let val;
 
       if (f.contract) {
-        // Contract field: special rendering
-        if (a.contractUrl) {
-          val = `<a href="${esc(a.contractUrl)}" target="_blank" rel="noopener">Download PDF</a>`;
-        } else {
-          val = `<span style="color:var(--muted);font-size:11px;">No contract on file</span>`;
-        }
+        val = a.contractUrl
+          ? `<a href="${esc(a.contractUrl)}" target="_blank" rel="noopener">Download PDF</a>`
+          : `<span style="color:var(--muted);font-size:11px;">No contract on file</span>`;
+      } else if (f.datetime) {
+        val = esc(displayDateTime(a[f.key]));
       } else {
         const raw = a[f.key] || "—";
         if (f.date && raw !== "—") val = esc(displayDate(raw));
@@ -1133,7 +1030,7 @@
   }
 
   // ═══════════════════════════
-  // Edit mode
+  // Affiliate edit mode
   // ═══════════════════════════
   function enterEditMode() {
     const a = currentAffiliate;
@@ -1171,22 +1068,6 @@
       }
     }
 
-    // Contract upload in edit mode
-    const contractLabel = a.contractUrl
-      ? `Replace Contract PDF <span style="color:var(--muted);font-size:9px;">(optional — leave blank to keep existing)</span>`
-      : `Upload Contract PDF <span style="color:var(--muted);font-size:9px;">(optional)</span>`;
-
-    html += `<div class="form-group full-width" style="grid-column:1/-1">
-      <label>${contractLabel}</label>
-      <div class="file-input-wrapper">
-        <input type="file" id="edit-contract" accept="application/pdf" onchange="handleEditContractFileChange(this)" />
-        <div class="file-input-display" id="edit-contract-display">
-          <span id="edit-contract-filename">${a.contractUrl ? "Current contract on file" : "No file selected"}</span>
-          <span class="file-browse">Browse</span>
-        </div>
-      </div>
-    </div>`;
-
     html += `<div class="form-actions">
       <button class="btn-primary" onclick="saveEdit()">Save Changes</button>
       <button class="btn-secondary" onclick="cancelEdit()">Cancel</button>
@@ -1213,23 +1094,6 @@
     }
   }
 
-  function handleEditContractFileChange(input) {
-    const display  = document.getElementById("edit-contract-display");
-    const filename = document.getElementById("edit-contract-filename");
-    if (input.files && input.files[0]) {
-      const file = input.files[0];
-      if (file.type !== "application/pdf") {
-        toast("Only PDF files are accepted.", "error");
-        input.value = "";
-        filename.textContent = currentAffiliate.contractUrl ? "Current contract on file" : "No file selected";
-        display.classList.remove("has-file");
-        return;
-      }
-      filename.textContent = file.name;
-      display.classList.add("has-file");
-    }
-  }
-
   function cancelEdit() { renderDetail(); }
 
   async function saveEdit() {
@@ -1252,105 +1116,13 @@
       status: gev("edit-status"),
     };
 
-    // Check if a new contract file was selected
-    const contractInput = document.getElementById("edit-contract");
-    const contractFile  = contractInput && contractInput.files[0];
-
     try {
-      if (contractFile) {
-        toast("Uploading contract...", "success");
-        const { contractUrl, contractStoragePath } = await uploadContract(a.id, contractFile);
-        data.contractUrl         = contractUrl;
-        data.contractStoragePath = contractStoragePath;
-      }
-
       await db.collection(COLLECTION).doc(a.id).update(data);
       Object.assign(a, data);
       renderDetail();
       toast("Affiliate updated successfully.", "success");
     } catch (e) {
       toast("Error saving: " + e.message, "error");
-    }
-  }
-
-  // ═══════════════════════════
-  // Add new affiliate
-  // ═══════════════════════════
-  async function saveNewAffiliate() {
-    const offerCode = (document.getElementById("add-offerCode").value || "").toUpperCase().trim();
-    if (!offerCode) { toast("Offer code is required.", "error"); return; }
-
-    const firstName = gev("add-firstName"), lastName = gev("add-lastName"), email = gev("add-email");
-    if (!firstName || !lastName || !email) {
-      toast("First name, last name, and email are required.", "error"); return;
-    }
-
-    const lastPromoDate = gev("add-lastPromoDate");
-    const eligPeriod    = parseInt(gev("add-eligibilityPeriod")) || 90;
-    let endDate = "";
-    if (lastPromoDate) {
-      const d = new Date(lastPromoDate + "T00:00:00");
-      d.setDate(d.getDate() + eligPeriod);
-      endDate = fmtDate(d);
-    }
-
-    const data = {
-      medium: gev("add-medium"), channelName: gev("add-channelName"), channelUrl: gev("add-channelUrl"),
-      firstName, lastName, businessEntity: gev("add-businessEntity"), email, paypal: gev("add-paypal"),
-      offerCode, portalCode: generatePortalCode(offerCode),
-      commissionPct: parseFloat(gev("add-commissionPct")) || 25,
-      commissionEligibilityPeriod: eligPeriod,
-      lastPromoDate, lastPromoUrl: "", lastPromoTimestamp: "",
-      commissionEligibilityEndDate: endDate,
-      status: "ACTIVE", createdAt: new Date().toISOString(),
-    };
-
-    // Check for contract file
-    const contractInput = document.getElementById("add-contract");
-    const contractFile  = contractInput && contractInput.files[0];
-
-    const btn = document.getElementById("save-affiliate-btn");
-    btn.disabled = true;
-
-    try {
-      const existing = await db.collection(COLLECTION).doc(offerCode).get();
-      if (existing.exists) {
-        toast("An affiliate with this offer code already exists.", "error");
-        btn.disabled = false;
-        return;
-      }
-
-      // Upload contract first if provided
-      if (contractFile) {
-        btn.textContent = "Uploading contract...";
-        const { contractUrl, contractStoragePath } = await uploadContract(offerCode, contractFile);
-        data.contractUrl         = contractUrl;
-        data.contractStoragePath = contractStoragePath;
-      }
-
-      btn.textContent = "Saving...";
-      await db.collection(COLLECTION).doc(offerCode).set(data);
-      affiliates.push({ id: offerCode, ...data });
-      affiliates.sort((a, b) => (a.lastName||"").localeCompare(b.lastName||""));
-
-      // Reset form
-      ["add-channelName","add-channelUrl","add-firstName","add-lastName","add-businessEntity",
-       "add-email","add-paypal","add-offerCode","add-portalCode","add-lastPromoDate","add-eligibilityEnd"]
-        .forEach(id => { document.getElementById(id).value = ""; });
-      document.getElementById("add-commissionPct").value     = "25";
-      document.getElementById("add-eligibilityPeriod").value = "90";
-      contractInput.value = "";
-      document.getElementById("add-contract-filename").textContent = "No file selected";
-      document.getElementById("add-contract-display").classList.remove("has-file");
-
-      toast("Affiliate added successfully.", "success");
-      switchTab("list");
-      renderList();
-    } catch (e) {
-      toast("Error saving affiliate: " + e.message, "error");
-    } finally {
-      btn.disabled = false;
-      btn.textContent = "Save Affiliate";
     }
   }
 
@@ -1416,18 +1188,13 @@
 
   function renderRecentPromos(promos) {
     const container = document.getElementById("recent-promos-container");
-
     if (promos.length === 0) {
       container.innerHTML = `<div class="empty-state">No promotions submitted in the last 30 days.</div>`;
       return;
     }
 
     let html = `<table class="act-table"><thead><tr>
-      <th>Submitted</th>
-      <th>Channel</th>
-      <th>Promotion Date</th>
-      <th>Minute Marker</th>
-      <th>Promotion URL</th>
+      <th>Submitted</th><th>Channel</th><th>Promotion Date</th><th>Minute Marker</th><th>Promotion URL</th>
     </tr></thead><tbody>`;
 
     for (const p of promos) {
@@ -1449,7 +1216,6 @@
 
   function renderMostActive(ranked) {
     const container = document.getElementById("most-active-container");
-
     if (ranked.length === 0) {
       container.innerHTML = `<div class="empty-state">No promotion history yet.</div>`;
       return;
@@ -1540,11 +1306,11 @@
         throw new Error(err.error || response.statusText);
       }
 
-      const blob = await response.blob();
+      const blob    = await response.blob();
       const blobUrl = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = blobUrl;
-      a.download = `payment-report-TEST-${refDateStr}.csv`;
+      const a       = document.createElement("a");
+      a.href        = blobUrl;
+      a.download    = `payment-report-TEST-${refDateStr}.csv`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -1572,20 +1338,18 @@
   // Helpers
   // ═══════════════════════════
   function gev(id) { const el = document.getElementById(id); return el ? (el.value||"").trim() : ""; }
-
   function esc(s) { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
-
   function toast(msg, type) {
     const el = document.getElementById("toast");
     el.textContent = msg;
     el.className = "toast " + type + " show";
     setTimeout(() => el.classList.remove("show"), 3500);
   }
+  function closeModal() { document.getElementById("confirm-modal").classList.remove("show"); }
 
-
-  // ═══════════════════════════
+  // ═══════════════════════════════════════════════════════════
   // Leads
-  // ═══════════════════════════
+  // ═══════════════════════════════════════════════════════════
   let leads = [];
   let currentLead = null;
   let leadsLoaded = false;
@@ -1600,6 +1364,10 @@
       if (ch === "9") return "0";
       return ch;
     }).join("");
+  }
+
+  function generatePortalCode(offerCode) {
+    return generateOnboardingCode(offerCode); // same Caesar-shift logic
   }
 
   function getOnboardingUrl(offerCode) {
@@ -1659,14 +1427,21 @@
 
     for (const l of filtered) {
       const status = l.onboardingStatus || "pending";
-      const badgeClass = status === "completed" ? "active" : "inactive";
+      // Map status to badge class
+      const badgeClass = status === "completed" ? "completed"
+                       : status === "promoted"  ? "promoted"
+                       : "pending";
       const onboardingUrl = getOnboardingUrl(l.offerCode || l.id);
       html += `<tr>
         <td onclick="viewLead('${l.id}')" style="cursor:pointer">${esc(l.firstName||"")}&nbsp;${esc(l.lastName||"")}</td>
         <td onclick="viewLead('${l.id}')" style="cursor:pointer;font-family:monospace;letter-spacing:0.05em">${esc(l.offerCode||l.id)}</td>
         <td onclick="viewLead('${l.id}')" style="cursor:pointer">${esc(l.channelName||"—")}</td>
         <td onclick="viewLead('${l.id}')" style="cursor:pointer"><span class="status-badge ${badgeClass}">${status}</span></td>
-        <td><button class="btn-secondary" style="font-size:9px;padding:0.3rem 0.7rem" onclick="copyLeadUrl('${esc(onboardingUrl)}', this)">Copy Link</button></td>
+        <td>${
+          status === "promoted"
+            ? `<span style="font-size:10px;color:var(--muted);">—</span>`
+            : `<button class="btn-secondary" style="font-size:9px;padding:0.3rem 0.7rem" onclick="copyLeadUrl('${esc(onboardingUrl)}', this)">Copy Link</button>`
+        }</td>
       </tr>`;
     }
 
@@ -1694,7 +1469,7 @@
     { key: "channelUrl",                  label: "Channel URL", link: true },
     { key: "firstName",                   label: "First Name" },
     { key: "lastName",                    label: "Last Name" },
-    { key: "businessEntity",              label: "Business Entity" },
+    { key: "businessEntity",             label: "Business Entity" },
     { key: "address",                     label: "Physical Address" },
     { key: "email",                       label: "Email" },
     { key: "paypal",                      label: "PayPal Address" },
@@ -1703,8 +1478,10 @@
     { key: "commissionEligibilityPeriod", label: "Eligibility Period", suffix: " days" },
     { key: "taxFormType",                 label: "Tax Form Type" },
     { key: "taxFormUrl",                  label: "Tax Form", taxform: true },
+    { key: "contractUrl",                 label: "Signed Contract", contract: true },
     { key: "signatureName",               label: "Signed By" },
-    { key: "onboardingCompletedAt",       label: "Completed At", datetime: true },
+    { key: "onboardingCompletedAt",       label: "Onboarding Completed At", datetime: true },
+    { key: "promotedAt",                  label: "Promoted At", datetime: true },
     { key: "onboardingEnabled",           label: "Onboarding Link Active" },
     { key: "onboardingUrl",               label: "Onboarding URL", onboardingurl: true },
   ];
@@ -1713,9 +1490,18 @@
     const l = currentLead;
     document.getElementById("lead-detail-name").textContent = `${l.firstName||""} ${l.lastName||""}`;
     const status = l.onboardingStatus || "pending";
-    const badgeClass = status === "completed" ? "active" : "inactive";
+    const badgeClass = status === "completed" ? "completed"
+                     : status === "promoted"  ? "promoted"
+                     : "pending";
     document.getElementById("lead-detail-status-badge").outerHTML =
       `<span class="status-badge ${badgeClass}" id="lead-detail-status-badge">${status}</span>`;
+
+    // Show promote button only for completed (not yet promoted) leads
+    const promoteBtn = document.getElementById("promote-btn");
+    promoteBtn.style.display = status === "completed" ? "inline-block" : "none";
+
+    // Hide the confirmation banner when re-rendering
+    document.getElementById("promote-banner").style.display = "none";
 
     let gridHtml = "";
     for (const f of LEAD_FIELD_MAP) {
@@ -1724,6 +1510,10 @@
         val = l.taxFormUrl
           ? `<a href="${esc(l.taxFormUrl)}" target="_blank" rel="noopener">Download PDF</a>`
           : `<span style="color:var(--muted);font-size:11px;">Not uploaded yet</span>`;
+      } else if (f.contract) {
+        val = l.contractUrl
+          ? `<a href="${esc(l.contractUrl)}" target="_blank" rel="noopener">Download PDF</a>`
+          : `<span style="color:var(--muted);font-size:11px;">Not on file</span>`;
       } else if (f.onboardingurl) {
         const url = getOnboardingUrl(l.offerCode || l.id);
         val = `<span style="font-size:11px;word-break:break-all">${esc(url)}</span>
@@ -1747,6 +1537,106 @@
     document.getElementById("lead-detail-edit").style.display = "none";
   }
 
+  // ═══════════════════════════════════════════════════════════
+  // Promote lead to affiliate
+  // ═══════════════════════════════════════════════════════════
+  function confirmPromote() {
+    // Show the inline confirmation banner, hide the promote button
+    document.getElementById("promote-btn").style.display = "none";
+    document.getElementById("promote-banner").style.display = "flex";
+  }
+
+  function cancelPromote() {
+    document.getElementById("promote-banner").style.display = "none";
+    document.getElementById("promote-btn").style.display = "inline-block";
+  }
+
+  async function executePromote() {
+    const l = currentLead;
+    if (!l) return;
+
+    const confirmBtn = document.getElementById("promote-confirm-btn");
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = "Promoting...";
+
+    try {
+      const today          = todayStr();
+      const eligDays       = parseInt(l.commissionEligibilityPeriod) || 90;
+      const eligibilityEnd = addDaysToToday(eligDays);
+      const promotedAt     = new Date().toISOString();
+
+      // Build the affiliate document from the lead
+      const affiliateData = {
+        // Channel & identity
+        medium:           l.medium          || "",
+        channelName:      l.channelName     || "",
+        channelUrl:       l.channelUrl      || "",
+        firstName:        l.firstName       || "",
+        lastName:         l.lastName        || "",
+        businessEntity:   l.businessEntity  || "",
+        address:          l.address         || "",
+        email:            l.email           || "",
+        paypal:           l.paypal          || "",
+        // Codes
+        offerCode:        l.offerCode       || l.id,
+        portalCode:       generatePortalCode(l.offerCode || l.id),
+        // Commission
+        commissionPct:               parseFloat(l.commissionPct) || 25,
+        commissionEligibilityPeriod: eligDays,
+        // Promo dates — set to today on promotion
+        lastPromoDate:                today,
+        lastPromoUrl:                 "",
+        lastPromoTimestamp:           "",
+        commissionEligibilityEndDate: eligibilityEnd,
+        // Contract & tax (carried over from lead)
+        contractUrl:          l.contractUrl          || "",
+        contractStoragePath:  l.contractStoragePath  || "",
+        taxFormType:          l.taxFormType           || "",
+        taxFormUrl:           l.taxFormUrl            || "",
+        taxFormStoragePath:   l.taxFormStoragePath    || "",
+        // Signature info (carried over)
+        signatureName:    l.signatureName    || "",
+        signatureAgreed:  l.signatureAgreed  || false,
+        // Metadata
+        status:      "ACTIVE",
+        promotedAt,
+        createdAt:   promotedAt,
+      };
+
+      // Write affiliate doc (use offer code as document ID, matching existing pattern)
+      const affiliateId = l.offerCode || l.id;
+      await db.collection(COLLECTION).doc(affiliateId).set(affiliateData);
+
+      // Update lead status to "promoted"
+      await db.collection("leads").doc(l.id).update({
+        onboardingStatus:  "promoted",
+        onboardingEnabled: false,
+        promotedAt,
+      });
+
+      // Update local state
+      Object.assign(l, { onboardingStatus: "promoted", onboardingEnabled: false, promotedAt });
+
+      // Add to local affiliates array and re-sort
+      affiliates.push({ id: affiliateId, ...affiliateData });
+      affiliates.sort((a, b) => (a.lastName||"").localeCompare(b.lastName||""));
+
+      toast(`${l.firstName} ${l.lastName} has been promoted to affiliate.`, "success");
+
+      // Re-render lead detail (will hide promote button, show promoted badge)
+      renderLeadDetail();
+
+    } catch (e) {
+      console.error("Promote error:", e);
+      toast("Error promoting lead: " + e.message, "error");
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = "Yes, Promote";
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // Lead edit mode
+  // ═══════════════════════════════════════════════════════════
   function enterLeadEditMode() {
     const l = currentLead;
     const LEAD_EDIT_FIELDS = [
@@ -1759,7 +1649,7 @@
       { key: "offerCode",                   label: "Offer Code", readonly: true },
       { key: "commissionPct",               label: "Commission %", type: "number" },
       { key: "commissionEligibilityPeriod", label: "Eligibility Period (days)", type: "number" },
-      { key: "onboardingStatus",            label: "Onboarding Status", type: "select", options: ["pending","completed"] },
+      { key: "onboardingStatus",            label: "Onboarding Status", type: "select", options: ["pending","completed","promoted"] },
       { key: "onboardingEnabled",           label: "Onboarding Link Active", type: "select", options: ["true","false"] },
     ];
 
@@ -1785,6 +1675,7 @@
     </div>`;
 
     document.getElementById("lead-edit-form").innerHTML = html;
+    document.getElementById("promote-banner").style.display = "none";
     document.getElementById("lead-detail-view").style.display = "none";
     document.getElementById("lead-detail-edit").style.display = "block";
   }
@@ -1817,6 +1708,9 @@
     }
   }
 
+  // ═══════════════════════════════════════════════════════════
+  // Save new lead
+  // ═══════════════════════════════════════════════════════════
   async function saveNewLead() {
     const offerCode = (document.getElementById("lead-offerCode").value || "").toUpperCase().trim();
     if (!offerCode) { toast("Offer code is required.", "error"); return; }
@@ -1846,17 +1740,17 @@
       const existing = await db.collection("leads").doc(offerCode).get();
       if (existing.exists) { toast("A lead with this offer code already exists.", "error"); btn.disabled = false; return; }
 
-      const existingAffiliate = await db.collection("affiliates").doc(offerCode).get();
+      const existingAffiliate = await db.collection(COLLECTION).doc(offerCode).get();
       if (existingAffiliate.exists) { toast("An affiliate with this offer code already exists.", "error"); btn.disabled = false; return; }
 
       await db.collection("leads").doc(offerCode).set(data);
       leads.push({ id: offerCode, ...data });
-      leads.sort((a, b) => (a.lastName||""    ).localeCompare(b.lastName||""));
+      leads.sort((a, b) => (a.lastName||"").localeCompare(b.lastName||""));
 
       // Reset form
       ["lead-channelName","lead-channelUrl","lead-firstName","lead-lastName","lead-email","lead-offerCode","lead-onboardingUrl"]
         .forEach(id => { const el = document.getElementById(id); if (el) el.value = ""; });
-      document.getElementById("lead-commissionPct").value    = "25";
+      document.getElementById("lead-commissionPct").value     = "25";
       document.getElementById("lead-eligibilityPeriod").value = "90";
 
       toast("Lead saved successfully.", "success");
@@ -1869,8 +1763,6 @@
       btn.disabled = false;
     }
   }
-
-  function closeModal() { document.getElementById("confirm-modal").classList.remove("show"); }
 </script>
 
 </body>
