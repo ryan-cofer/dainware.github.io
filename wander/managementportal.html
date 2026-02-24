@@ -1679,6 +1679,17 @@
       affiliates.push({ id: offerCode, ...affiliateData });
       affiliates.sort((a, b) => (a.lastName||"").localeCompare(b.lastName||""));
 
+      // Send welcome email to affiliate (non-fatal — promotion already succeeded)
+      try {
+        await fetch(`${FUNCTIONS_BASE_URL}/notifyAffiliatePromoted`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ affiliateId: offerCode }),
+        });
+      } catch (emailErr) {
+        console.warn("Welcome email notification failed:", emailErr.message);
+      }
+
       toast(`${l.firstName} ${l.lastName} has been promoted to affiliate.`, "success");
       renderLeadDetail();
 
