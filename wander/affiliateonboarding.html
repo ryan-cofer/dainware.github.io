@@ -8,6 +8,8 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js"></script>
+  <!-- jsPDF for client-side contract PDF generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     :root {
       --ink:      #ffffff;
@@ -509,7 +511,6 @@
       return;
     }
 
-    // Decode code to offer code = lead document ID
     const offerCode = decodeOnboardingCode(code);
     leadId = offerCode;
 
@@ -523,28 +524,24 @@
 
       leadData = doc.data();
 
-      // Check if already completed
       if (leadData.onboardingStatus === "completed") {
         showScreen("complete-screen");
         return;
       }
 
-      // Check if onboarding is enabled
       if (leadData.onboardingEnabled === false) {
         showError("Link Not Active", "This onboarding link is not currently active. Please contact affiliates@dainware.com.");
         return;
       }
 
       // Pre-fill known fields
-      if (leadData.firstName) document.getElementById("ob-firstName").value = leadData.firstName;
-      if (leadData.lastName)  document.getElementById("ob-lastName").value  = leadData.lastName;
-      if (leadData.email)     document.getElementById("ob-email").value     = leadData.email;
+      if (leadData.firstName)  document.getElementById("ob-firstName").value  = leadData.firstName;
+      if (leadData.lastName)   document.getElementById("ob-lastName").value   = leadData.lastName;
+      if (leadData.email)      document.getElementById("ob-email").value      = leadData.email;
       if (leadData.channelUrl) document.getElementById("ob-channelUrl").value = leadData.channelUrl;
 
-      // Render the contract
       renderContract(leadData);
 
-      // Update page title
       const firstName = leadData.firstName || "there";
       document.getElementById("page-title").textContent = `Welcome, ${firstName}!`;
 
@@ -557,21 +554,20 @@
   });
 
   // ─────────────────────────────────────────────────────────────────
-  // Render contract
+  // Render contract (HTML display version)
   // ─────────────────────────────────────────────────────────────────
   function renderContract(lead) {
-    const offerCode    = lead.offerCode || "—";
-    const commPct      = lead.commissionPct || 25;
-    const eligDays     = lead.commissionEligibilityPeriod || 90;
-    const channelUrl   = lead.channelUrl || "[Affiliate to enter URL]";
+    const offerCode     = lead.offerCode || "—";
+    const commPct       = lead.commissionPct || 25;
+    const eligDays      = lead.commissionEligibilityPeriod || 90;
+    const channelUrl    = lead.channelUrl || "[Affiliate to enter URL]";
     const effectiveDate = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 
-    // Net proceeds example calculation
-    const retailPrice  = 19.99;
-    const discounted   = (retailPrice * 0.90).toFixed(2);
-    const appStoreFee  = 0.15;
-    const netProceeds  = (discounted * (1 - appStoreFee)).toFixed(2);
-    const commission   = (netProceeds * commPct / 100).toFixed(2);
+    const retailPrice = 19.99;
+    const discounted  = (retailPrice * 0.90).toFixed(2);
+    const appStoreFee = 0.15;
+    const netProceeds = (discounted * (1 - appStoreFee)).toFixed(2);
+    const commission  = (netProceeds * commPct / 100).toFixed(2);
 
     document.getElementById("contract-box").innerHTML = `
 <h3>WANDER AFFILIATE PARTNERSHIP AGREEMENT</h3>
@@ -639,6 +635,247 @@
   }
 
   // ─────────────────────────────────────────────────────────────────
+  // Generate contract PDF using jsPDF
+  // Returns a Blob of the signed PDF
+  // ─────────────────────────────────────────────────────────────────
+  function generateContractPdf(fields) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: "pt", format: "letter" });
+
+    const lead         = leadData;
+    const offerCode    = lead.offerCode || "—";
+    const commPct      = lead.commissionPct || 25;
+    const eligDays     = lead.commissionEligibilityPeriod || 90;
+    const channelUrl   = fields.channelUrl || lead.channelUrl || "[Not provided]";
+    const effectiveDate = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+    const submittedAt  = new Date().toLocaleString("en-US", { dateStyle: "long", timeStyle: "short" });
+
+    const retailPrice = 19.99;
+    const discounted  = (retailPrice * 0.90).toFixed(2);
+    const appStoreFee = 0.15;
+    const netProceeds = (discounted * (1 - appStoreFee)).toFixed(2);
+    const commission  = (netProceeds * commPct / 100).toFixed(2);
+
+    const pageW   = doc.internal.pageSize.getWidth();
+    const pageH   = doc.internal.pageSize.getHeight();
+    const margin  = 60;
+    const colW    = pageW - margin * 2;
+    let   y       = margin;
+
+    // ── helpers ──────────────────────────────────────────────────
+    function checkPage(needed = 20) {
+      if (y + needed > pageH - margin) {
+        doc.addPage();
+        y = margin;
+      }
+    }
+
+    function addText(text, opts = {}) {
+      const {
+        fontSize = 10,
+        fontStyle = "normal",
+        color = [255, 255, 255],
+        indent = 0,
+        spacing = 4,
+      } = opts;
+
+      doc.setFontSize(fontSize);
+      doc.setFont("helvetica", fontStyle);
+      doc.setTextColor(...color);
+
+      const lines = doc.splitTextToSize(text, colW - indent);
+      for (const line of lines) {
+        checkPage(fontSize * 1.4 + spacing);
+        doc.text(line, margin + indent, y);
+        y += fontSize * 1.4 + spacing;
+      }
+      y += spacing; // extra gap after block
+    }
+
+    function addHeading(text) {
+      y += 6;
+      checkPage(24);
+      addText(text, { fontSize: 11, fontStyle: "bold", color: [255, 255, 255] });
+      // underline
+      doc.setDrawColor(201, 168, 76);
+      doc.setLineWidth(0.5);
+      doc.line(margin, y - 6, margin + colW, y - 6);
+      y += 4;
+    }
+
+    function addSectionTitle(text) {
+      y += 10;
+      checkPage(26);
+      addText(text, { fontSize: 9, fontStyle: "bold", color: [201, 168, 76] });
+    }
+
+    function addPara(text, indent = 0) {
+      addText(text, { fontSize: 9, color: [220, 220, 220], indent });
+    }
+
+    function addHighlight(label, value) {
+      checkPage(20);
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(168, 200, 216);
+      doc.text(label, margin, y);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(201, 168, 76);
+      const labelW = doc.getTextWidth(label);
+      doc.text(value, margin + labelW + 4, y);
+      y += 16;
+    }
+
+    // ── Page background (dark) ────────────────────────────────────
+    function fillPageBg() {
+      doc.setFillColor(23, 88, 115); // --paper colour
+      doc.rect(0, 0, pageW, pageH, "F");
+    }
+
+    // Hook new pages to also get background
+    doc.setPage(1);
+    fillPageBg();
+
+    // Monkey-patch addPage so every new page gets the background
+    const origAddPage = doc.addPage.bind(doc);
+    doc.addPage = function(...args) {
+      origAddPage(...args);
+      fillPageBg();
+      return doc;
+    };
+
+    // ── Title block ───────────────────────────────────────────────
+    addText("WANDER AFFILIATE PARTNERSHIP AGREEMENT", {
+      fontSize: 14, fontStyle: "bold", color: [255, 255, 255],
+    });
+
+    addText(`Effective Date: ${effectiveDate}`, { fontSize: 9, color: [168, 200, 216] });
+    y += 4;
+
+    addPara("This Agreement is entered into between:");
+    addPara("Dainware LLC (\"Wander\") — 900 NW High Point Dr., Lee's Summit, MO 64081 USA — ryan.cofer@dainware.com", 12);
+    addPara(`and ${fields.firstName} ${fields.lastName}${fields.businessEntity ? ` / ${fields.businessEntity}` : ""} ("Affiliate") identified by signature below.`, 12);
+
+    // ── Sections ─────────────────────────────────────────────────
+    addHeading("1. PARTNERSHIP OVERVIEW");
+    addPara("Dainware grants Affiliate the right to promote Wander (the \"App\") using the tracking tools provided by Dainware, including a unique promo code (identified in Exhibit A), QR code, and affiliate URL (collectively, the \"Offer Code\"), in exchange for commission payments as outlined in this Agreement.");
+
+    addHeading("2. COMMISSION STRUCTURE");
+    addPara("2.1 The Offer Code applies exclusively to the in-app purchase with Reference Name \"3 Tour Credits.\" The Offer Code may only be redeemed by users who have not previously made any purchase within the Wander app. The Offer Code provides redeemers with a 10% discount off the retail price so long as the Offer Code remains active.");
+    addPara(`2.2 Dainware will pay Affiliate a ${commPct}% commission on all net proceeds generated from purchases made using the Offer Code.`);
+    addPara("2.3 Net proceeds are defined as amounts actually received by Dainware from Apple or Google after all platform fees, discounts, refunds, and adjustments.");
+    addPara(`2.4 Example calculation: Retail price: $${retailPrice} → after 10% discount: $${discounted} → after 15% App Store fee: $${netProceeds} → Affiliate commission (${commPct}%): $${commission}`);
+    addPara("2.5 Apple, Google or other platforms may at any time raise or lower the fee they charge developers, affecting net proceeds. The retail price is set at Dainware's sole discretion and may change at any time. Commission percentages remain fixed as described in Section 2.2.");
+
+    addHeading("3. PAYMENTS");
+    addPara("3.1 Commissions are paid monthly, approximately 1 calendar month plus 7 days following the sale month (e.g., January sales paid on or around March 7th), aligning with Apple's payout schedule.");
+    addPara("3.2 Payments are issued only if total commission due exceeds $25. Amounts below $25 roll over. Payments require valid tax documentation (W-9 or W-8BEN) on file and are issued via PayPal to the address identified in Exhibit A.");
+    addPara("3.3 Dainware reserves the right to adjust, withhold, or deduct commissions for refunded transactions, chargebacks, or fraudulent activity.");
+    addPara("3.4 Dainware reserves the right to correct commission calculation errors.");
+    addPara("3.5 Dainware will not withhold or reduce commissions except as explicitly described in this Agreement.");
+
+    addHeading("4. CURRENCY & PRICING");
+    addPara("Affiliate commissions are calculated using net proceeds in USD received by Dainware from the applicable platform.");
+
+    addHeading("5. COMMISSION ELIGIBILITY PERIOD");
+    addPara(`5.1 Affiliate earns commissions on all sales made using the Offer Code during the Commission Eligibility Period.`);
+    addPara(`5.2 The Commission Eligibility Period begins with the published date of the Affiliate's first Qualifying Promotion and extends for ${eligDays} days after the most recent Qualifying Promotion.`);
+    addPara(`5.3 Rolling expiration: Each new Qualifying Promotion extends the Commission Eligibility Period for an additional ${eligDays} days.`);
+    addPara("5.4 The Offer Code may remain active for customer use indefinitely, but Affiliate will not earn commissions after the Commission Eligibility Period has expired.");
+    addPara("5.5 Reactivation requires a new agreement and a new Offer Code.");
+
+    addHeading("6. QUALIFYING PROMOTIONS");
+    addPara("6.1 A \"Qualifying Promotion\" includes: a verbal mention of Wander with the Offer Code text AND Wander app icon displayed on screen for at least 7 seconds, OR a verbal mention of Wander with the QR code AND Wander app icon displayed on screen for at least 7 seconds, AND the unaltered affiliate URL in the video description.");
+    addPara("6.2 Affiliate must self-report each Qualifying Promotion via the Affiliate Portal within 48 hours of publishing, including a link to the video and the approximate minute mark of the promotion.");
+    addPara("6.3 Affiliate must ensure all Qualifying Promotions remain publicly accessible for the duration of the Commission Eligibility Period. Removal or alteration immediately terminates commission eligibility.");
+
+    addHeading("7. DISTRIBUTION CHANNELS");
+    addPara("Affiliate may promote Wander on any of their preferred channels. The Commission Eligibility Period is only initiated and extended by Qualifying Promotions as defined in Section 6.");
+
+    addHeading("8. REPORTING & TRACKING");
+    addPara("Dainware will provide Affiliate with access to an Affiliate Portal to track Offer Code usage. Report accuracy is on a best-effort basis and depends on third parties. In the event of a discrepancy, official platform data (Apple App Store Connect, Google Play Console, etc.) shall serve as the authoritative basis for commission calculations.");
+
+    addHeading("9. TERM & TERMINATION");
+    addPara(`This Agreement begins on the Effective Date and continues until explicitly terminated by either party, or until ${eligDays} days have elapsed since the last Qualifying Promotion (Passive Termination). Either party may terminate with written notice. Upon termination, Affiliate earns commissions for the remainder of the Commission Eligibility Period unless Affiliate has violated this Agreement.`);
+
+    addHeading("10. REPRESENTATIONS & WARRANTIES");
+    addPara("Affiliate represents they have the right to promote the App on their platforms. Affiliate is solely responsible for complying with all applicable laws and disclosure requirements (including FTC requirements). Affiliate agrees not to engage in fraudulent activity or make false statements about the App or Dainware LLC.");
+
+    addHeading("11–19. STANDARD TERMS");
+    addPara("Limitation of Liability: Dainware's total liability shall not exceed total commissions paid in the twelve months preceding any claim. No earnings are guaranteed. Affiliate is granted a limited license to use Wander branding solely for promotional purposes. Affiliate is an independent contractor. Dainware may modify non-essential terms with 30 days' written notice. Disputes resolved in the courts of Missouri. This Agreement is governed by the laws of the State of Missouri.");
+
+    addHeading("20. ELECTRONIC SIGNATURES");
+    addPara("Electronic signatures, including typed names and dates, are legally binding and have the same legal effect as handwritten signatures, in accordance with the Electronic Signatures in Global and National Commerce Act (E-SIGN Act) and applicable international equivalents.");
+
+    // ── Exhibit A ────────────────────────────────────────────────
+    y += 10;
+    checkPage(120);
+    doc.setDrawColor(201, 168, 76);
+    doc.setLineWidth(0.5);
+    doc.line(margin, y, margin + colW, y);
+    y += 14;
+
+    addText("EXHIBIT A — AFFILIATE INFORMATION", {
+      fontSize: 11, fontStyle: "bold", color: [201, 168, 76],
+    });
+
+    addHighlight("Promo Code:             ", offerCode);
+    addHighlight("YouTube Channel URL:    ", channelUrl);
+    addHighlight("PayPal Address:         ", fields.paypal || "[Not provided]");
+    addHighlight("Physical Address:       ", fields.address || "[Not provided]");
+    addHighlight("Tax Form Type:          ", fields.taxFormType || "[Not provided]");
+    if (fields.businessEntity) addHighlight("Business Entity:        ", fields.businessEntity);
+
+    // ── Signature block ───────────────────────────────────────────
+    y += 16;
+    checkPage(120);
+    doc.setDrawColor(201, 168, 76);
+    doc.line(margin, y, margin + colW, y);
+    y += 14;
+
+    addText("ELECTRONIC SIGNATURE & ACCEPTANCE", {
+      fontSize: 11, fontStyle: "bold", color: [201, 168, 76],
+    });
+
+    addPara("By submitting this form, the Affiliate confirms they have read, understood, and agreed to all terms of this Agreement.");
+    y += 4;
+
+    // Signature line
+    doc.setFontSize(20);
+    doc.setFont("times", "italic");
+    doc.setTextColor(201, 168, 76);
+    checkPage(36);
+    doc.text(fields.signature, margin, y);
+    y += 28;
+
+    doc.setDrawColor(168, 200, 216);
+    doc.setLineWidth(0.5);
+    doc.line(margin, y, margin + 280, y);
+    y += 14;
+
+    addText("Affiliate Electronic Signature", { fontSize: 8, color: [168, 200, 216] });
+    addText(`Submitted: ${submittedAt}`, { fontSize: 8, color: [168, 200, 216] });
+    addText(`Full Name: ${fields.firstName} ${fields.lastName}`, { fontSize: 9, color: [220, 220, 220] });
+    addText(`Email: ${fields.email}`, { fontSize: 9, color: [220, 220, 220] });
+
+    // ── Footer on every page ──────────────────────────────────────
+    const totalPages = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      doc.setFontSize(7);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(168, 200, 216);
+      doc.text(
+        `Wander Affiliate Partnership Agreement — ${offerCode} — Page ${i} of ${totalPages}`,
+        margin,
+        pageH - 30
+      );
+    }
+
+    return doc.output("blob");
+  }
+
+  // ─────────────────────────────────────────────────────────────────
   // Tax form file input
   // ─────────────────────────────────────────────────────────────────
   function handleTaxFormChange(input) {
@@ -662,74 +899,87 @@
   // Submit
   // ─────────────────────────────────────────────────────────────────
   async function submitOnboarding() {
-    const firstName   = v("ob-firstName");
-    const lastName    = v("ob-lastName");
-    const address     = v("ob-address");
-    const email       = v("ob-email");
-    const paypal      = v("ob-paypal");
-    const channelUrl  = v("ob-channelUrl");
-    const taxFormType = document.getElementById("ob-taxFormType").value;
-    const signature   = v("ob-signature");
-    const agreed      = document.getElementById("ob-agree").checked;
-    const taxFile     = document.getElementById("ob-taxForm").files[0];
-    const status      = document.getElementById("submit-status");
+    const firstName      = v("ob-firstName");
+    const lastName       = v("ob-lastName");
+    const businessEntity = v("ob-businessEntity");
+    const address        = v("ob-address");
+    const email          = v("ob-email");
+    const paypal         = v("ob-paypal");
+    const channelUrl     = v("ob-channelUrl");
+    const taxFormType    = document.getElementById("ob-taxFormType").value;
+    const signature      = v("ob-signature");
+    const agreed         = document.getElementById("ob-agree").checked;
+    const taxFile        = document.getElementById("ob-taxForm").files[0];
 
     // Validation
-    if (!firstName || !lastName) { setStatus("Please enter your first and last name.", true); return; }
-    if (!address)    { setStatus("Please enter your physical address.", true); return; }
-    if (!email)      { setStatus("Please enter your email address.", true); return; }
-    if (!paypal)     { setStatus("Please enter your PayPal address.", true); return; }
-    if (!channelUrl) { setStatus("Please enter your YouTube channel URL.", true); return; }
-    if (!taxFormType){ setStatus("Please select your tax form type.", true); return; }
-    if (!taxFile)    { setStatus("Please upload your completed tax form PDF.", true); return; }
-    if (!signature)  { setStatus("Please type your full legal name as your electronic signature.", true); return; }
-    if (!agreed)     { setStatus("Please check the agreement checkbox to proceed.", true); return; }
+    if (!firstName || !lastName)  { setStatus("Please enter your first and last name.", true); return; }
+    if (!address)                  { setStatus("Please enter your physical address.", true); return; }
+    if (!email)                    { setStatus("Please enter your email address.", true); return; }
+    if (!paypal)                   { setStatus("Please enter your PayPal address.", true); return; }
+    if (!channelUrl)               { setStatus("Please enter your YouTube channel URL.", true); return; }
+    if (!taxFormType)              { setStatus("Please select your tax form type.", true); return; }
+    if (!taxFile)                  { setStatus("Please upload your completed tax form PDF.", true); return; }
+    if (!signature)                { setStatus("Please type your full legal name as your electronic signature.", true); return; }
+    if (!agreed)                   { setStatus("Please check the agreement checkbox to proceed.", true); return; }
 
     const btn = document.getElementById("submit-btn");
     btn.disabled = true;
-    setStatus(`<span class="loading-spinner"></span> Uploading tax form...`);
 
     try {
-      // 1. Upload tax form to Firebase Storage
-      const safeName     = taxFile.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-      const storagePath  = `affiliate-tax-forms/${leadId}/${safeName}`;
-      const storageRef   = storage.ref(storagePath);
-      const snapshot     = await storageRef.put(taxFile, { contentType: "application/pdf" });
-      const taxFormUrl   = await snapshot.ref.getDownloadURL();
+      // 1. Upload tax form PDF
+      setStatus(`<span class="loading-spinner"></span> Uploading tax form...`);
+      const safeTaxName    = taxFile.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+      const taxStoragePath = `affiliate-tax-forms/${leadId}/${safeTaxName}`;
+      const taxRef         = storage.ref(taxStoragePath);
+      const taxSnapshot    = await taxRef.put(taxFile, { contentType: "application/pdf" });
+      const taxFormUrl     = await taxSnapshot.ref.getDownloadURL();
 
+      // 2. Generate & upload signed contract PDF
+      setStatus(`<span class="loading-spinner"></span> Generating signed contract...`);
+      const contractFields = { firstName, lastName, businessEntity, address, email, paypal, channelUrl, taxFormType, signature };
+      const contractBlob   = generateContractPdf(contractFields);
+
+      const submittedAt        = new Date().toISOString();
+      const contractFileName   = `contract_signed_${leadId}_${submittedAt.slice(0,10)}.pdf`;
+      const contractStoragePath = `affiliate-contracts/${leadId}/${contractFileName}`;
+      const contractRef        = storage.ref(contractStoragePath);
+
+      setStatus(`<span class="loading-spinner"></span> Uploading signed contract...`);
+      const contractSnapshot = await contractRef.put(contractBlob, { contentType: "application/pdf" });
+      const contractUrl      = await contractSnapshot.ref.getDownloadURL();
+
+      // 3. Save all data to Firestore
       setStatus(`<span class="loading-spinner"></span> Saving your information...`);
+      const contractSnapshot2 = document.getElementById("contract-box").innerText; // plain text snapshot for reference
 
-      // 2. Capture contract snapshot text
-      const contractSnapshot = document.getElementById("contract-box").innerText;
-
-      // 3. Update lead record in Firestore
-      const submittedAt = new Date().toISOString();
       await db.collection("leads").doc(leadId).update({
         // Affiliate-provided info
         firstName,
         lastName,
-        businessEntity: v("ob-businessEntity"),
+        businessEntity,
         address,
         email,
         paypal,
         channelUrl,
         // Tax form
         taxFormType,
-        taxFormStoragePath: storagePath,
+        taxFormStoragePath: taxStoragePath,
         taxFormUrl,
+        // Signed contract PDF
+        contractUrl,
+        contractStoragePath,
         // Signature & agreement
-        signatureName: signature,
-        signatureAgreed: true,
-        contractSnapshot,
+        signatureName:      signature,
+        signatureAgreed:    true,
+        contractSnapshot:   contractSnapshot2,
         // Status
         onboardingStatus:      "completed",
         onboardingEnabled:     false,
         onboardingCompletedAt: submittedAt,
       });
 
-      setStatus(`<span class="loading-spinner"></span> Sending confirmation...`);
-
       // 4. Trigger email notification
+      setStatus(`<span class="loading-spinner"></span> Sending confirmation...`);
       try {
         await fetch(`${FUNCTIONS_BASE}/notifyOnboardingComplete`, {
           method: "POST",
@@ -737,7 +987,7 @@
           body: JSON.stringify({ leadId }),
         });
       } catch (emailErr) {
-        // Non-fatal — onboarding is still complete even if email fails
+        // Non-fatal
         console.warn("Email notification failed:", emailErr.message);
       }
 
