@@ -906,15 +906,10 @@
     var qrUrl = affiliateData ? (affiliateData.promoQrUrl || "") : "";
     if (!qrUrl) return;
     var offerCode = affiliateData.offerCode || OFFER_CODE || "";
-    fetch(qrUrl)
-      .then(function(resp) { return resp.blob(); })
-      .then(function(blob) {
-        var a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
-        a.download = offerCode + "_qr.png";
-        a.click();
-        URL.revokeObjectURL(a.href);
-      });
+    var a = document.createElement("a");
+    a.href = qrUrl + (qrUrl.includes("?") ? "&" : "?") + "fl_attachment=" + encodeURIComponent(offerCode + "_qr.png");
+    a.target = "_blank";
+    a.click();
   }
 </script>
 
