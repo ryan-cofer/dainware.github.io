@@ -126,7 +126,7 @@
     /* ── Promo assets panel ── */
     .promo-assets {
       display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
       gap: 1px;
       background: var(--border);
       border: 1px solid var(--border);
@@ -449,6 +449,10 @@
         <div class="promo-asset-label">Promo QR Code</div>
         <div class="promo-asset-value" id="asset-qr"></div>
       </div>
+      <div class="promo-asset-cell">
+        <div class="promo-asset-label">App Icon</div>
+        <div class="promo-asset-value" id="asset-icon"></div>
+      </div>
     </div>
 
     <!-- ── Eligibility Bar ── -->
@@ -667,7 +671,6 @@
   // ── Promo assets panel ────────────────────────────────────────────
   function populatePromoAssets() {
     if (!affiliateData) return;
-
     var offerCode = affiliateData.offerCode || OFFER_CODE || "";
     var promoUrl  = affiliateData.promoUrl  || "";
     var qrUrl     = affiliateData.promoQrUrl || "";
@@ -694,6 +697,10 @@
     } else {
       qrEl.innerHTML = '<span style="color:var(--muted);font-size:11px;">Not available yet — contact us.</span>';
     }
+
+    // App Icon download
+    document.getElementById("asset-icon").innerHTML =
+      '<a href="/wander/appIconRounded.png" target="_blank" rel="noopener" download="wander_appIcon.png">Download PNG</a>';
   }
 
   // ── Eligibility bar ───────────────────────────────────────────────
