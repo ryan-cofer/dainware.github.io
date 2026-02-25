@@ -101,17 +101,6 @@
       margin-bottom: 2.5rem;
     }
 
-    /*.section-label {
-      font-size: 25px;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      color: var(--ink);
-      padding-bottom: 0.25rem;
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 1.25rem;
-      margin-top: 2rem;
-    }*/
-
     .section-label {
       font-size: 22px;
       letter-spacing: -0.5px;
@@ -164,6 +153,13 @@
     .contract-box .highlight {
       color: var(--gold);
       font-weight: 600;
+    }
+
+    /* Dynamic placeholders in contract that haven't been filled yet */
+    .contract-box .pending {
+      color: var(--gold);
+      font-style: italic;
+      opacity: 0.75;
     }
 
     /* ── FORM FIELDS ── */
@@ -377,44 +373,38 @@
 <!-- ONBOARDING FORM -->
 <div id="onboarding-screen">
   <main>
-    <div class="page-subtitle">Please review your partnership agreement below and complete the required fields.</div>
+    <div class="page-subtitle">Please complete your information below, then review and sign your partnership agreement.</div>
 
-    <!-- CONTRACT -->
-    <div class="section-label">Partnership Agreement</div>
-    <div class="contract-box" id="contract-box">
-      <!-- Rendered by JS -->
-    </div>
-
-    <!-- AFFILIATE INFO -->
+    <!-- AFFILIATE INFO (moved above contract) -->
     <div class="section-label">Your Information</div>
     <div class="form-grid">
       <div class="form-group">
         <label>First Name</label>
-        <input type="text" id="ob-firstName" />
+        <input type="text" id="ob-firstName" oninput="updateContract()" />
       </div>
       <div class="form-group">
         <label>Last Name</label>
-        <input type="text" id="ob-lastName" />
+        <input type="text" id="ob-lastName" oninput="updateContract()" />
       </div>
       <div class="form-group full-width">
         <label>Business Entity <span style="color:var(--muted);font-size:9px;">(if applicable — leave blank if signing as an individual)</span></label>
-        <input type="text" id="ob-businessEntity" placeholder="e.g. My Channel LLC" />
+        <input type="text" id="ob-businessEntity" placeholder="e.g. My Channel LLC" oninput="updateContract()" />
       </div>
       <div class="form-group full-width">
         <label>Physical Address</label>
-        <input type="text" id="ob-address" placeholder="Street, City, State/Province, Postal Code, Country" />
+        <input type="text" id="ob-address" placeholder="Street, City, State/Province, Postal Code, Country" oninput="updateContract()" />
       </div>
       <div class="form-group">
         <label>Email Address</label>
-        <input type="email" id="ob-email" />
+        <input type="email" id="ob-email" oninput="updateContract()" />
       </div>
       <div class="form-group">
         <label>PayPal Address</label>
-        <input type="email" id="ob-paypal" placeholder="PayPal email for commission payments" />
+        <input type="email" id="ob-paypal" placeholder="PayPal email for commission payments" oninput="updateContract()" />
       </div>
       <div class="form-group full-width">
         <label>YouTube Channel URL</label>
-        <input type="text" id="ob-channelUrl" placeholder="https://youtube.com/@yourchannel" />
+        <input type="text" id="ob-channelUrl" placeholder="https://youtube.com/@yourchannel" oninput="updateContract()" />
       </div>
     </div>
 
@@ -444,6 +434,12 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- CONTRACT -->
+    <div class="section-label">Partnership Agreement</div>
+    <div class="contract-box" id="contract-box">
+      <!-- Rendered by JS -->
     </div>
 
     <!-- SIGNATURE -->
@@ -553,10 +549,8 @@
       if (leadData.email)      document.getElementById("ob-email").value      = leadData.email;
       if (leadData.channelUrl) document.getElementById("ob-channelUrl").value = leadData.channelUrl;
 
+      // Initial contract render
       renderContract(leadData);
-
-      const firstName = leadData.firstName || "there";
-      //document.getElementById("page-title").textContent = `Welcome!`;
 
       showScreen("onboarding-screen");
 
@@ -567,13 +561,30 @@
   });
 
   // ─────────────────────────────────────────────────────────────────
-  // Render contract (HTML display version)
+  // Called on every keystroke in Your Information fields
+  // ─────────────────────────────────────────────────────────────────
+  function updateContract() {
+    if (!leadData) return;
+    renderContract(leadData);
+  }
+
+  // ─────────────────────────────────────────────────────────────────
+  // Helper: return field value or a gold italic placeholder span
+  // ─────────────────────────────────────────────────────────────────
+  function fieldOrPending(value, placeholder) {
+    const trimmed = (value || "").trim();
+    return trimmed
+      ? esc(trimmed)
+      : `<span class="pending">${placeholder}</span>`;
+  }
+
+  // ─────────────────────────────────────────────────────────────────
+  // Render contract (HTML display version) — reads live form values
   // ─────────────────────────────────────────────────────────────────
   function renderContract(lead) {
     const offerCode     = lead.offerCode || "—";
     const commPct       = lead.commissionPct || 25;
     const eligDays      = lead.commissionEligibilityPeriod || 90;
-    const channelUrl    = lead.channelUrl || "[Affiliate to enter URL]";
     const effectiveDate = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 
     const retailPrice = 19.99;
@@ -582,11 +593,35 @@
     const netProceeds = (discounted * (1 - appStoreFee)).toFixed(2);
     const commission  = (netProceeds * commPct / 100).toFixed(2);
 
+    // Read live form values
+    const firstName      = document.getElementById("ob-firstName")     ? document.getElementById("ob-firstName").value.trim()     : "";
+    const lastName       = document.getElementById("ob-lastName")      ? document.getElementById("ob-lastName").value.trim()      : "";
+    const businessEntity = document.getElementById("ob-businessEntity")? document.getElementById("ob-businessEntity").value.trim(): "";
+    const address        = document.getElementById("ob-address")       ? document.getElementById("ob-address").value.trim()       : "";
+    const email          = document.getElementById("ob-email")         ? document.getElementById("ob-email").value.trim()         : "";
+    const paypal         = document.getElementById("ob-paypal")        ? document.getElementById("ob-paypal").value.trim()        : "";
+    const channelUrl     = document.getElementById("ob-channelUrl")    ? document.getElementById("ob-channelUrl").value.trim()    : (lead.channelUrl || "");
+
+    // Build affiliate name display
+    let affiliateName = "";
+    if (firstName || lastName) {
+      affiliateName = [firstName, lastName].filter(Boolean).join(" ");
+      if (businessEntity) affiliateName += ` / ${businessEntity}`;
+    } else if (businessEntity) {
+      affiliateName = businessEntity;
+    }
+
+    const affiliateNameDisplay  = affiliateName  ? esc(affiliateName)  : `<span class="pending">[Affiliate Name]</span>`;
+    const addressDisplay        = address        ? esc(address)        : `<span class="pending">[Affiliate Physical Address]</span>`;
+    const emailDisplay          = email          ? esc(email)          : `<span class="pending">[Affiliate Email Address]</span>`;
+    const paypalDisplay         = paypal         ? esc(paypal)         : `<span class="pending">[Affiliate PayPal Address]</span>`;
+    const channelUrlDisplay     = channelUrl     ? esc(channelUrl)     : `<span class="pending">[Affiliate YouTube Channel URL]</span>`;
+
     document.getElementById("contract-box").innerHTML = `
 <h3>WANDER AFFILIATE PARTNERSHIP AGREEMENT</h3>
 <p>This Agreement is entered into as of ${effectiveDate} ("Effective Date") between:</p>
 <p><strong>Dainware LLC ("Wander")</strong><br>900 NW High Point Dr., Lee's Summit, MO 64081 USA<br>ryan.cofer@dainware.com</p>
-<p>and <strong>[Affiliate first and last name(s) or Affiliate business entity]</strong> ("Affiliate")<br>[Affiliate Physical Address]<br>[Affiliate Email Address]</p>
+<p>and <strong>${affiliateNameDisplay}</strong> ("Affiliate")<br>${addressDisplay}<br>${emailDisplay}</p>
 
 <h3>1. PARTNERSHIP OVERVIEW</h3>
 <p>Dainware grants Affiliate the right to promote Wander (the "App") to Affiliate's audience using the tracking tools provided by Dainware, including a unique promo code (identified in Exhibit A), QR code, and affiliate URL (collectively, the "Offer Code"), in exchange for commission payments as outlined in this Agreement.</p>
@@ -624,7 +659,7 @@
 <ul>
   <li>Payments are issued only if the total commission due exceeds $25. Amounts below $25 roll over to the following month until the $25 threshold is met.</li>
   <li>Payments will not be issued until Affiliate has provided valid tax documentation (W-9 for US-based Affiliates, W-8BEN for international Affiliates) to Dainware. These forms must be emailed to affiliates@dainware.com.</li>
-  <li>Payments are issued via PayPal and to the PayPal address identified in Exhibit A.</li>
+  <li>Payments are issued via PayPal to the PayPal address identified in Exhibit A.</li>
 </ul>
 <p>3.3 Right to Withhold for Refunds, Fraud, or Chargebacks</p>
 <ul>
@@ -734,13 +769,15 @@
 <p>Including Exhibit A attached hereto:</p>
 <p>The parties below agree that electronic signatures, including typed names and dates, are legally binding and have the same legal effect as handwritten signatures, in accordance with the Electronic Signatures in Global and National Commerce Act (E-SIGN Act) and any applicable state or international equivalent.</p>
 <p><strong>Dainware LLC:</strong><br>Ryan Cofer, Manager<br>Date: 2/20/2026</p>
-<p><strong>Affiliate:</strong><br>[Affiliate to enter first and last name(s)]<br>Date: [Affiliate to enter date of signature here]</p>
+<p><strong>Affiliate:</strong><br>${affiliateNameDisplay}<br>Date: ${effectiveDate}</p>
 
 <div class="exhibit">
   <h3>EXHIBIT A — AFFILIATE INFORMATION</h3>
   <p><strong>Promo Code:</strong> ${esc(offerCode)}</p>
-  <p><strong>Affiliate YouTube Channel URL:</strong> ${esc(channelUrl)}</p>
-  <p><strong>Affiliate PayPal address:</strong> [Provided in onboarding form above]</p>
+  <p><strong>Affiliate YouTube Channel URL:</strong> ${channelUrlDisplay}</p>
+  <p><strong>Affiliate PayPal Address:</strong> ${paypalDisplay}</p>
+  <p><strong>Affiliate Physical Address:</strong> ${addressDisplay}</p>
+  <p><strong>Affiliate Email Address:</strong> ${emailDisplay}</p>
 </div>
     `;
   }
@@ -757,7 +794,6 @@
     const offerCode    = lead.offerCode || "—";
     const commPct      = lead.commissionPct || 25;
     const eligDays     = lead.commissionEligibilityPeriod || 90;
-    const channelUrl   = fields.channelUrl || lead.channelUrl || "[Not provided]";
     const effectiveDate = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
     const submittedAt  = new Date().toLocaleString("en-US", { dateStyle: "long", timeStyle: "short" });
 
@@ -800,24 +836,17 @@
         doc.text(line, margin + indent, y);
         y += fontSize * 1.4 + spacing;
       }
-      y += spacing; // extra gap after block
+      y += spacing;
     }
 
     function addHeading(text) {
       y += 6;
       checkPage(24);
       addText(text, { fontSize: 11, fontStyle: "bold", color: [255, 255, 255] });
-      // underline
       doc.setDrawColor(201, 168, 76);
       doc.setLineWidth(0.5);
       doc.line(margin, y - 6, margin + colW, y - 6);
       y += 4;
-    }
-
-    function addSectionTitle(text) {
-      y += 10;
-      checkPage(26);
-      addText(text, { fontSize: 9, fontStyle: "bold", color: [201, 168, 76] });
     }
 
     function addPara(text, indent = 0) {
@@ -839,15 +868,13 @@
 
     // ── Page background (dark) ────────────────────────────────────
     function fillPageBg() {
-      doc.setFillColor(23, 88, 115); // --paper colour
+      doc.setFillColor(23, 88, 115);
       doc.rect(0, 0, pageW, pageH, "F");
     }
 
-    // Hook new pages to also get background
     doc.setPage(1);
     fillPageBg();
 
-    // Monkey-patch addPage so every new page gets the background
     const origAddPage = doc.addPage.bind(doc);
     doc.addPage = function(...args) {
       origAddPage(...args);
@@ -864,59 +891,123 @@
     y += 4;
 
     addPara("This Agreement is entered into between:");
-    addPara("Dainware LLC (\"Wander\") — 900 NW High Point Dr., Lee's Summit, MO 64081 USA — ryan.cofer@dainware.com", 12);
-    addPara(`and ${fields.firstName} ${fields.lastName}${fields.businessEntity ? ` / ${fields.businessEntity}` : ""} ("Affiliate") identified by signature below.`, 12);
+    addPara(`Dainware LLC ("Wander") — 900 NW High Point Dr., Lee's Summit, MO 64081 USA — ryan.cofer@dainware.com`, 12);
+
+    let affiliateName = [fields.firstName, fields.lastName].filter(Boolean).join(" ");
+    if (fields.businessEntity) affiliateName += ` / ${fields.businessEntity}`;
+    addPara(`and ${affiliateName || "[Affiliate Name]"} ("Affiliate")`, 12);
+    addPara(`Address: ${fields.address || "[Not provided]"}`, 12);
+    addPara(`Email: ${fields.email || "[Not provided]"}`, 12);
 
     // ── Sections ─────────────────────────────────────────────────
     addHeading("1. PARTNERSHIP OVERVIEW");
-    addPara("Dainware grants Affiliate the right to promote Wander (the \"App\") using the tracking tools provided by Dainware, including a unique promo code (identified in Exhibit A), QR code, and affiliate URL (collectively, the \"Offer Code\"), in exchange for commission payments as outlined in this Agreement.");
+    addPara("Dainware grants Affiliate the right to promote Wander (the \"App\") to Affiliate's audience using the tracking tools provided by Dainware, including a unique promo code (identified in Exhibit A), QR code, and affiliate URL (collectively, the \"Offer Code\"), in exchange for commission payments as outlined in this Agreement.");
 
     addHeading("2. COMMISSION STRUCTURE");
-    addPara("2.1 The Offer Code applies exclusively to the in-app purchase with Reference Name \"3 Tour Credits.\" The Offer Code may only be redeemed by users who have not previously made any purchase within the Wander app. The Offer Code provides redeemers with a 10% discount off the retail price so long as the Offer Code remains active.");
-    addPara(`2.2 Dainware will pay Affiliate a ${commPct}% commission on all net proceeds generated from purchases made using the Offer Code.`);
+    addPara("2.1 Offer Code effectiveness");
+    addPara("• The Offer Code applies exclusively to the in-app purchase with Reference Name \"3 Tour Credits\" (the \"In-App Purchase\").", 12);
+    addPara("• The Offer Code may only be redeemed by users who have not previously made any purchase within the Wander app.", 12);
+    addPara("• The Offer Code will provide the redeemer with a 10% discount off the retail price of the In-App Purchase so long as the Offer Code remains active.", 12);
+    addPara(`2.2 Dainware will pay Affiliate a ${commPct}% commission on all net proceeds generated from purchases of the In-App Purchase made using the Offer Code.`);
     addPara("2.3 Net proceeds are defined as amounts actually received by Dainware from Apple or Google after all platform fees, discounts, refunds, and adjustments.");
-    addPara(`2.4 Example calculation: Retail price: $${retailPrice} → after 10% discount: $${discounted} → after 15% App Store fee: $${netProceeds} → Affiliate commission (${commPct}%): $${commission}`);
-    addPara("2.5 Apple, Google or other platforms may at any time raise or lower the fee they charge developers, affecting net proceeds. The retail price is set at Dainware's sole discretion and may change at any time. Commission percentages remain fixed as described in Section 2.2.");
+    addPara("2.4 Example calculation:");
+    addPara(`• In-App Purchase retail price: $${retailPrice}`, 12);
+    addPara(`• Proceeds after 10% customer discount: $${discounted}`, 12);
+    addPara(`• Net proceeds after 15% App Store / Play Store fee: $${netProceeds}`, 12);
+    addPara(`• Affiliate commission (${commPct}% of $${netProceeds}): $${commission}`, 12);
+    addPara("2.5 Apple, Google or other platforms may at any time raise or lower the fee they charge developers. Changes to their fee structure may affect net proceeds on which the Affiliate commission percentage is calculated.");
+    addPara("2.6 The retail price of the in-app purchase is set at Dainware's sole discretion and may be changed at any time. Commission percentages remain fixed as described in Section 2.2, but the dollar amount of commissions will reflect the then-current retail price.");
 
     addHeading("3. PAYMENTS");
-    addPara("3.1 Commissions are paid monthly, approximately 1 calendar month plus 7 days following the sale month (e.g., January sales paid on or around March 7th), aligning with Apple's payout schedule.");
-    addPara("3.2 Payments are issued only if total commission due exceeds $25. Amounts below $25 roll over. Payments require valid tax documentation (W-9 or W-8BEN) on file and are issued via PayPal to the address identified in Exhibit A.");
-    addPara("3.3 Dainware reserves the right to adjust, withhold, or deduct commissions for refunded transactions, chargebacks, or fraudulent activity.");
-    addPara("3.4 Dainware reserves the right to correct commission calculation errors.");
+    addPara("3.1 Payment timing — Commissions are paid monthly:");
+    addPara("• Sales generated in any given month are paid approximately 1 calendar month plus 7 days following the sale month.", 12);
+    addPara("• Example: Sales generated in January are paid on or around March 7th.", 12);
+    addPara("• This timing aligns with Apple's payout schedule to Dainware.", 12);
+    addPara("3.2 Payment issuance:");
+    addPara("• Payments are issued only if the total commission due exceeds $25. Amounts below $25 roll over.", 12);
+    addPara("• Payments will not be issued until Affiliate has provided valid tax documentation (W-9 or W-8BEN) to Dainware.", 12);
+    addPara("• Payments are issued via PayPal to the PayPal address identified in Exhibit A.", 12);
+    addPara("3.3 Dainware reserves the right to adjust, withhold, or deduct commissions for refunded transactions, chargebacks, fraudulent activity, or transactions determined to be invalid.");
+    addPara("3.4 Dainware reserves the right to correct commission calculation errors and adjust future payments accordingly.");
     addPara("3.5 Dainware will not withhold or reduce commissions except as explicitly described in this Agreement.");
 
     addHeading("4. CURRENCY & PRICING");
-    addPara("Affiliate commissions are calculated using net proceeds in USD received by Dainware from the applicable platform.");
+    addPara("The Affiliate's commission will be calculated using the net proceeds in USD received by Dainware from the platform on which the purchase was made.");
 
     addHeading("5. COMMISSION ELIGIBILITY PERIOD");
-    addPara(`5.1 Affiliate earns commissions on all sales made using the Offer Code during the Commission Eligibility Period.`);
+    addPara("5.1 Affiliate earns commissions on all sales made using the Offer Code during the Commission Eligibility Period.");
     addPara(`5.2 The Commission Eligibility Period begins with the published date of the Affiliate's first Qualifying Promotion and extends for ${eligDays} days after the most recent Qualifying Promotion.`);
-    addPara(`5.3 Rolling expiration: Each new Qualifying Promotion extends the Commission Eligibility Period for an additional ${eligDays} days.`);
-    addPara("5.4 The Offer Code may remain active for customer use indefinitely, but Affiliate will not earn commissions after the Commission Eligibility Period has expired.");
-    addPara("5.5 Reactivation requires a new agreement and a new Offer Code.");
+    addPara(`5.3 Rolling ${eligDays} day expiration: Each new Qualifying Promotion extends the Commission Eligibility Period for an additional ${eligDays} days.`);
+    addPara("5.4 Example: Affiliate posts on January 1, 2026 → eligibility runs through April 1, 2026. A new post on March 15, 2026 resets to June 13, 2026.");
+    addPara("5.5 The Offer Code may remain active for customer use indefinitely, but Affiliate will not earn commissions after the Commission Eligibility Period has expired.");
+    addPara("5.6 Reactivation requires a new agreement with Dainware and a new Offer Code.");
 
     addHeading("6. QUALIFYING PROMOTIONS");
-    addPara("6.1 A \"Qualifying Promotion\" includes: a verbal mention of Wander with the Offer Code text AND Wander app icon displayed on screen for at least 7 seconds, OR a verbal mention of Wander with the QR code AND Wander app icon displayed on screen for at least 7 seconds, AND the unaltered affiliate URL in the video description.");
+    addPara("6.1 A \"Qualifying Promotion\" includes:");
+    addPara("• A verbal mention of Wander with the Offer Code text AND Wander app icon displayed on screen for at least 7 seconds, OR a verbal mention of Wander with the QR code AND Wander app icon displayed on screen for at least 7 seconds.", 12);
+    addPara("• The unaltered affiliate URL in the video description.", 12);
     addPara("6.2 Affiliate must self-report each Qualifying Promotion via the Affiliate Portal within 48 hours of publishing, including a link to the video and the approximate minute mark of the promotion.");
     addPara("6.3 Affiliate must ensure all Qualifying Promotions remain publicly accessible for the duration of the Commission Eligibility Period. Removal or alteration immediately terminates commission eligibility.");
 
     addHeading("7. DISTRIBUTION CHANNELS");
-    addPara("Affiliate may promote Wander on any of their preferred channels. The Commission Eligibility Period is only initiated and extended by Qualifying Promotions as defined in Section 6.");
+    addPara("Wander grants the Affiliate the right to promote Wander using the Offer Code on any of their preferred distribution channels (blogs, social media, or otherwise) in addition to YouTube. The Commission Eligibility Period is only initiated and extended by Qualifying Promotions as defined in Section 6.");
 
     addHeading("8. REPORTING & TRACKING");
-    addPara("Dainware will provide Affiliate with access to an Affiliate Portal to track Offer Code usage. Report accuracy is on a best-effort basis and depends on third parties. In the event of a discrepancy, official platform data (Apple App Store Connect, Google Play Console, etc.) shall serve as the authoritative basis for commission calculations.");
+    addPara("8.1 Dainware will provide Affiliate with the ability to track Offer Code usage via the \"Affiliate Portal\".");
+    addPara("8.2 Report accuracy is on a best-effort basis and is dependent on third parties including Apple App Store API, Google Play Store API, and Google Firebase Functions. In the event of a discrepancy, data sourced directly from Apple App Store Connect, Google Play Console, or other official platform reporting systems shall serve as the authoritative basis for commission calculations.");
 
     addHeading("9. TERM & TERMINATION");
-    addPara(`This Agreement begins on the Effective Date and continues until explicitly terminated by either party, or until ${eligDays} days have elapsed since the last Qualifying Promotion (Passive Termination). Either party may terminate with written notice. Upon termination, Affiliate earns commissions for the remainder of the Commission Eligibility Period unless Affiliate has violated this Agreement.`);
+    addPara("9.1 This Agreement begins on the Effective Date and continues until:");
+    addPara("• Explicitly terminated by either party (\"Active Termination\"), OR", 12);
+    addPara(`• ${eligDays} days have elapsed since the last Qualifying Promotion ("Passive Termination"), OR`, 12);
+    addPara(`• ${eligDays} days have elapsed since the Effective Date and no Qualifying Promotion has been performed ("Passive Termination").`, 12);
+    addPara(`9.2 Dainware may actively terminate at any time with written notice. Upon termination by Dainware, Affiliate will continue to earn commissions for the remainder of the Commission Eligibility Period (${eligDays} days from the most recent Qualifying Promotion) unless Affiliate has violated this Agreement.`);
+    addPara(`9.3 Affiliate may terminate at any time with written notice, or passively by ceasing to promote the App for ${eligDays} days.`);
+    addPara(`9.4 Upon termination, the Offer Code may remain active at Dainware's discretion, but Affiliate will not earn further commissions beyond ${eligDays} days following the most recent Qualifying Promotion.`);
 
     addHeading("10. REPRESENTATIONS & WARRANTIES");
-    addPara("Affiliate represents they have the right to promote the App on their platforms. Affiliate is solely responsible for complying with all applicable laws and disclosure requirements (including FTC requirements). Affiliate agrees not to engage in fraudulent activity or make false statements about the App or Dainware LLC.");
+    addPara("10.1 Affiliate represents that they have the right to promote the App and that their content does not violate any third-party rights.");
+    addPara("10.2 Affiliate is solely responsible for complying with all applicable laws and disclosure requirements, including FTC requirements.");
+    addPara("10.3 Affiliate agrees not to engage in fraudulent activity, including artificially inflating sales or misrepresenting the App's features.");
+    addPara("10.4 Affiliate agrees not to make false or misleading statements about the App or Dainware LLC.");
 
-    addHeading("11–19. STANDARD TERMS");
-    addPara("Limitation of Liability: Dainware's total liability shall not exceed total commissions paid in the twelve months preceding any claim. No earnings are guaranteed. Affiliate is granted a limited license to use Wander branding solely for promotional purposes. Affiliate is an independent contractor. Dainware may modify non-essential terms with 30 days' written notice. Disputes resolved in the courts of Missouri. This Agreement is governed by the laws of the State of Missouri.");
+    addHeading("11. LIMITATION OF LIABILITY");
+    addPara("11.1 Dainware is not liable for any indirect, incidental, or consequential damages arising from this Agreement.");
+    addPara("11.2 Dainware's total liability shall not exceed the total commissions paid to Affiliate in the twelve months preceding any claim.");
 
-    addHeading("20. ELECTRONIC SIGNATURES");
-    addPara("Electronic signatures, including typed names and dates, are legally binding and have the same legal effect as handwritten signatures, in accordance with the Electronic Signatures in Global and National Commerce Act (E-SIGN Act) and applicable international equivalents.");
+    addHeading("12. NO GUARANTEE OF EARNINGS");
+    addPara("Dainware makes no guarantees regarding the amount of commissions Affiliate may potentially earn. Earnings depend on Affiliate's promotional activity and customer response.");
+
+    addHeading("13. INTELLECTUAL PROPERTY USAGE AND OWNERSHIP");
+    addPara("13.1 Affiliate is granted a limited, non-exclusive, non-transferable license to use Wander's name, logo, promotional assets, and App Footage solely for promoting the App. App Footage must accurately represent the App and may not be edited in a misleading manner.");
+    addPara("13.2 Offer Codes are the exclusive property of Dainware and may be deactivated upon termination or expiration of the Commission Eligibility Period.");
+
+    addHeading("14. INDEPENDENT CONTRACTOR");
+    addPara("Affiliate is an independent contractor and is not an employee, partner, or agent of Dainware. Affiliate is responsible for all taxes on commission income.");
+
+    addHeading("15. MODIFICATIONS");
+    addPara("Dainware may modify terms of this Agreement (excluding Section 2 and Section 5) with 30 days' written notice. Affiliate may terminate if they do not accept the modifications.");
+
+    addHeading("16. FORCE MAJEURE");
+    addPara("Dainware shall not be liable for delays or failure to perform due to causes beyond its reasonable control.");
+
+    addHeading("17. NON-TRANSFERABILITY");
+    addPara("Affiliate may not assign or transfer this Agreement without written consent from Dainware.");
+
+    addHeading("18. SURVIVAL");
+    addPara("Sections relating to payments, liability limitations, and governing law survive termination.");
+
+    addHeading("19. RECORD RETENTION AND CLAIM PERIOD");
+    addPara("Commission records shall be deemed accurate and final unless Affiliate provides written notice of a dispute within 90 days of the applicable payment date. Dainware is not obligated to maintain records beyond 364 days from any current date.");
+
+    addHeading("20. DISPUTES");
+    addPara("Any disputes shall first be resolved through good-faith negotiation. If unresolved, disputes shall be resolved in the courts of Missouri.");
+
+    addHeading("21. ENTIRE AGREEMENT");
+    addPara("This Agreement constitutes the entire agreement between the parties and supersedes any prior agreements or understandings.");
+
+    addHeading("22. GOVERNING LAW");
+    addPara("This Agreement is governed by the laws of the state of Missouri in the United States of America.");
 
     // ── Exhibit A ────────────────────────────────────────────────
     y += 10;
@@ -931,9 +1022,10 @@
     });
 
     addHighlight("Promo Code:             ", offerCode);
-    addHighlight("YouTube Channel URL:    ", channelUrl);
+    addHighlight("YouTube Channel URL:    ", fields.channelUrl || "[Not provided]");
     addHighlight("PayPal Address:         ", fields.paypal || "[Not provided]");
     addHighlight("Physical Address:       ", fields.address || "[Not provided]");
+    addHighlight("Email Address:          ", fields.email || "[Not provided]");
     addHighlight("Tax Form Type:          ", fields.taxFormType || "[Not provided]");
     if (fields.businessEntity) addHighlight("Business Entity:        ", fields.businessEntity);
 
@@ -951,7 +1043,6 @@
     addPara("By submitting this form, the Affiliate confirms they have read, understood, and agreed to all terms of this Agreement.");
     y += 4;
 
-    // Signature line
     doc.setFontSize(20);
     doc.setFont("times", "italic");
     doc.setTextColor(201, 168, 76);
@@ -1050,10 +1141,10 @@
       const contractFields = { firstName, lastName, businessEntity, address, email, paypal, channelUrl, taxFormType, signature };
       const contractBlob   = generateContractPdf(contractFields);
 
-      const submittedAt        = new Date().toISOString();
-      const contractFileName   = `contract_signed_${leadId}_${submittedAt.slice(0,10)}.pdf`;
+      const submittedAt         = new Date().toISOString();
+      const contractFileName    = `contract_signed_${leadId}_${submittedAt.slice(0,10)}.pdf`;
       const contractStoragePath = `affiliate-contracts/${leadId}/${contractFileName}`;
-      const contractRef        = storage.ref(contractStoragePath);
+      const contractRef         = storage.ref(contractStoragePath);
 
       setStatus(`<span class="loading-spinner"></span> Uploading signed contract...`);
       const contractSnapshot = await contractRef.put(contractBlob, { contentType: "application/pdf" });
@@ -1061,10 +1152,9 @@
 
       // 3. Save all data to Firestore
       setStatus(`<span class="loading-spinner"></span> Saving your information...`);
-      const contractSnapshot2 = document.getElementById("contract-box").innerText; // plain text snapshot for reference
+      const contractSnapshot2 = document.getElementById("contract-box").innerText;
 
       await db.collection("leads").doc(leadId).update({
-        // Affiliate-provided info
         firstName,
         lastName,
         businessEntity,
@@ -1072,18 +1162,14 @@
         email,
         paypal,
         channelUrl,
-        // Tax form
         taxFormType,
         taxFormStoragePath: taxStoragePath,
         taxFormUrl,
-        // Signed contract PDF
         contractUrl,
         contractStoragePath,
-        // Signature & agreement
         signatureName:      signature,
         signatureAgreed:    true,
         contractSnapshot:   contractSnapshot2,
-        // Status
         onboardingStatus:      "completed",
         onboardingEnabled:     false,
         onboardingCompletedAt: submittedAt,
@@ -1098,7 +1184,6 @@
           body: JSON.stringify({ leadId }),
         });
       } catch (emailErr) {
-        // Non-fatal
         console.warn("Email notification failed:", emailErr.message);
       }
 
