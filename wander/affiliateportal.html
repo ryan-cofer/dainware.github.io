@@ -676,11 +676,13 @@
     var urlEl = document.getElementById("asset-url");
     if (promoUrl) {
       urlEl.innerHTML =
-        '<span style="word-break:break-all;">' + escHtml(promoUrl) + '</span>' +
-        '<button onclick="copyPromoUrl()" title="Copy to clipboard" style="' +
-          'background:none;border:none;cursor:pointer;padding:0.25rem 0.4rem;' +
-          'color:var(--gold);vertical-align:middle;font-size:20px;line-height:1;" ' +
-          'id="copy-url-btn">&#x2398;</button>';
+        '<div style="display:flex;flex-direction:column;height:100%;justify-content:space-between;">' +
+          '<span style="word-break:break-all;">' + escHtml(promoUrl) + '</span>' +
+          '<button onclick="copyPromoUrl()" title="Copy to clipboard" style="' +
+            'background:none;border:none;cursor:pointer;padding:0.25rem 0;' +
+            'color:var(--gold);font-size:25px;line-height:1;text-align:left;" ' +
+            'id="copy-url-btn">&#x2398;</button>' +
+        '</div>';
     } else {
       urlEl.innerHTML = '<span style="color:var(--muted);font-size:11px;">Not available yet — contact us.</span>';
     }
