@@ -404,6 +404,7 @@
       .promo-form .form-grid { grid-template-columns: 1fr; }
       .elig-bar { flex-direction: column; }
       .promo-assets { grid-template-columns: 1fr; }
+      .promo-asset-cell div { text-align: left; }
     }
   </style>
 </head>
@@ -443,12 +444,12 @@
         <div class="promo-asset-label">Promo URL</div>
         <div class="promo-asset-value" style="font-size:11px;" id="asset-url"></div>
       </div>
-      <div class="promo-asset-cell" style="display:flex;flex-direction:column;gap:1rem;">
-        <div style="text-align:left;">
-          <div class="promo-asset-label">QR Code</div>
+      <div class="promo-asset-cell" style="display:flex;flex-direction:column;gap:1rem;align-items:flex-end;">
+        <div style="text-align:right;">
+          <div class="promo-asset-label">Promo QR Code</div>
           <div class="promo-asset-value" id="asset-qr"></div>
         </div>
-        <div style="text-align:left;">
+        <div style="text-align:right;">
           <div class="promo-asset-label">App Icon</div>
           <div class="promo-asset-value" id="asset-icon"></div>
         </div>
@@ -675,8 +676,8 @@
       urlEl.innerHTML =
         '<span style="word-break:break-all;">' + escHtml(promoUrl) + '</span>' +
         '<button onclick="copyPromoUrl()" title="Copy to clipboard" style="' +
-          'background:none;border:none;cursor:pointer;padding:0 0 0 0.5rem;' +
-          'color:var(--gold);vertical-align:middle;font-size:25px;line-height:1;" ' +
+          'background:none;border:none;cursor:pointer;padding:0.25rem 0.4rem;' +
+          'color:var(--gold);vertical-align:middle;font-size:20px;line-height:1;" ' +
           'id="copy-url-btn">&#x2398;</button>';
     } else {
       urlEl.innerHTML = '<span style="color:var(--muted);font-size:11px;">Not available yet — contact us.</span>';
@@ -816,13 +817,6 @@
       }
     }
 
-    var fileEmail  = (affiliateData.email  || "").trim().toLowerCase();
-    var filePaypal = (affiliateData.paypal || "").trim().toLowerCase();
-
-    if (email !== fileEmail || paypal !== filePaypal) {
-      showPromoError("The information you entered doesn't match what's on file. Please contact " + CONTACT_EMAIL + " for assistance."); return;
-    }
-
     var btn = document.getElementById("promo-submit-btn");
     btn.disabled    = true;
     btn.textContent = "Submitting...";
@@ -867,8 +861,6 @@
 
       populateEligibilityBar();
 
-      document.getElementById("promo-email").value     = "";
-      document.getElementById("promo-paypal").value    = "";
       document.getElementById("promo-date").value      = "";
       document.getElementById("promo-url").value       = "";
       document.getElementById("promo-timestamp").value = "";
