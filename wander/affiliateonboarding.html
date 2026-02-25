@@ -604,14 +604,21 @@
 
     // Build affiliate name display
     let affiliateName = "";
-    if (firstName || lastName) {
-      affiliateName = [firstName, lastName].filter(Boolean).join(" ");
-      if (businessEntity) affiliateName += ` / ${businessEntity}`;
-    } else if (businessEntity) {
+    let affiliatePartyLine = "";
+    const fullName = [firstName, lastName].filter(Boolean).join(" ");
+    if (businessEntity) {
       affiliateName = businessEntity;
+      affiliatePartyLine = businessEntity
+        ? `${esc(businessEntity)} ("Affiliate") — represented by ${esc(fullName)}, its authorized representative`
+        : `<span class="pending">[Affiliate Name]</span>`;
+    } else {
+      affiliateName = fullName;
+      affiliatePartyLine = fullName
+        ? `${esc(fullName)} ("Affiliate")`
+        : `<span class="pending">[Affiliate Name]</span>`;
     }
 
-    const affiliateNameDisplay  = affiliateName  ? esc(affiliateName)  : `<span class="pending">[Affiliate Name]</span>`;
+    const affiliateNameDisplay  = affiliatePartyLine;
     const addressDisplay        = address        ? esc(address)        : `<span class="pending">[Affiliate Physical Address]</span>`;
     const emailDisplay          = email          ? esc(email)          : `<span class="pending">[Affiliate Email Address]</span>`;
     const paypalDisplay         = paypal         ? esc(paypal)         : `<span class="pending">[Affiliate PayPal Address]</span>`;
@@ -621,7 +628,7 @@
 <h3>WANDER AFFILIATE PARTNERSHIP AGREEMENT</h3>
 <p>This Agreement is entered into as of ${effectiveDate} ("Effective Date") between:</p>
 <p><strong>Dainware LLC ("Wander")</strong><br>900 NW High Point Dr., Lee's Summit, MO 64081 USA<br>ryan.cofer@dainware.com</p>
-<p>and <strong>${affiliateNameDisplay}</strong> ("Affiliate")<br>${addressDisplay}<br>${emailDisplay}</p>
+<p>and <strong>${affiliateNameDisplay}</strong><br>${addressDisplay}<br>${emailDisplay}</p>
 
 <h3>1. PARTNERSHIP OVERVIEW</h3>
 <p>Dainware grants Affiliate the right to promote Wander (the "App") to Affiliate's audience using the tracking tools provided by Dainware, including a unique promo code (identified in Exhibit A), QR code, and affiliate URL (collectively, the "Offer Code"), in exchange for commission payments as outlined in this Agreement.</p>
@@ -893,9 +900,11 @@
     addPara("This Agreement is entered into between:");
     addPara(`Dainware LLC ("Wander") — 900 NW High Point Dr., Lee's Summit, MO 64081 USA — ryan.cofer@dainware.com`, 12);
 
-    let affiliateName = [fields.firstName, fields.lastName].filter(Boolean).join(" ");
-    if (fields.businessEntity) affiliateName += ` / ${fields.businessEntity}`;
-    addPara(`and ${affiliateName || "[Affiliate Name]"} ("Affiliate")`, 12);
+    const pdfFullName = [fields.firstName, fields.lastName].filter(Boolean).join(" ");
+    let affiliateName = fields.businessEntity
+      ? `${fields.businessEntity} ("Affiliate") — represented by ${pdfFullName}, its authorized representative`
+      : `${pdfFullName} ("Affiliate")`;
+    addPara(`and ${affiliateName}`, 12);
     addPara(`Address: ${fields.address || "[Not provided]"}`, 12);
     addPara(`Email: ${fields.email || "[Not provided]"}`, 12);
 
