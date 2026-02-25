@@ -821,7 +821,7 @@
     var existingPromoDate = affiliateData.lastPromoDate;
     if (existingPromoDate) {
       var existingD = new Date(existingPromoDate + "T00:00:00");
-      if (promoD <= existingD) {
+      if (promoD < existingD) {
         showPromoError("The promotion date must be after your last qualified promotion date (" + displayDate(existingPromoDate) + ")."); return;
       }
     }
