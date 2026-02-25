@@ -584,59 +584,157 @@
 
     document.getElementById("contract-box").innerHTML = `
 <h3>WANDER AFFILIATE PARTNERSHIP AGREEMENT</h3>
-<p>This Agreement is entered into as of ${effectiveDate} ("Effective Date") between:</p>
+<p>This Agreement is entered into as of the latest date of signatures found at the bottom of this agreement ("Effective Date") between:</p>
 <p><strong>Dainware LLC ("Wander")</strong><br>900 NW High Point Dr., Lee's Summit, MO 64081 USA<br>ryan.cofer@dainware.com</p>
-<p>and <strong>[Affiliate]</strong> identified by signature below ("Affiliate")</p>
+<p>and <strong>[Affiliate first and last name(s) or Affiliate business entity]</strong> ("Affiliate")<br>[Affiliate Physical Address]<br>[Affiliate Email Address]</p>
 
 <h3>1. PARTNERSHIP OVERVIEW</h3>
-<p>Dainware grants Affiliate the right to promote Wander (the "App") using the tracking tools provided by Dainware, including a unique promo code (identified in Exhibit A), QR code, and affiliate URL (collectively, the "Offer Code"), in exchange for commission payments as outlined in this Agreement.</p>
+<p>Dainware grants Affiliate the right to promote Wander (the "App") to Affiliate's audience using the tracking tools provided by Dainware, including a unique promo code (identified in Exhibit A), QR code, and affiliate URL (collectively, the "Offer Code"), in exchange for commission payments as outlined in this Agreement.</p>
 
 <h3>2. COMMISSION STRUCTURE</h3>
-<p>2.1 The Offer Code applies exclusively to the in-app purchase with Reference Name "3 Tour Credits." The Offer Code may only be redeemed by users who have not previously made any purchase within the Wander app. The Offer Code provides redeemers with a 10% discount off the retail price so long as the Offer Code remains active.</p>
-<p>2.2 Dainware will pay Affiliate a ${commPct}% commission on all net proceeds generated from purchases made using the Offer Code.</p>
+<p>2.1 Offer Code effectiveness</p>
+<ul>
+  <li>The Offer Code applies exclusively to the in-app purchase with Reference Name "3 Tour Credits" (the "In-App Purchase").</li>
+  <li>The Offer Code may only be redeemed by users who have not previously made any purchase within the Wander app.</li>
+  <li>The Offer Code will provide the redeemer with a 10% discount off the retail price of the In-App Purchase so long as the Offer Code remains active.</li>
+</ul>
+<p>2.2 Dainware will pay Affiliate a ${commPct}% commission on all net proceeds generated from purchases of the In-App Purchase made using the Offer Code.</p>
 <p>2.3 Net proceeds are defined as amounts actually received by Dainware from Apple or Google after all platform fees, discounts, refunds, and adjustments.</p>
-<p>2.4 Example calculation: Retail price: $${retailPrice} → after 10% discount: $${discounted} → after 15% App Store fee: $${netProceeds} → Affiliate commission (${commPct}%): $${commission}</p>
-<p>2.5 Apple, Google or other platforms may at any time raise or lower the fee they charge developers, affecting net proceeds. The retail price is set at Dainware's sole discretion and may change at any time. Commission percentages remain fixed as described in Section 2.2.</p>
+<p>2.4 Example calculation</p>
+<ul>
+  <li>In-App Purchase retail price: $${retailPrice}</li>
+  <li>Proceeds after 10% customer discount: $${discounted}</li>
+  <li>Net proceeds after 15% App Store / Play Store fee: $${netProceeds}</li>
+  <li>Affiliate commission (${commPct}% of $${netProceeds}): $${commission}</li>
+</ul>
+<p>2.5 Variable App Store / Play Store / Other platform fee structures</p>
+<ul>
+  <li>Apple, Google or other platforms may at any time raise or lower the fee they charge developers. Changes to their fee structure may affect net proceeds on which the Affiliate commission percentage is calculated.</li>
+</ul>
+<p>2.6 The retail price of the in-app purchase is set at Dainware's sole discretion and may be changed at any time. Commission percentages remain fixed as described in Section 2.2, but the dollar amount of commissions will reflect the then-current retail price.</p>
 
 <h3>3. PAYMENTS</h3>
-<p>3.1 Commissions are paid monthly, approximately 1 calendar month plus 7 days following the sale month (e.g., January sales paid on or around March 7th), aligning with Apple's payout schedule.</p>
-<p>3.2 Payments are issued only if total commission due exceeds $25. Amounts below $25 roll over. Payments require valid tax documentation (W-9 or W-8BEN) on file and are issued via PayPal to the address identified in Exhibit A.</p>
-<p>3.3 Dainware reserves the right to adjust, withhold, or deduct commissions for refunded transactions, chargebacks, or fraudulent activity.</p>
-<p>3.4 Dainware reserves the right to correct commission calculation errors.</p>
-<p>3.5 Dainware will not withhold or reduce commissions except as explicitly described in this Agreement.</p>
+<p>3.1 Payment timing<br>Commissions are paid monthly and based on the following schedule:</p>
+<ul>
+  <li>Sales generated in any given month are paid to Affiliate approximately 1 calendar month plus 7 days following the sale month.</li>
+  <li>Example: Sales generated in January are paid on or around March 7th.</li>
+  <li>This timing aligns with Apple's payout schedule to Dainware (Apple pays Dainware for January sales on or around March 1st).</li>
+</ul>
+<p>3.2 Payment issuance</p>
+<ul>
+  <li>Payments are issued only if the total commission due exceeds $25. Amounts below $25 roll over to the following month until the $25 threshold is met.</li>
+  <li>Payments will not be issued until Affiliate has provided valid tax documentation (W-9 for US-based Affiliates, W-8BEN for international Affiliates) to Dainware. These forms must be emailed to affiliates@dainware.com.</li>
+  <li>Payments are issued via PayPal and to the PayPal address identified in Exhibit A.</li>
+</ul>
+<p>3.3 Right to Withhold for Refunds, Fraud, or Chargebacks</p>
+<ul>
+  <li>Dainware reserves the right to adjust, withhold, or deduct commissions for refunded transactions, chargebacks, fraudulent activity, or transactions determined to be invalid. Commissions will only be paid on completed transactions that are not refunded or reversed.</li>
+</ul>
+<p>3.4 Right to Audit / Correct Errors</p>
+<ul>
+  <li>Dainware reserves the right to correct commission calculation errors and adjust future payments accordingly.</li>
+</ul>
+<p>3.5 Commission Payment Guarantee</p>
+<ul>
+  <li>Dainware will not withhold or reduce commissions except as explicitly described in this Agreement, including but not limited to refunds, chargebacks, fraudulent activity, violations of this Agreement, or expiration of the Commission Eligibility Period.</li>
+</ul>
 
-<h3>4. CURRENCY & PRICING</h3>
-<p>Affiliate commissions are calculated using net proceeds in USD received by Dainware from the applicable platform.</p>
+<h3>4. CURRENCY &amp; PRICING</h3>
+<p>The App is available in many different countries and as such, the In-App Purchase is available in many different currencies and prices. For simplicity, the Affiliate's commission will be calculated using the net proceeds in USD received by Dainware from the platform on which the purchase was made.</p>
 
 <h3>5. COMMISSION ELIGIBILITY PERIOD</h3>
-<p>5.1 Affiliate earns commissions on all sales made using the Offer Code during the Commission Eligibility Period.</p>
-<p>5.2 The Commission Eligibility Period begins with the published date of the Affiliate's first Qualifying Promotion and extends for ${eligDays} days after the most recent Qualifying Promotion.</p>
-<p>5.3 Rolling expiration: Each new Qualifying Promotion extends the Commission Eligibility Period for an additional ${eligDays} days.</p>
-<p>5.4 The Offer Code may remain active for customer use indefinitely, but Affiliate will not earn commissions after the Commission Eligibility Period has expired.</p>
-<p>5.5 Reactivation requires a new agreement and a new Offer Code.</p>
+<p>5.1 Commission Eligibility Period: Affiliate earns commissions on all sales made using the Offer Code during the Commission Eligibility Period.</p>
+<p>5.2 The Commission Eligibility Period begins with the published date of the Affiliate's first Qualifying Promotion, as defined in Section 6, and extends for ${eligDays} days after the most recent Qualifying Promotion.</p>
+<p>5.3 Rolling ${eligDays} day expiration: Each new Qualifying Promotion extends the Commission Eligibility Period for an additional ${eligDays} days from the published date of that Qualifying Promotion.</p>
+<p>5.4 Example:</p>
+<ul>
+  <li>Affiliate posts a Qualifying Promotion on January 1, 2026</li>
+  <li>Commission eligibility runs through April 1, 2026 (90 days).</li>
+  <li>If Affiliate posts another Qualifying Promotion on March 15, 2026, the eligibility window resets and now runs through June 13, 2026 (90 days from March 15).</li>
+  <li>If Affiliate does not post a new Qualifying Promotion by April 1, 2026, this Agreement would be considered "passively terminated" and the Affiliate would receive commissions on all sales using their Offer Code made through April 1, 2026 (the end of the Commission Eligibility Period).</li>
+</ul>
+<p>5.5 Code May Remain Active: The Offer Code may remain active for customer use indefinitely, continuing to provide redeemers with a discount. However, Affiliate will not earn commissions on sales made with the Offer Code after the Commission Eligibility Period has expired.</p>
+<p>5.6 Reactivation: To resume earning commissions after the Commission Eligibility Period has expired, Affiliate must enter into a new agreement with Dainware and will be assigned a new Offer Code.</p>
 
 <h3>6. QUALIFYING PROMOTIONS</h3>
-<p>6.1 A "Qualifying Promotion" includes: a verbal mention of Wander with the Offer Code text AND Wander app icon displayed on screen for at least 7 seconds, OR a verbal mention of Wander with the QR code AND Wander app icon displayed on screen for at least 7 seconds, AND the unaltered affiliate URL in the video description.</p>
-<p>6.2 Affiliate must self-report each Qualifying Promotion via the Affiliate Portal within 48 hours of publishing, including a link to the video and the approximate minute mark of the promotion.</p>
-<p>6.3 Affiliate must ensure all Qualifying Promotions remain publicly accessible for the duration of the Commission Eligibility Period. Removal or alteration immediately terminates commission eligibility.</p>
+<p>6.1 A "Qualifying Promotion" that begins and extends the Commission Eligibility Period includes:</p>
+<ul>
+  <li>A verbal mention of Wander with the Offer Code text AND Wander app icon displayed on screen for at least 7 seconds, OR a verbal mention of Wander with the QR code AND Wander app icon displayed on screen for at least 7 seconds.</li>
+  <li>The unaltered affiliate URL in the video description.</li>
+</ul>
+<p>6.2 Affiliate must self-report the posting of a promotion via the Affiliate Portal within 48 hours of publishing any video they consider to be a Qualifying Promotion. The submission must contain a link to the video in which the promotion occurs and the approximate minute mark of the promotion. This must be submitted in order for the promotion to be considered a Qualifying Promotion.</p>
+<p>6.3 Continuing Availability Requirement</p>
+<ul>
+  <li>Affiliate must ensure that any Qualifying Promotion remains publicly accessible and contains the required promotional elements for the duration of the Commission Eligibility Period. If the Qualifying Promotion is removed, made private, altered to remove required promotional elements, or otherwise becomes inaccessible, Affiliate's commission eligibility will immediately terminate as of the date the promotion becomes unavailable. Commissions earned prior to that date remain payable in accordance with this Agreement.</li>
+</ul>
 
 <h3>7. DISTRIBUTION CHANNELS</h3>
-<p>Affiliate may promote Wander on any of their preferred channels. The Commission Eligibility Period is only initiated and extended by Qualifying Promotions as defined in Section 6.</p>
+<p>Wander grants the Affiliate the right to promote Wander using the Offer Code on any of their preferred distribution channels (blogs, social media, or otherwise) in addition to YouTube. However, the Commission Eligibility Period is only initiated and extended by use of a Qualifying Promotion as described in Section 6.</p>
 
-<h3>8. REPORTING & TRACKING</h3>
-<p>Dainware will provide Affiliate with access to an Affiliate Portal to track Offer Code usage. Report accuracy is on a best-effort basis and depends on third parties. In the event of a discrepancy, official platform data (Apple App Store Connect, Google Play Console, etc.) shall serve as the authoritative basis for commission calculations.</p>
+<h3>8. REPORTING &amp; TRACKING</h3>
+<p>8.1 Dainware will provide Affiliate with the ability to track Offer Code usage showing the number of redemptions over time periods via the "Affiliate Portal".</p>
+<p>8.2 Best effort of Affiliate Portal report availability and accuracy: Dainware will make a best effort to ensure the reports generated by the Affiliate via the Affiliate Portal are accurate and up-to-date. However, reporting availability and accuracy is dependent on third parties, including but not limited to: Apple App Store API, Google Play Store API and Google Firebase Functions. Inaccuracies may also be caused by, but not limited to, time zones, customer refunds, fraud or chargebacks. Data in the reports generated by the Affiliate via the Affiliate Portal may not completely align with actual Offer Code redemptions or commission payments issued due to, but not limited to, the aforementioned examples. In the event of a discrepancy, the data sourced directly from Apple App Store Connect, Google Play Console, or any other official platform reporting system used to process purchases shall serve as the authoritative basis for commission calculations and payment issuance.</p>
 
-<h3>9. TERM & TERMINATION</h3>
-<p>This Agreement begins on the Effective Date and continues until explicitly terminated by either party, or until ${eligDays} days have elapsed since the last Qualifying Promotion (Passive Termination). Either party may terminate with written notice. Upon termination, Affiliate earns commissions for the remainder of the Commission Eligibility Period unless Affiliate has violated this Agreement.</p>
+<h3>9. TERM &amp; TERMINATION</h3>
+<p>9.1 This Agreement begins on the Effective Date and continues until:</p>
+<ul>
+  <li>Explicitly terminated by either party ("Active Termination"), OR</li>
+  <li>${eligDays} days have elapsed since the last Qualifying Promotion ("Passive Termination"), OR</li>
+  <li>${eligDays} days have elapsed since the Effective Date and no Qualifying Promotion has been performed ("Passive Termination").</li>
+</ul>
+<p>9.2 Dainware may actively terminate this Agreement at any time with written notice (email is acceptable). Upon termination by Dainware, Affiliate will continue to earn commissions on sales made using the Offer Code for the remainder of the Commission Eligibility Period as defined in Section 5 (${eligDays} days from the most recent Qualifying Promotion) unless Affiliate has violated the terms of this Agreement, at which point, Affiliate relinquishes all rights to unpaid commissions.</p>
+<p>9.3 Affiliate may actively terminate this Agreement at any time with written notice (email is acceptable). Affiliate may, without formal notice, passively terminate this Agreement by ceasing to promote the App for ${eligDays} days. As described in Section 5, commission eligibility will automatically expire ${eligDays} days after the last Qualifying Promotion, at which point this Agreement is considered to be passively terminated.</p>
+<p>9.4 Upon termination, the Offer Code may remain active at Dainware's discretion for customer use, but Affiliate will not earn further commissions beyond ${eligDays} days following the most recent Qualifying Promotion.</p>
 
-<h3>10. REPRESENTATIONS & WARRANTIES</h3>
-<p>Affiliate represents they have the right to promote the App on their platforms. Affiliate is solely responsible for complying with all applicable laws and disclosure requirements (including FTC requirements). Affiliate agrees not to engage in fraudulent activity or make false statements about the App or Dainware LLC.</p>
+<h3>10. REPRESENTATIONS &amp; WARRANTIES</h3>
+<p>10.1 Affiliate represents that they have the right to promote the App on their platforms and that their content does not violate any third-party rights.</p>
+<p>10.2 Affiliate is solely responsible for complying with all applicable laws, regulations, and disclosure requirements related to their promotional activities, including FTC disclosure requirements in the United States and any equivalent laws in Affiliate's country of residence.</p>
+<p>10.3 Affiliate agrees not to engage in fraudulent activity, including but not limited to artificially inflating sales or misrepresenting the App's features.</p>
+<p>10.4 Affiliate agrees not to make false or misleading statements about the App or Dainware LLC.</p>
 
-<h3>11–19. STANDARD TERMS</h3>
-<p>Limitation of Liability: Dainware's total liability shall not exceed total commissions paid in the twelve months preceding any claim. No earnings are guaranteed. Affiliate is granted a limited license to use Wander branding solely for promotional purposes. Affiliate is an independent contractor. Dainware may modify non-essential terms with 30 days' written notice. Disputes resolved in the courts of Missouri. This Agreement is governed by the laws of the State of Missouri.</p>
+<h3>11. LIMITATION OF LIABILITY</h3>
+<p>11.1 Dainware is not liable for any indirect, incidental, or consequential damages arising from this Agreement.</p>
+<p>11.2 Dainware's total liability under this Agreement shall not exceed the total commissions paid to Affiliate in the twelve months preceding any claim.</p>
 
-<h3>20. ELECTRONIC SIGNATURES</h3>
-<p>Electronic signatures, including typed names and dates, are legally binding and have the same legal effect as handwritten signatures, in accordance with the Electronic Signatures in Global and National Commerce Act (E-SIGN Act) and applicable international equivalents.</p>
+<h3>12. NO GUARANTEE OF EARNINGS</h3>
+<p>Dainware makes no guarantees regarding the amount of commissions Affiliate may potentially earn. Earnings depend on Affiliate's promotional activity and customer response.</p>
+
+<h3>13. INTELLECTUAL PROPERTY USAGE AND OWNERSHIP</h3>
+<p>13.1 Affiliate is granted a limited, non-exclusive, non-transferable license to use Wander's name, logo, promotional assets, and screen recordings or footage of the App in use ("App Footage"), solely for purposes of promoting the App under this Agreement. App Footage must accurately represent the App's features and functionality and may not be edited in a misleading or deceptive manner. Affiliate may not modify Wander's branding or use it in a misleading or unauthorized manner.</p>
+<p>13.2 Offer Codes are the exclusive property of Dainware. The Offer Code assigned under this Agreement is valid only for the duration of this Agreement and may be deactivated by Dainware upon termination of this Agreement or expiration of the Commission Eligibility Period. Dainware is not responsible for commissions associated with use of inactive or expired Offer Codes.</p>
+
+<h3>14. INDEPENDENT CONTRACTOR</h3>
+<p>Affiliate is an independent contractor and is not an employee, partner, or agent of Dainware. Affiliate is responsible for all taxes on commission income.</p>
+
+<h3>15. MODIFICATIONS</h3>
+<p>Dainware may modify terms of this Agreement (excluding the commission structure as defined in Section 2 and the Commission Eligibility Period as defined in Section 5) with 30 days' written notice to Affiliate. Affiliate may terminate this Agreement if they do not accept the modifications.</p>
+
+<h3>16. FORCE MAJEURE</h3>
+<p>Dainware shall not be liable for delays or failure to perform due to causes beyond its reasonable control, including but not limited to acts of God, internet outages, platform outages, or third-party service disruptions.</p>
+
+<h3>17. NON-TRANSFERABILITY</h3>
+<p>Affiliate may not assign or transfer this Agreement without written consent from Dainware.</p>
+
+<h3>18. SURVIVAL</h3>
+<p>Sections relating to payments, liability limitations, and governing law survive termination.</p>
+
+<h3>19. RECORD RETENTION AND CLAIM PERIOD</h3>
+<p>Affiliate agrees that commission calculations and payment records maintained by Dainware shall be deemed accurate and final unless Affiliate provides written notice of a dispute within 90 days of the applicable payment date. Dainware is not obligated to maintain offer code usage, commission or tracking records beyond 364 days from any current date.</p>
+
+<h3>20. DISPUTES</h3>
+<p>Any disputes arising under this Agreement shall first be resolved through good-faith negotiation. If unresolved, disputes shall be resolved in the courts of Missouri.</p>
+
+<h3>21. ENTIRE AGREEMENT</h3>
+<p>This Agreement constitutes the entire agreement between the parties and supersedes any prior agreements or understandings.</p>
+
+<h3>22. GOVERNING LAW</h3>
+<p>This Agreement is governed by the laws of the state of Missouri in the United States of America.</p>
+
+<h3>SIGNATURES</h3>
+<p>Including Exhibit A attached hereto:</p>
+<p>The parties below agree that electronic signatures, including typed names and dates, are legally binding and have the same legal effect as handwritten signatures, in accordance with the Electronic Signatures in Global and National Commerce Act (E-SIGN Act) and any applicable state or international equivalent.</p>
+<p><strong>Dainware LLC:</strong><br>Ryan Cofer, Manager<br>Date: 2/20/2026</p>
+<p><strong>Affiliate:</strong><br>[Affiliate to enter first and last name(s)]<br>Date: [Affiliate to enter date of signature here]</p>
 
 <div class="exhibit">
   <h3>EXHIBIT A — AFFILIATE INFORMATION</h3>
