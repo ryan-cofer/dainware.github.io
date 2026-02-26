@@ -847,7 +847,7 @@
     <div class="tab-content" id="tab-detail">
       <div class="detail-header">
         <button class="detail-back" onclick="switchTab('list')">← Back to list</button>
-        <div style="display:flex;gap:0.75rem;">
+        <div style="display:flex;gap:0.75rem;align-items:center;">
           <button class="btn-secondary" onclick="enterEditMode()">Edit</button>
         </div>
       </div>
@@ -968,7 +968,6 @@
 
   // ═══════════════════════════
   // QR code → PNG Blob
-  // Renders into an off-screen div via QRCode.js, extracts canvas as PNG.
   // ═══════════════════════════
   function generateQrBlob(url) {
     return new Promise((resolve, reject) => {
@@ -984,7 +983,6 @@
         correctLevel: QRCode.CorrectLevel.H,
       });
 
-      // QRCode.js renders synchronously to a <canvas> (with an <img> fallback)
       const canvas = container.querySelector("canvas");
       if (canvas) {
         canvas.toBlob(blob => {
@@ -994,13 +992,9 @@
         return;
       }
 
-      // Fallback: QRCode.js created an <img> with a data-URL src
       const img = container.querySelector("img");
       if (img && img.src) {
-        fetch(img.src)
-          .then(r => r.blob())
-          .then(resolve)
-          .catch(reject);
+        fetch(img.src).then(r => r.blob()).then(resolve).catch(reject);
         return;
       }
 
@@ -1091,6 +1085,7 @@
     { key: "promotedAt",                   label: "Promoted At", datetime: true },
     { key: "status",                       label: "Status" },
     { key: "contractUrl",                  label: "Signed Contract", contract: true },
+    { key: "portalCode",                   label: "Affiliate Portal", portal: true },
   ];
 
   function renderDetail() {
@@ -1134,7 +1129,12 @@
     let gridHtml = "";
     for (const f of FIELD_MAP) {
       let val;
-      if (f.contract) {
+      if (f.portal) {
+        const pUrl = getPortalUrl(a.portalCode || "");
+        val = pUrl
+          ? `<a href="${esc(pUrl)}" target="_blank" rel="noopener noreferrer">Open Affiliate Portal ↗</a>`
+          : `<span style="color:var(--muted);font-size:11px;">No portal code on file</span>`;
+      } else if (f.contract) {
         val = a.contractUrl
           ? `<a href="${esc(a.contractUrl)}" target="_blank" rel="noopener">Download PDF</a>`
           : `<span style="color:var(--muted);font-size:11px;">No contract on file</span>`;
@@ -1439,6 +1439,7 @@
   let leadsLoaded = false;
 
   const ONBOARDING_BASE_URL = "https://dainware.com/wander/affiliateonboarding.html";
+  const PORTAL_BASE_URL     = "https://dainware.com/wander/affiliateportal.html";
 
   function generateOnboardingCode(offerCode) {
     return offerCode.toUpperCase().split("").map(ch => {
@@ -1455,6 +1456,11 @@
   function getOnboardingUrl(offerCode) {
     if (!offerCode) return "";
     return ONBOARDING_BASE_URL + "?code=" + generateOnboardingCode(offerCode);
+  }
+
+  function getPortalUrl(portalCode) {
+    if (!portalCode) return "";
+    return PORTAL_BASE_URL + "?code=" + encodeURIComponent(portalCode);
   }
 
   document.getElementById("lead-offerCode").addEventListener("input", function() {
@@ -1616,7 +1622,6 @@
   function confirmPromote() {
     document.getElementById("promote-btn").style.display       = "none";
     document.getElementById("promote-checklist").style.display = "block";
-    // Uncheck all boxes and disable confirm button on each open
     ["chk-contract","chk-taxform","chk-appstore"].forEach(id => {
       document.getElementById(id).checked = false;
     });
@@ -1628,7 +1633,6 @@
       .every(id => document.getElementById(id).checked);
     const confirmBtn = document.getElementById("promote-confirm-btn");
     const banner     = document.getElementById("promote-banner");
-    // Show the confirmation banner only once all boxes are checked
     if (allChecked) {
       banner.style.display = "flex";
     } else {
@@ -1660,21 +1664,17 @@
       const eligibilityEnd = addDaysToToday(eligDays);
       const promotedAt     = new Date().toISOString();
 
-      // 1. Build promo URL
       const promoUrl = buildPromoUrl(offerCode);
 
-      // 2. Generate QR code PNG blob
       confirmBtn.textContent = "Generating QR code...";
       const qrBlob = await generateQrBlob(promoUrl);
 
-      // 3. Upload QR PNG to Firebase Storage
       confirmBtn.textContent    = "Uploading QR code...";
       const qrStoragePath       = `affiliate-qr-codes/${offerCode}/${offerCode}_promo_qr.png`;
       const qrRef               = storage.ref(qrStoragePath);
       const qrSnapshot          = await qrRef.put(qrBlob, { contentType: "image/png" });
       const promoQrUrl          = await qrSnapshot.ref.getDownloadURL();
 
-      // 4. Build and write affiliate document
       confirmBtn.textContent = "Saving affiliate...";
       const affiliateData = {
         medium:           l.medium         || "",
@@ -1688,28 +1688,22 @@
         paypal:           l.paypal         || "",
         offerCode,
         portalCode:       generatePortalCode(offerCode),
-        // Promo assets
         promoUrl,
         promoQrUrl,
         promoQrStoragePath: qrStoragePath,
-        // Commission
         commissionPct:               parseFloat(l.commissionPct) || 25,
         commissionEligibilityPeriod: eligDays,
-        // Promo dates
         lastPromoDate:                today,
         lastPromoUrl:                 "",
         lastPromoTimestamp:           "",
         commissionEligibilityEndDate: eligibilityEnd,
-        // Contract & tax (carried over from lead)
         contractUrl:         l.contractUrl         || "",
         contractStoragePath: l.contractStoragePath  || "",
         taxFormType:         l.taxFormType          || "",
         taxFormUrl:          l.taxFormUrl           || "",
         taxFormStoragePath:  l.taxFormStoragePath   || "",
-        // Signature
         signatureName:   l.signatureName   || "",
         signatureAgreed: l.signatureAgreed || false,
-        // Metadata
         status:    "ACTIVE",
         promotedAt,
         createdAt: promotedAt,
@@ -1717,19 +1711,16 @@
 
       await db.collection(COLLECTION).doc(offerCode).set(affiliateData);
 
-      // 5. Update lead status
       await db.collection("leads").doc(l.id).update({
         onboardingStatus:  "promoted",
         onboardingEnabled: false,
         promotedAt,
       });
 
-      // Update local state
       Object.assign(l, { onboardingStatus: "promoted", onboardingEnabled: false, promotedAt });
       affiliates.push({ id: offerCode, ...affiliateData });
       affiliates.sort((a, b) => (a.lastName||"").localeCompare(b.lastName||""));
 
-      // Send welcome email to affiliate (non-fatal — promotion already succeeded)
       try {
         await fetch(`${FUNCTIONS_BASE_URL}/notifyAffiliatePromoted`, {
           method: "POST",
@@ -1831,9 +1822,6 @@
     if (!offerCode) { toast("Offer code is required.", "error"); return; }
 
     const firstName = gev("lead-firstName"), lastName = gev("lead-lastName"), email = gev("lead-email");
-    //if (!firstName || !lastName || !email) {
-      //toast("First name, last name, and email are required.", "error"); return;
-    //}
 
     const data = {
       medium:                      document.getElementById("lead-medium").value,
