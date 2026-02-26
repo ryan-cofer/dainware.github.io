@@ -512,6 +512,7 @@
   // Load lead on page load
   // ─────────────────────────────────────────────────────────────────
   window.addEventListener("load", async () => {
+    await new Promise(resolve => setTimeout(resolve, 2000));
     const params = new URLSearchParams(window.location.search);
     const code   = params.get("code");
 
