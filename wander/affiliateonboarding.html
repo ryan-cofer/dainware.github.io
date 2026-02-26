@@ -74,14 +74,9 @@
     }
 
     .state-title {
-      /*font-size: 1.5rem;
+      font-size: 1.5rem;
       font-weight: 300;
-      letter-spacing: 0.05em;*/
-
-      font-size: 22px;
-      letter-spacing: -0.3px;
-      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-      font-weight: 700;
+      letter-spacing: 0.05em;
     }
 
     .state-body {
@@ -365,14 +360,14 @@
 <div id="error-screen" class="state-screen" style="display:none">
   <div class="state-icon">⚠️</div>
   <div class="state-title" id="error-title">Something went wrong</div>
-  <div class="state-body" id="error-body">This onboarding link may be invalid or expired. Please contact affiliates@dainware.com.</div>
+  <div class="state-body" id="error-body">This onboarding link may be invalid or expired. Please contact <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="ccadaaaaa5a0a5adb8a9bf8ca8ada5a2bbadbea9e2afa3a1">[email&#160;protected]</a>.</div>
 </div>
 
 <!-- ALREADY COMPLETE -->
 <div id="complete-screen" class="state-screen" style="display:none">
   <div class="state-icon">✅</div>
   <div class="state-title">Onboarding Complete</div>
-  <div class="state-body">You've already completed the onboarding process. If you need to make any changes, please contact affiliates@dainware.com.</div>
+  <div class="state-body">You've already completed the onboarding process. If you need to make any changes, please contact <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="9efff8f8f7f2f7ffeafbeddefafff7f0e9ffecfbb0fdf1f3">[email&#160;protected]</a>.</div>
 </div>
 
 <!-- ONBOARDING FORM -->
@@ -477,19 +472,19 @@
   <div class="state-body">Thank you! Your signed agreement and tax documentation have been received. We will review your submission and be in touch with you soon!</div>
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
   const firebaseConfig = {
-    apiKey: "AIzaSyCL63-Rsfg_IhcwB17YpdfpczD1CmoRWI4",
-    authDomain: "wander-eab4e.firebaseapp.com",
-    projectId: "wander-eab4e",
-    storageBucket: "wander-eab4e.firebasestorage.app",
-    messagingSenderId: "679842398896",
-    appId: "1:679842398896:web:97763db575ecca5f09b175"
+    apiKey: "AIzaSyA1QjWa9B-I5QFoIHRzyiAfYN0WvmdDmZk",
+    authDomain: "wanderwebportals.firebaseapp.com",
+    projectId: "wanderwebportals",
+    storageBucket: "wanderwebportals.firebasestorage.app",
+    messagingSenderId: "678043085927",
+    appId: "1:678043085927:web:e81a82f3f386ce3ad5f8c2"
   };
 
   firebase.initializeApp(firebaseConfig);
   firebase.appCheck().activate(
-    new firebase.appCheck.ReCaptchaEnterpriseProvider('6LfIBXQsAAAAAH2P3fLRotftf3DdpW-kda9Ed-U1'),
+    new firebase.appCheck.ReCaptchaEnterpriseProvider('6LePFngsAAAAAIjKwvipXPVEtkoe9_NMji2TohHB'),
     true
   );
 
@@ -1398,17 +1393,4 @@
   function showScreen(id) {
     ["loading-screen","error-screen","complete-screen","onboarding-screen","success-screen"]
       .forEach(s => {
-        const el = document.getElementById(s);
-        if (el) el.style.display = s === id ? (s === "onboarding-screen" ? "block" : "flex") : "none";
-      });
-  }
-
-  function showError(title, body) {
-    document.getElementById("error-title").textContent = title;
-    document.getElementById("error-body").textContent  = body;
-    showScreen("error-screen");
-  }
-</script>
-
-</body>
-</html>
+        const el = document.get
