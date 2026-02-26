@@ -794,7 +794,7 @@
     document.getElementById("elig-rate").textContent = (affiliateData.commissionPct || 25) + "%";
 
     var lastPromo = affiliateData.lastPromoDate;
-    document.getElementById("elig-last-promo").textContent = lastPromo ? displayDate(lastPromo) : "\u2014";
+    document.getElementById("elig-last-promo").textContent = (lastPromo && affiliateData.lastPromoUrl) ? displayDate(lastPromo) : "\u2014";
 
     var endDate = affiliateData.commissionEligibilityEndDate;
     var endEl   = document.getElementById("elig-end-date");
