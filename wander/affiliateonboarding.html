@@ -512,12 +512,11 @@
   // Load lead on page load
   // ─────────────────────────────────────────────────────────────────
   window.addEventListener("load", async () => {
-    await new Promise(resolve => setTimeout(resolve, 2000));
     const params = new URLSearchParams(window.location.search);
     const code   = params.get("code");
 
     if (!code) {
-      showError("Invalid Link", "This onboarding link is missing a required parameter. Please contact affiliates@dainware.com.");
+      showError("Invalid Link", "This onboarding link is missing a required parameter. Please contact affiliates&#64;dainware.com.");
       return;
     }
 
@@ -528,7 +527,7 @@
       const doc = await db.collection("leads").doc(offerCode).get();
 
       if (!doc.exists) {
-        showError("Link Not Found", "This onboarding link is invalid or has been removed. Please contact affiliates@dainware.com.");
+        showError("Link Not Found", "This onboarding link is invalid or has been removed. Please contact affiliates&#64;dainware.com.");
         return;
       }
 
@@ -540,7 +539,7 @@
       }
 
       if (leadData.onboardingEnabled === false) {
-        showError("Link Not Active", "This onboarding link is not currently active. Please contact affiliates@dainware.com.");
+        showError("Link Not Active", "This onboarding link is not currently active. Please contact affiliates&#64;dainware.com.");
         return;
       }
 
@@ -557,7 +556,7 @@
 
     } catch (e) {
       console.error("Error loading lead:", e);
-      showError("Error Loading Page", "An unexpected error occurred. Please try refreshing, or contact affiliates@dainware.com.");
+      showError("Error Loading Page", "An unexpected error occurred. Please try refreshing, or contact affiliates&#64;dainware.com.");
     }
   });
 
@@ -628,7 +627,7 @@
     document.getElementById("contract-box").innerHTML = `
 <h3>WANDER AFFILIATE PARTNERSHIP AGREEMENT</h3>
 <p>This Agreement is entered into as of ${effectiveDate} ("Effective Date") between:</p>
-<p><strong>Dainware LLC ("Wander")</strong><br>900 NW High Point Dr., Lee's Summit, MO 64081 USA<br>ryan.cofer@dainware.com</p>
+<p><strong>Dainware LLC ("Wander")</strong><br>900 NW High Point Dr., Lee's Summit, MO 64081 USA<br>ryan.cofer&#64;dainware.com</p>
 <p>and</p>
 <p><strong>${affiliateNameDisplay}</strong><br>${addressDisplay}<br>${emailDisplay}</p>
 
@@ -983,7 +982,7 @@
     doc.setFont("times", "normal");
     doc.setTextColor(...C.bodyText);
     addPara("900 NW High Point Dr., Lee's Summit, MO 64081 USA", 20);
-    addPara("ryan.cofer@dainware.com", 20);
+    addPara("ryan.cofer&#64;dainware.com", 20);
     y += 4;
 
     addPara("— and —");
@@ -1366,7 +1365,7 @@
 
     } catch (err) {
       console.error("Submission error:", err);
-      setStatus("An error occurred: " + err.message + ". Please try again or contact affiliates@dainware.com.", true);
+      setStatus("An error occurred: " + err.message + ". Please try again or contact affiliates&#64;dainware.com.", true);
       btn.disabled = false;
     }
   }
