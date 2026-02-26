@@ -1393,4 +1393,17 @@
   function showScreen(id) {
     ["loading-screen","error-screen","complete-screen","onboarding-screen","success-screen"]
       .forEach(s => {
-        const el = document.get
+        const el = document.getElementById(s);
+        if (el) el.style.display = s === id ? (s === "onboarding-screen" ? "block" : "flex") : "none";
+      });
+  }
+
+  function showError(title, body) {
+    document.getElementById("error-title").textContent = title;
+    document.getElementById("error-body").textContent  = body;
+    showScreen("error-screen");
+  }
+</script>
+
+</body>
+</html>
