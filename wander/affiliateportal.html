@@ -394,6 +394,46 @@
     .elig-cell .cell-value.green { color: var(--green); }
     .elig-cell .cell-value.red   { color: var(--red); }
 
+    /* ── View Agreement link ── */
+    .agreement-footer {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      margin-top: 1.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .agreement-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 0;
+      font-family: inherit;
+    }
+
+    .agreement-link:hover { color: var(--gold); }
+
+    .agreement-link svg {
+      width: 13px;
+      height: 13px;
+      flex-shrink: 0;
+      opacity: 0.7;
+    }
+
+    .agreement-link:hover svg { opacity: 1; }
+
+    .agreement-link.loading { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+
     @media (max-width: 600px) {
       .summary-grid { grid-template-columns: 1fr; }
       .controls { flex-direction: row; flex-wrap: wrap; justify-content: center; }
@@ -562,6 +602,18 @@
           </div>
         </div>
       </div>
+
+      <!-- View Agreement link — right-aligned, below the promo form -->
+      <div class="agreement-footer">
+        <button class="agreement-link" id="view-agreement-btn" onclick="viewAgreement()" style="display:none">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="1" width="10" height="13" rx="1"/>
+            <path d="M5 5h4M5 8h4M5 11h2"/>
+            <path d="M10 1v3h2" stroke-width="1"/>
+          </svg>
+          View Agreement
+        </button>
+      </div>
     </div>
 
   </main>
@@ -646,6 +698,11 @@
       populatePromoAssets();
       populateEligibilityBar();
 
+      // Show "View Agreement" button only if a contract URL exists on their own record
+      if (affiliateData.contractUrl) {
+        document.getElementById("view-agreement-btn").style.display = "inline-flex";
+      }
+
       var today = new Date();
       var thirtyBack = new Date();
       thirtyBack.setDate(today.getDate() - 30);
@@ -659,6 +716,39 @@
     });
   });
 
+  // ── View Agreement ────────────────────────────────────────────────
+  // Opens the contract URL stored on the affiliate's own Firestore document.
+  // The URL was saved during onboarding and is a Firebase Storage signed URL
+  // that is scoped to their specific contract file path:
+  //   affiliate-contracts/{OFFER_CODE}/{filename}
+  // An affiliate can only reach this via their authenticated portal session,
+  // and the URL itself was written to their own document — they cannot
+  // access another affiliate's document because OFFER_CODE is derived
+  // from their private portal code.
+  function viewAgreement() {
+    if (!affiliateData || !affiliateData.contractUrl) {
+      alert("Your agreement is not available yet. Please contact " + CONTACT_EMAIL + " if you believe this is an error.");
+      return;
+    }
+
+    var btn = document.getElementById("view-agreement-btn");
+    btn.classList.add("loading");
+    btn.textContent = "Opening...";
+
+    // Brief visual feedback, then open in new tab
+    setTimeout(function() {
+      window.open(affiliateData.contractUrl, "_blank", "noopener,noreferrer");
+      btn.classList.remove("loading");
+      btn.innerHTML =
+        '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' +
+          '<rect x="2" y="1" width="10" height="13" rx="1"/>' +
+          '<path d="M5 5h4M5 8h4M5 11h2"/>' +
+          '<path d="M10 1v3h2" stroke-width="1"/>' +
+        '</svg>' +
+        'View Agreement';
+    }, 300);
+  }
+
   // ── Promo assets panel ────────────────────────────────────────────
   function populatePromoAssets() {
     if (!affiliateData) return;
@@ -666,13 +756,10 @@
     var promoUrl  = affiliateData.promoUrl  || "";
     var qrUrl     = affiliateData.promoQrUrl || "";
 
-    // Always show the panel — at minimum show the offer code
     document.getElementById("promo-assets-panel").style.display = "grid";
 
-    // Promo Code
     document.getElementById("asset-code").textContent = offerCode;
 
-    // Promo URL — plain text with copy icon
     var urlEl = document.getElementById("asset-url");
     if (promoUrl) {
       urlEl.innerHTML =
@@ -687,7 +774,6 @@
       urlEl.innerHTML = '<span style="color:var(--muted);font-size:11px;">Not available yet — contact us.</span>';
     }
 
-    // QR Code download
     var qrEl = document.getElementById("asset-qr");
     if (qrUrl) {
       qrEl.innerHTML = '<a href="#" onclick="downloadQr(event)">Download</a>';
@@ -695,7 +781,6 @@
       qrEl.innerHTML = '<span style="color:var(--muted);font-size:11px;">Not available yet — contact us.</span>';
     }
 
-    // App Icon download
     document.getElementById("asset-icon").innerHTML =
       '<a href="/wander/appIconRounded.png" download="wander_appIcon.png">Download</a>';
   }
