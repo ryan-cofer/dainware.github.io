@@ -705,9 +705,8 @@
   <li>The unaltered affiliate URL in the video description.</li>
   AND
   <li>A verbal mention of Wander with the Offer Code text AND Wander app icon displayed on screen for at least 7 seconds.</li>
-  OR 
+  OR
   <li>A verbal mention of Wander with the QR code AND Wander app icon displayed on screen for at least 7 seconds.</li>
-  
 </ul>
 <p>6.2 Affiliate must self-report the posting of a promotion via the Wander Affiliate Portal. Failure to do so will exempt the promotion from being considered a Qualifying Promotion. These submissions must occur before the Commission Eligibility Period expires in order to extend the Commission Eligibility Period.</p>
 <p>6.3 Continuing Availability Requirement</p>
@@ -795,19 +794,19 @@
   }
 
   // ─────────────────────────────────────────────────────────────────
-  // Generate contract PDF using jsPDF
+  // Generate contract PDF using jsPDF — Professional white document
   // Returns a Blob of the signed PDF
   // ─────────────────────────────────────────────────────────────────
   function generateContractPdf(fields) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ unit: "pt", format: "letter" });
 
-    const lead         = leadData;
-    const offerCode    = lead.offerCode || "—";
-    const commPct      = lead.commissionPct || 25;
-    const eligDays     = lead.commissionEligibilityPeriod || 90;
+    const lead          = leadData;
+    const offerCode     = lead.offerCode || "—";
+    const commPct       = lead.commissionPct || 25;
+    const eligDays      = lead.commissionEligibilityPeriod || 90;
     const effectiveDate = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
-    const submittedAt  = new Date().toLocaleString("en-US", { dateStyle: "long", timeStyle: "short" });
+    const submittedAt   = new Date().toLocaleString("en-US", { dateStyle: "long", timeStyle: "short" });
 
     const retailPrice = 19.99;
     const discounted  = (retailPrice * 0.90).toFixed(2);
@@ -815,78 +814,33 @@
     const netProceeds = (discounted * (1 - appStoreFee)).toFixed(2);
     const commission  = (netProceeds * commPct / 100).toFixed(2);
 
-    const pageW   = doc.internal.pageSize.getWidth();
-    const pageH   = doc.internal.pageSize.getHeight();
-    const margin  = 60;
-    const colW    = pageW - margin * 2;
-    let   y       = margin;
+    const pageW  = doc.internal.pageSize.getWidth();
+    const pageH  = doc.internal.pageSize.getHeight();
+    const margin = 72; // 1 inch margins
+    const colW   = pageW - margin * 2;
+    let   y      = margin;
 
-    // ── helpers ──────────────────────────────────────────────────
-    function checkPage(needed = 20) {
-      if (y + needed > pageH - margin) {
-        doc.addPage();
-        y = margin;
-      }
-    }
+    // ── Color palette ─────────────────────────────────────────────
+    const C = {
+      black:       [0,   0,   0  ],
+      darkText:    [30,  30,  30 ],
+      bodyText:    [50,  50,  50 ],
+      mutedText:   [100, 100, 100],
+      accent:      [20,  60,  100],   // dark navy for headings/accents
+      rule:        [180, 180, 180],   // light gray dividers
+      white:       [255, 255, 255],
+    };
 
-    function addText(text, opts = {}) {
-      const {
-        fontSize = 10,
-        fontStyle = "normal",
-        color = [255, 255, 255],
-        indent = 0,
-        spacing = 4,
-      } = opts;
-
-      doc.setFontSize(fontSize);
-      doc.setFont("helvetica", fontStyle);
-      doc.setTextColor(...color);
-
-      const lines = doc.splitTextToSize(text, colW - indent);
-      for (const line of lines) {
-        checkPage(fontSize * 1.4 + spacing);
-        doc.text(line, margin + indent, y);
-        y += fontSize * 1.4 + spacing;
-      }
-      y += spacing;
-    }
-
-    function addHeading(text) {
-      y += 6;
-      checkPage(24);
-      addText(text, { fontSize: 11, fontStyle: "bold", color: [255, 255, 255] });
-      doc.setDrawColor(201, 168, 76);
-      doc.setLineWidth(0.5);
-      doc.line(margin, y - 6, margin + colW, y - 6);
-      y += 4;
-    }
-
-    function addPara(text, indent = 0) {
-      addText(text, { fontSize: 9, color: [220, 220, 220], indent });
-    }
-
-    function addHighlight(label, value) {
-      checkPage(20);
-      doc.setFontSize(9);
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor(168, 200, 216);
-      doc.text(label, margin, y);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(201, 168, 76);
-      const labelW = doc.getTextWidth(label);
-      doc.text(value, margin + labelW + 4, y);
-      y += 16;
-    }
-
-    // ── Page background (dark) ────────────────────────────────────
+    // ── Page setup: white background ─────────────────────────────
     function fillPageBg() {
-      doc.setFillColor(23, 88, 115);
+      doc.setFillColor(...C.white);
       doc.rect(0, 0, pageW, pageH, "F");
     }
 
     doc.setPage(1);
     fillPageBg();
 
+    // Wrap addPage to always set white background
     const origAddPage = doc.addPage.bind(doc);
     doc.addPage = function(...args) {
       origAddPage(...args);
@@ -894,116 +848,264 @@
       return doc;
     };
 
-    // ── Title block ───────────────────────────────────────────────
-    addText("WANDER AFFILIATE PARTNERSHIP AGREEMENT", {
-      fontSize: 14, fontStyle: "bold", color: [255, 255, 255],
-    });
+    // ── Helpers ───────────────────────────────────────────────────
+    function checkPage(needed = 20) {
+      if (y + needed > pageH - margin - 30) {
+        doc.addPage();
+        y = margin;
+      }
+    }
 
-    addText(`Effective Date: ${effectiveDate}`, { fontSize: 9, color: [168, 200, 216] });
+    function rule(color = C.rule, width = 0.5) {
+      doc.setDrawColor(...color);
+      doc.setLineWidth(width);
+      doc.line(margin, y, margin + colW, y);
+      y += 8;
+    }
+
+    function addText(text, opts = {}) {
+      const {
+        fontSize  = 10,
+        fontStyle = "normal",
+        fontName  = "times",
+        color     = C.bodyText,
+        indent    = 0,
+        spacing   = 3,
+        align     = "left",
+      } = opts;
+
+      doc.setFontSize(fontSize);
+      doc.setFont(fontName, fontStyle);
+      doc.setTextColor(...color);
+
+      const effectiveWidth = colW - indent;
+      const lines = doc.splitTextToSize(text, effectiveWidth);
+      for (const line of lines) {
+        checkPage(fontSize * 1.5 + spacing);
+        doc.text(line, margin + indent, y);
+        y += fontSize * 1.5 + spacing;
+      }
+      y += spacing;
+    }
+
+    function addHeading(text) {
+      y += 10;
+      checkPage(28);
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(...C.accent);
+      doc.text(text, margin, y);
+      y += 14;
+      rule(C.accent, 0.75);
+      y += 2;
+    }
+
+    function addPara(text, indent = 0) {
+      addText(text, { fontSize: 9.5, fontName: "times", fontStyle: "normal", color: C.bodyText, indent, spacing: 2 });
+    }
+
+    function addBullet(text, indent = 16) {
+      const bulletX = margin + indent;
+      const textX   = margin + indent + 10;
+      checkPage(16);
+      doc.setFontSize(9.5);
+      doc.setFont("times", "normal");
+      doc.setTextColor(...C.bodyText);
+      doc.text("\u2022", bulletX, y);
+      const lines = doc.splitTextToSize(text, colW - indent - 10);
+      doc.text(lines[0], textX, y);
+      y += 14;
+      for (let i = 1; i < lines.length; i++) {
+        checkPage(14);
+        doc.text(lines[i], textX, y);
+        y += 14;
+      }
+      y += 2;
+    }
+
+    function addExhibitField(label, value) {
+      checkPage(18);
+      doc.setFontSize(9.5);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(...C.accent);
+      const labelW = doc.getTextWidth(label + "  ");
+      doc.text(label, margin, y);
+      doc.setFont("times", "normal");
+      doc.setTextColor(...C.bodyText);
+      const lines = doc.splitTextToSize(value, colW - labelW);
+      doc.text(lines[0], margin + labelW, y);
+      y += 14;
+      for (let i = 1; i < lines.length; i++) {
+        checkPage(14);
+        doc.text(lines[i], margin + labelW, y);
+        y += 14;
+      }
+      y += 2;
+    }
+
+    // ── Document header ───────────────────────────────────────────
+    // Title
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...C.accent);
+    const titleText = "WANDER AFFILIATE PARTNERSHIP AGREEMENT";
+    const titleW = doc.getTextWidth(titleText);
+    doc.text(titleText, (pageW - titleW) / 2, y);
+    y += 22;
+
+    rule(C.accent, 1.5);
     y += 4;
 
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(...C.mutedText);
+    const subText = `Effective Date: ${effectiveDate}`;
+    const subW = doc.getTextWidth(subText);
+    doc.text(subText, (pageW - subW) / 2, y);
+    y += 18;
+
+    rule(C.rule, 0.5);
+    y += 8;
+
+    // Parties block
+    doc.setFontSize(9.5);
+    doc.setFont("times", "normal");
+    doc.setTextColor(...C.bodyText);
     addPara("This Agreement is entered into between:");
-    addPara(`Dainware LLC ("Wander") — 900 NW High Point Dr., Lee's Summit, MO 64081 USA — ryan.cofer@dainware.com`, 12);
+    y += 4;
+
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...C.darkText);
+    doc.setFontSize(9.5);
+    doc.text("Dainware LLC (\"Wander\")", margin + 20, y);
+    y += 14;
+    doc.setFont("times", "normal");
+    doc.setTextColor(...C.bodyText);
+    addPara("900 NW High Point Dr., Lee's Summit, MO 64081 USA", 20);
+    addPara("ryan.cofer@dainware.com", 20);
+    y += 4;
+
+    addPara("— and —");
+    y += 4;
 
     const pdfFullName = [fields.firstName, fields.lastName].filter(Boolean).join(" ");
-    let affiliateName = fields.businessEntity
-      ? `${fields.businessEntity} ("Affiliate") — represented by ${pdfFullName}, its authorized representative`
+    let affiliatePartyStr = fields.businessEntity
+      ? `${fields.businessEntity} ("Affiliate"), represented by ${pdfFullName}, its authorized representative`
       : `${pdfFullName} ("Affiliate")`;
-    addPara(`and ${affiliateName}`, 12);
-    addPara(`Address: ${fields.address || "[Not provided]"}`, 12);
-    addPara(`Email: ${fields.email || "[Not provided]"}`, 12);
+
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...C.darkText);
+    doc.setFontSize(9.5);
+    const affLines = doc.splitTextToSize(affiliatePartyStr, colW - 20);
+    for (const line of affLines) {
+      checkPage(14);
+      doc.text(line, margin + 20, y);
+      y += 14;
+    }
+    doc.setFont("times", "normal");
+    doc.setTextColor(...C.bodyText);
+    y += 2;
+    addPara(fields.address || "[Address not provided]", 20);
+    addPara(fields.email   || "[Email not provided]",   20);
+
+    y += 6;
+    rule(C.rule, 0.5);
 
     // ── Sections ─────────────────────────────────────────────────
     addHeading("1. PARTNERSHIP OVERVIEW");
-    addPara("Dainware grants Affiliate the right to promote Wander (the \"App\") to Affiliate's audience using the tracking tools provided by Dainware, including a unique promo code (identified in Exhibit A), QR code, and affiliate URL (collectively, the \"Offer Code\"), in exchange for commission payments as outlined in this Agreement.");
+    addPara("Dainware grants Affiliate the right to promote Wander (the \"App\") to Affiliate's audience using the tracking tools provided by Dainware, including a unique promo code (identified in Exhibit A), QR code, and affiliate URL (collectively, the \"Offer Code\"), in exchange for commission payments as outlined in this Agreement. Affiliate is under no obligation to promote the App. This Agreement governs the terms and conditions that apply if and when Affiliate chooses to do so.");
 
     addHeading("2. COMMISSION STRUCTURE");
-    addPara("2.1 Offer Code effectiveness");
-    addPara("• The Offer Code applies exclusively to the in-app purchase with Reference Name \"3 Tour Credits\" (the \"In-App Purchase\").", 12);
-    addPara("• The Offer Code may only be redeemed by users who have not previously made any purchase within the Wander app.", 12);
-    addPara("• The Offer Code will provide the redeemer with a 10% discount off the retail price of the In-App Purchase so long as the Offer Code remains active.", 12);
+    addPara("2.1 Offer Code effectiveness:");
+    addBullet("The Offer Code applies exclusively to the in-app purchase with Reference Name \"3 Tour Credits\" (the \"In-App Purchase\").");
+    addBullet("The Offer Code may only be redeemed by users who have not previously made any purchase within the Wander app.");
+    addBullet("The Offer Code will provide the redeemer with a 10% discount off the retail price of the In-App Purchase so long as the Offer Code remains active.");
     addPara(`2.2 Dainware will pay Affiliate a ${commPct}% commission on all net proceeds generated from purchases of the In-App Purchase made using the Offer Code.`);
     addPara("2.3 Net proceeds are defined as amounts actually received by Dainware from Apple or Google after all platform fees, discounts, refunds, and adjustments.");
     addPara("2.4 Example calculation:");
-    addPara(`• In-App Purchase retail price: $${retailPrice}`, 12);
-    addPara(`• Proceeds after 10% customer discount: $${discounted}`, 12);
-    addPara(`• Net proceeds after 15% App Store / Play Store fee: $${netProceeds}`, 12);
-    addPara(`• Affiliate commission (${commPct}% of $${netProceeds}): $${commission}`, 12);
-    addPara("2.5 Apple, Google or other platforms may at any time raise or lower the fee they charge developers. Changes to their fee structure may affect net proceeds on which the Affiliate commission percentage is calculated.");
+    addBullet(`In-App Purchase retail price: $${retailPrice}`);
+    addBullet(`Proceeds after 10% customer discount: $${discounted}`);
+    addBullet(`Net proceeds after 15% App Store / Play Store fee: $${netProceeds}`);
+    addBullet(`Affiliate commission (${commPct}% of $${netProceeds}): $${commission}`);
+    addPara("2.5 Apple, Google or other platforms may at any time raise or lower their developer fees. Changes to their fee structure may affect net proceeds on which the Affiliate commission percentage is calculated.");
     addPara("2.6 The retail price of the in-app purchase is set at Dainware's sole discretion and may be changed at any time. Commission percentages remain fixed as described in Section 2.2, but the dollar amount of commissions will reflect the then-current retail price.");
 
     addHeading("3. PAYMENTS");
     addPara("3.1 Payment timing — Commissions are paid monthly:");
-    addPara("• Sales generated in any given month are paid approximately 1 calendar month plus 7 days following the sale month.", 12);
-    addPara("• Example: Sales generated in January are paid on or around March 7th.", 12);
-    addPara("• This timing aligns with Apple's payout schedule to Dainware.", 12);
+    addBullet("Sales generated in any given month are paid to Affiliate approximately 1 calendar month plus 7 days following the sale month.");
+    addBullet("Example: Sales generated in January are paid on or around March 7th.");
+    addBullet("This timing aligns with Apple's payout schedule to Dainware (Apple pays Dainware for January sales on or around March 1st).");
     addPara("3.2 Payment issuance:");
-    addPara("• Payments are issued only if the total commission due exceeds $25. Amounts below $25 roll over.", 12);
-    addPara("• Payments will not be issued until Affiliate has provided valid tax documentation (W-9 or W-8BEN) to Dainware.", 12);
-    addPara("• Payments are issued via PayPal to the PayPal address identified in Exhibit A.", 12);
-    addPara("3.3 Dainware reserves the right to adjust, withhold, or deduct commissions for refunded transactions, chargebacks, fraudulent activity, or transactions determined to be invalid.");
-    addPara("3.4 Dainware reserves the right to correct commission calculation errors and adjust future payments accordingly.");
-    addPara("3.5 Dainware will not withhold or reduce commissions except as explicitly described in this Agreement.");
+    addBullet("Payments are issued for any commission amount greater than $0.00.");
+    addBullet("Payments are issued via PayPal to the PayPal address identified in Exhibit A.");
+    addBullet("All payments are issued in USD. Dainware is not responsible for currency conversion costs, foreign transaction fees, or PayPal availability in the recipient's country.");
+    addPara("3.3 Right to Withhold for Refunds, Fraud, or Chargebacks: Dainware reserves the right to adjust, withhold, or deduct commissions for refunded transactions, chargebacks, fraudulent activity, or transactions determined to be invalid.");
+    addPara("3.4 Right to Audit / Correct Errors: Dainware reserves the right to correct commission calculation errors and adjust future payments accordingly.");
+    addPara("3.5 Commission Payment Guarantee: Dainware will not withhold or reduce commissions except as explicitly described in this Agreement.");
 
     addHeading("4. CURRENCY & PRICING");
-    addPara("The Affiliate's commission will be calculated using the net proceeds in USD received by Dainware from the platform on which the purchase was made.");
+    addPara("The App is available in many different countries and as such, the In-App Purchase is available in many different currencies and prices. For simplicity, the Affiliate's commission will be calculated using the net proceeds in USD received by Dainware from the platform on which the purchase was made.");
 
     addHeading("5. COMMISSION ELIGIBILITY PERIOD");
     addPara("5.1 Affiliate earns commissions on all sales made using the Offer Code during the Commission Eligibility Period.");
-    addPara(`5.2 The Commission Eligibility Period begins with the published date of the Affiliate's first Qualifying Promotion and extends for ${eligDays} days after the most recent Qualifying Promotion.`);
-    addPara(`5.3 Rolling ${eligDays} day expiration: Each new Qualifying Promotion extends the Commission Eligibility Period for an additional ${eligDays} days.`);
-    addPara("5.4 Example: Affiliate posts on January 1, 2026 → eligibility runs through April 1, 2026. A new post on March 15, 2026 resets to June 13, 2026.");
-    addPara("5.5 The Offer Code may remain active for customer use indefinitely, but Affiliate will not earn commissions after the Commission Eligibility Period has expired.");
-    addPara("5.6 Reactivation requires a new agreement with Dainware and a new Offer Code.");
+    addPara(`5.2 The Commission Eligibility Period begins on the effective date of this Agreement and extends for ${eligDays} days.`);
+    addPara(`5.3 Rolling ${eligDays}-day expiration: Each new Qualifying Promotion extends the Commission Eligibility Period for an additional ${eligDays} days from the published date of that Qualifying Promotion.`);
+    addPara("5.4 Example:");
+    addBullet("Affiliate posts a Qualifying Promotion on January 1, 2026 — eligibility runs through April 1, 2026 (90 days).");
+    addBullet("If Affiliate posts another Qualifying Promotion on March 15, 2026, eligibility resets and now runs through June 13, 2026.");
+    addBullet("If no new Qualifying Promotion is posted by April 1, 2026, this Agreement is considered \"passively terminated.\"");
+    addPara("5.5 Code May Remain Active: The Offer Code may remain active for customer use indefinitely, but Affiliate will not earn commissions after the Commission Eligibility Period has expired.");
+    addPara("5.6 Reactivation: To resume earning commissions after the Commission Eligibility Period has expired, Affiliate must enter into a new agreement with Dainware and will be assigned a new Offer Code.");
 
     addHeading("6. QUALIFYING PROMOTIONS");
-    addPara("6.1 A \"Qualifying Promotion\" includes:");
-    addPara("• A verbal mention of Wander with the Offer Code text AND Wander app icon displayed on screen for at least 7 seconds, OR a verbal mention of Wander with the QR code AND Wander app icon displayed on screen for at least 7 seconds.", 12);
-    addPara("• The unaltered affiliate URL in the video description.", 12);
-    addPara("6.2 Affiliate must self-report each Qualifying Promotion via the Affiliate Portal within 48 hours of publishing, including a link to the video and the approximate minute mark of the promotion.");
-    addPara("6.3 Affiliate must ensure all Qualifying Promotions remain publicly accessible for the duration of the Commission Eligibility Period. Removal or alteration immediately terminates commission eligibility.");
+    addPara("6.1 A \"Qualifying Promotion\" that extends the Commission Eligibility Period requires:");
+    addBullet("The unaltered affiliate URL in the video description; AND");
+    addBullet("A verbal mention of Wander with the Offer Code text AND Wander app icon displayed on screen for at least 7 seconds; OR");
+    addBullet("A verbal mention of Wander with the QR code AND Wander app icon displayed on screen for at least 7 seconds.");
+    addPara("6.2 Affiliate must self-report the posting of a promotion via the Wander Affiliate Portal. Failure to do so will exempt the promotion from being considered a Qualifying Promotion. Submissions must occur before the Commission Eligibility Period expires.");
+    addPara("6.3 Continuing Availability Requirement: Affiliate must ensure that any Qualifying Promotion remains publicly accessible and contains the required promotional elements for the duration of the Commission Eligibility Period. If the Qualifying Promotion is removed, made private, or altered, Affiliate's commission eligibility will immediately terminate as of that date.");
 
     addHeading("7. DISTRIBUTION CHANNELS");
-    addPara("Wander grants the Affiliate the right to promote Wander using the Offer Code on any of their preferred distribution channels (blogs, social media, or otherwise) in addition to YouTube. The Commission Eligibility Period is only initiated and extended by Qualifying Promotions as defined in Section 6.");
+    addPara("Wander grants the Affiliate the right to promote Wander using the Offer Code on any of their preferred distribution channels (blogs, social media, or otherwise) in addition to YouTube. However, the Commission Eligibility Period is only extended by use of a Qualifying Promotion as described in Section 6.");
 
     addHeading("8. REPORTING & TRACKING");
-    addPara("8.1 Dainware will provide Affiliate with the ability to track Offer Code usage via the \"Affiliate Portal\".");
-    addPara("8.2 Report accuracy is on a best-effort basis and is dependent on third parties including Apple App Store API, Google Play Store API, and Google Firebase Functions. In the event of a discrepancy, data sourced directly from Apple App Store Connect, Google Play Console, or other official platform reporting systems shall serve as the authoritative basis for commission calculations.");
+    addPara("8.1 Dainware will provide Affiliate with the ability to track Offer Code usage showing the number of redemptions over time periods via the \"Affiliate Portal\".");
+    addPara("8.2 Report accuracy is on a best-effort basis and is dependent on third parties including the Apple App Store API, Google Play Store API, and Google Firebase Functions. In the event of a discrepancy, data sourced directly from Apple App Store Connect, Google Play Console, or other official platform reporting systems shall serve as the authoritative basis for commission calculations and payment issuance.");
 
     addHeading("9. TERM & TERMINATION");
     addPara("9.1 This Agreement begins on the Effective Date and continues until:");
-    addPara("• Explicitly terminated by either party (\"Active Termination\"), OR", 12);
-    addPara(`• ${eligDays} days have elapsed since the last Qualifying Promotion ("Passive Termination"), OR`, 12);
-    addPara(`• ${eligDays} days have elapsed since the Effective Date and no Qualifying Promotion has been performed ("Passive Termination").`, 12);
-    addPara(`9.2 Dainware may actively terminate at any time with written notice. Upon termination by Dainware, Affiliate will continue to earn commissions for the remainder of the Commission Eligibility Period (${eligDays} days from the most recent Qualifying Promotion) unless Affiliate has violated this Agreement.`);
-    addPara(`9.3 Affiliate may terminate at any time with written notice, or passively by ceasing to promote the App for ${eligDays} days.`);
+    addBullet("Explicitly terminated by either party (\"Active Termination\"); OR");
+    addBullet(`${eligDays} days have elapsed since the last Qualifying Promotion ("Passive Termination"); OR`);
+    addBullet(`${eligDays} days have elapsed since the Effective Date and no Qualifying Promotion has been performed ("Passive Termination").`);
+    addPara(`9.2 Dainware may actively terminate this Agreement at any time with written notice. Upon termination by Dainware, Affiliate will continue to earn commissions for the remainder of the Commission Eligibility Period (${eligDays} days from the most recent Qualifying Promotion) unless Affiliate has violated the terms of this Agreement.`);
+    addPara(`9.3 Affiliate may actively terminate this Agreement at any time with written notice, or passively by ceasing to promote the App for ${eligDays} days.`);
     addPara(`9.4 Upon termination, the Offer Code may remain active at Dainware's discretion, but Affiliate will not earn further commissions beyond ${eligDays} days following the most recent Qualifying Promotion.`);
 
     addHeading("10. REPRESENTATIONS & WARRANTIES");
-    addPara("10.1 Affiliate represents that they have the right to promote the App and that their content does not violate any third-party rights.");
-    addPara("10.2 Affiliate is solely responsible for complying with all applicable laws and disclosure requirements, including FTC requirements.");
-    addPara("10.3 Affiliate agrees not to engage in fraudulent activity, including artificially inflating sales or misrepresenting the App's features.");
+    addPara("10.1 Affiliate represents that they have the right to promote the App on their platforms and that their content does not violate any third-party rights.");
+    addPara("10.2 Affiliate is solely responsible for complying with all applicable laws, regulations, and disclosure requirements related to their promotional activities, including FTC disclosure requirements in the United States and any equivalent laws in Affiliate's country of residence.");
+    addPara("10.3 Affiliate agrees not to engage in fraudulent activity, including but not limited to artificially inflating sales or misrepresenting the App's features.");
     addPara("10.4 Affiliate agrees not to make false or misleading statements about the App or Dainware LLC.");
 
     addHeading("11. LIMITATION OF LIABILITY");
     addPara("11.1 Dainware is not liable for any indirect, incidental, or consequential damages arising from this Agreement.");
-    addPara("11.2 Dainware's total liability shall not exceed the total commissions paid to Affiliate in the twelve months preceding any claim.");
+    addPara("11.2 Dainware's total liability under this Agreement shall not exceed the total commissions paid to Affiliate in the twelve months preceding any claim.");
 
     addHeading("12. NO GUARANTEE OF EARNINGS");
     addPara("Dainware makes no guarantees regarding the amount of commissions Affiliate may potentially earn. Earnings depend on Affiliate's promotional activity and customer response.");
 
     addHeading("13. INTELLECTUAL PROPERTY USAGE AND OWNERSHIP");
-    addPara("13.1 Affiliate is granted a limited, non-exclusive, non-transferable license to use Wander's name, logo, promotional assets, and App Footage solely for promoting the App. App Footage must accurately represent the App and may not be edited in a misleading manner.");
-    addPara("13.2 Offer Codes are the exclusive property of Dainware and may be deactivated upon termination or expiration of the Commission Eligibility Period.");
+    addPara("13.1 Affiliate is granted a limited, non-exclusive, non-transferable license to use Wander's name, logo, promotional assets, and screen recordings or footage of the App in use (\"App Footage\"), solely for purposes of promoting the App under this Agreement. App Footage must accurately represent the App and may not be edited in a misleading or deceptive manner.");
+    addPara("13.2 Offer Codes are the exclusive property of Dainware. The Offer Code assigned under this Agreement is valid only for the duration of this Agreement and may be deactivated by Dainware upon termination or expiration of the Commission Eligibility Period.");
 
     addHeading("14. INDEPENDENT CONTRACTOR");
     addPara("Affiliate is an independent contractor and is not an employee, partner, or agent of Dainware. Affiliate is responsible for all taxes on commission income.");
 
     addHeading("15. MODIFICATIONS");
-    addPara("Dainware may modify terms of this Agreement (excluding Section 2 and Section 5) with 30 days' written notice. Affiliate may terminate if they do not accept the modifications.");
+    addPara("Dainware may modify terms of this Agreement (excluding the commission structure as defined in Section 2 and the Commission Eligibility Period as defined in Section 5) with 30 days' written notice to Affiliate. Affiliate may terminate this Agreement if they do not accept the modifications.");
 
     addHeading("16. FORCE MAJEURE");
-    addPara("Dainware shall not be liable for delays or failure to perform due to causes beyond its reasonable control.");
+    addPara("Dainware shall not be liable for delays or failure to perform due to causes beyond its reasonable control, including but not limited to acts of God, internet outages, platform outages, or third-party service disruptions.");
 
     addHeading("17. NON-TRANSFERABILITY");
     addPara("Affiliate may not assign or transfer this Agreement without written consent from Dainware.");
@@ -1012,10 +1114,10 @@
     addPara("Sections relating to payments, liability limitations, and governing law survive termination.");
 
     addHeading("19. RECORD RETENTION AND CLAIM PERIOD");
-    addPara("Commission records shall be deemed accurate and final unless Affiliate provides written notice of a dispute within 90 days of the applicable payment date. Dainware is not obligated to maintain records beyond 364 days from any current date.");
+    addPara("Affiliate agrees that commission calculations and payment records maintained by Dainware shall be deemed accurate and final unless Affiliate provides written notice of a dispute within 90 days of the applicable payment date. Dainware is not obligated to maintain offer code usage, commission, or tracking records beyond 364 days from any current date.");
 
     addHeading("20. DISPUTES");
-    addPara("Any disputes shall first be resolved through good-faith negotiation. If unresolved, disputes shall be resolved in the courts of Missouri.");
+    addPara("Any disputes arising under this Agreement shall first be resolved through good-faith negotiation. If unresolved, disputes shall be resolved in the courts of Missouri.");
 
     addHeading("21. ENTIRE AGREEMENT");
     addPara("This Agreement constitutes the entire agreement between the parties and supersedes any prior agreements or understandings.");
@@ -1024,67 +1126,124 @@
     addPara("This Agreement is governed by the laws of the state of Missouri in the United States of America.");
 
     // ── Exhibit A ────────────────────────────────────────────────
-    y += 10;
-    checkPage(120);
-    doc.setDrawColor(201, 168, 76);
-    doc.setLineWidth(0.5);
-    doc.line(margin, y, margin + colW, y);
-    y += 14;
+    y += 16;
+    checkPage(160);
 
-    addText("EXHIBIT A — AFFILIATE INFORMATION", {
-      fontSize: 11, fontStyle: "bold", color: [201, 168, 76],
-    });
+    rule(C.accent, 1.5);
+    y += 8;
 
-    addHighlight("Promo Code:             ", offerCode);
-    addHighlight("YouTube Channel URL:    ", fields.channelUrl || "[Not provided]");
-    addHighlight("PayPal Address:         ", fields.paypal || "[Not provided]");
-    addHighlight("Physical Address:       ", fields.address || "[Not provided]");
-    addHighlight("Email Address:          ", fields.email || "[Not provided]");
-    addHighlight("Tax Form Type:          ", fields.taxFormType || "[Not provided]");
-    if (fields.businessEntity) addHighlight("Business Entity:        ", fields.businessEntity);
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...C.accent);
+    doc.text("EXHIBIT A — AFFILIATE INFORMATION", margin, y);
+    y += 20;
+
+    rule(C.rule, 0.5);
+    y += 8;
+
+    addExhibitField("Promo Code:",              offerCode);
+    addExhibitField("YouTube Channel URL:",     fields.channelUrl   || "[Not provided]");
+    addExhibitField("PayPal Address:",          fields.paypal       || "[Not provided]");
+    addExhibitField("Physical Address:",        fields.address      || "[Not provided]");
+    addExhibitField("Email Address:",           fields.email        || "[Not provided]");
+    addExhibitField("Tax Form Type:",           fields.taxFormType  || "[Not provided]");
+    if (fields.businessEntity) {
+      addExhibitField("Business Entity:",       fields.businessEntity);
+    }
 
     // ── Signature block ───────────────────────────────────────────
     y += 16;
-    checkPage(120);
-    doc.setDrawColor(201, 168, 76);
-    doc.line(margin, y, margin + colW, y);
-    y += 14;
+    checkPage(180);
 
-    addText("ELECTRONIC SIGNATURE & ACCEPTANCE", {
-      fontSize: 11, fontStyle: "bold", color: [201, 168, 76],
-    });
+    rule(C.accent, 1.5);
+    y += 10;
 
-    addPara("By submitting this form, the Affiliate confirms they have read, understood, and agreed to all terms of this Agreement.");
-    y += 4;
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...C.accent);
+    doc.text("ELECTRONIC SIGNATURES", margin, y);
+    y += 18;
+
+    rule(C.rule, 0.5);
+    y += 10;
+
+    addPara("The parties below confirm that electronic signatures, including typed names and dates, are legally binding and have the same legal effect as handwritten signatures, in accordance with the Electronic Signatures in Global and National Commerce Act (E-SIGN Act) and any applicable state or international equivalent.");
+    y += 8;
+
+    // Dainware signature block
+    doc.setFontSize(9.5);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...C.darkText);
+    doc.text("Dainware LLC:", margin, y);
+    y += 16;
 
     doc.setFontSize(20);
     doc.setFont("times", "italic");
-    doc.setTextColor(201, 168, 76);
-    checkPage(36);
-    doc.text(fields.signature, margin, y);
+    doc.setTextColor(...C.accent);
+    doc.text("Ryan Cofer", margin, y);
+    y += 6;
+
+    doc.setDrawColor(...C.mutedText);
+    doc.setLineWidth(0.5);
+    doc.line(margin, y, margin + 220, y);
+    y += 14;
+
+    doc.setFontSize(8.5);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(...C.mutedText);
+    doc.text("Ryan Cofer, Manager — Dainware LLC", margin, y);
+    y += 13;
+    doc.text("Date: February 20, 2026", margin, y);
     y += 28;
 
-    doc.setDrawColor(168, 200, 216);
+    // Affiliate signature block
+    doc.setFontSize(9.5);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...C.darkText);
+    doc.text("Affiliate:", margin, y);
+    y += 16;
+
+    checkPage(80);
+    doc.setFontSize(22);
+    doc.setFont("times", "italic");
+    doc.setTextColor(...C.accent);
+    doc.text(fields.signature || "", margin, y);
+    y += 6;
+
+    doc.setDrawColor(...C.mutedText);
     doc.setLineWidth(0.5);
     doc.line(margin, y, margin + 280, y);
     y += 14;
 
-    addText("Affiliate Electronic Signature", { fontSize: 8, color: [168, 200, 216] });
-    addText(`Submitted: ${submittedAt}`, { fontSize: 8, color: [168, 200, 216] });
-    addText(`Full Name: ${fields.firstName} ${fields.lastName}`, { fontSize: 9, color: [220, 220, 220] });
-    addText(`Email: ${fields.email}`, { fontSize: 9, color: [220, 220, 220] });
+    doc.setFontSize(8.5);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(...C.mutedText);
+    const sigNameLine = fields.businessEntity
+      ? `${fields.businessEntity} — represented by ${fields.firstName} ${fields.lastName}`
+      : `${fields.firstName} ${fields.lastName}`;
+    doc.text(sigNameLine, margin, y);
+    y += 13;
+    doc.text(`Email: ${fields.email}`, margin, y);
+    y += 13;
+    doc.text(`Submitted: ${submittedAt}`, margin, y);
+    y += 28;
 
     // ── Footer on every page ──────────────────────────────────────
     const totalPages = doc.internal.getNumberOfPages();
     for (let i = 1; i <= totalPages; i++) {
       doc.setPage(i);
-      doc.setFontSize(7);
+      // Thin footer rule
+      doc.setDrawColor(...C.rule);
+      doc.setLineWidth(0.5);
+      doc.line(margin, pageH - 36, margin + colW, pageH - 36);
+      // Footer text
+      doc.setFontSize(7.5);
       doc.setFont("helvetica", "normal");
-      doc.setTextColor(168, 200, 216);
+      doc.setTextColor(...C.mutedText);
       doc.text(
-        `Wander Affiliate Partnership Agreement — ${offerCode} — Page ${i} of ${totalPages}`,
+        `Wander Affiliate Partnership Agreement  |  Offer Code: ${offerCode}  |  Page ${i} of ${totalPages}`,
         margin,
-        pageH - 30
+        pageH - 22
       );
     }
 
