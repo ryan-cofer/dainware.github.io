@@ -1307,7 +1307,8 @@
       const taxStoragePath = `affiliate-tax-forms/${leadId}/${safeTaxName}`;
       const taxRef         = storage.ref(taxStoragePath);
       const taxSnapshot    = await taxRef.put(taxFile, { contentType: "application/pdf" });
-      const taxFormUrl     = await taxSnapshot.ref.getDownloadURL();
+      //const taxFormUrl     = await taxSnapshot.ref.getDownloadURL();
+      const taxFormUrl = `https://firebasestorage.googleapis.com/v0/b/${taxSnapshot.ref.bucket}/o/${encodeURIComponent(taxSnapshot.ref.fullPath)}?alt=media`;
 
       // 2. Generate & upload signed contract PDF
       setStatus(`<span class="loading-spinner"></span> Generating signed contract...`);
@@ -1321,7 +1322,8 @@
 
       setStatus(`<span class="loading-spinner"></span> Uploading signed contract...`);
       const contractSnapshot = await contractRef.put(contractBlob, { contentType: "application/pdf" });
-      const contractUrl      = await contractSnapshot.ref.getDownloadURL();
+      //const contractUrl      = await contractSnapshot.ref.getDownloadURL();
+      const contractUrl = `https://firebasestorage.googleapis.com/v0/b/${contractSnapshot.ref.bucket}/o/${encodeURIComponent(contractSnapshot.ref.fullPath)}?alt=media`;
 
       // 3. Save all data to Firestore
       setStatus(`<span class="loading-spinner"></span> Saving your information...`);
