@@ -698,11 +698,17 @@
         return;
       }
 
-      // Determine medium and hide irrelevant promo fields for Facebook affiliates
+      // Determine medium and adjust promo fields for Facebook affiliates
       isFacebook = (affiliateData.medium || "").toLowerCase() === "facebook";
       if (isFacebook) {
+        // Hide the minute marker — not applicable for Facebook posts
         document.getElementById("field-timestamp").style.display = "none";
-        document.getElementById("field-url").style.display       = "none";
+        // Prefill the URL with their channel URL and lock it
+        var urlInput = document.getElementById("promo-url");
+        urlInput.value    = affiliateData.channelUrl || "";
+        urlInput.readOnly = true;
+        urlInput.style.opacity = "0.6";
+        urlInput.style.cursor  = "default";
       }
 
       document.getElementById("portal-screen").style.display = "block";
@@ -893,7 +899,7 @@
     }
 
     var promoDate      = document.getElementById("promo-date").value;
-    var promoUrl       = isFacebook ? "" : (document.getElementById("promo-url").value       || "").trim();
+    var promoUrl       = (document.getElementById("promo-url").value       || "").trim();
     var promoTimestamp = isFacebook ? "" : (document.getElementById("promo-timestamp").value || "").trim();
 
     if (!promoDate) {
