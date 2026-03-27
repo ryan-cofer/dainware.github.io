@@ -587,12 +587,14 @@
             <input type="date" id="promo-date" />
           </div>
 
-          <div class="form-group">
+          <!-- Hidden for Facebook affiliates -->
+          <div class="form-group" id="field-timestamp">
             <label>Promotion Minute Marker (approx.)</label>
             <input type="text" id="promo-timestamp" placeholder="e.g. 2:35" />
           </div>
 
-          <div class="form-group full-width">
+          <!-- Hidden for Facebook affiliates -->
+          <div class="form-group full-width" id="field-url">
             <label>Promotion URL</label>
             <input type="url" id="promo-url" placeholder="https://..." />
           </div>
@@ -669,6 +671,9 @@
   var OFFER_CODE   = PORTAL_CODE ? portalCodeToOfferCode(PORTAL_CODE) : null;
   var affiliateData = null;
 
+  // Whether this affiliate uses Facebook (set after affiliateData loads)
+  var isFacebook = false;
+
   window.addEventListener("load", function() {
     if (!PORTAL_CODE || !OFFER_CODE) {
       document.getElementById("invalid-screen").style.display = "flex";
@@ -691,6 +696,13 @@
       if (affiliateData.status === "INACTIVE") {
         document.getElementById("inactive-screen").style.display = "flex";
         return;
+      }
+
+      // Determine medium and hide irrelevant promo fields for Facebook affiliates
+      isFacebook = (affiliateData.medium || "").toLowerCase() === "facebook";
+      if (isFacebook) {
+        document.getElementById("field-timestamp").style.display = "none";
+        document.getElementById("field-url").style.display       = "none";
       }
 
       document.getElementById("portal-screen").style.display = "block";
@@ -717,14 +729,6 @@
   });
 
   // ── View Agreement ────────────────────────────────────────────────
-  // Opens the contract URL stored on the affiliate's own Firestore document.
-  // The URL was saved during onboarding and is a Firebase Storage signed URL
-  // that is scoped to their specific contract file path:
-  //   affiliate-contracts/{OFFER_CODE}/{filename}
-  // An affiliate can only reach this via their authenticated portal session,
-  // and the URL itself was written to their own document — they cannot
-  // access another affiliate's document because OFFER_CODE is derived
-  // from their private portal code.
   function viewAgreement() {
     if (!affiliateData || !affiliateData.contractUrl) {
       alert("Your agreement is not available yet. Please contact " + CONTACT_EMAIL + " if you believe this is an error.");
@@ -735,7 +739,6 @@
     btn.classList.add("loading");
     btn.textContent = "Opening...";
 
-    // Brief visual feedback, then open in new tab
     setTimeout(function() {
       window.open(affiliateData.contractUrl, "_blank", "noopener,noreferrer");
       btn.classList.remove("loading");
@@ -890,8 +893,8 @@
     }
 
     var promoDate      = document.getElementById("promo-date").value;
-    var promoUrl       = (document.getElementById("promo-url").value       || "").trim();
-    var promoTimestamp = (document.getElementById("promo-timestamp").value || "").trim();
+    var promoUrl       = isFacebook ? "" : (document.getElementById("promo-url").value       || "").trim();
+    var promoTimestamp = isFacebook ? "" : (document.getElementById("promo-timestamp").value || "").trim();
 
     if (!promoDate) {
       showPromoError("Please enter the date the promotion was published."); return;
@@ -923,14 +926,18 @@
     var submittedAt = new Date().toISOString();
 
     var promotionRecord = {
-      promoDate:      promoDate,
-      promoUrl:       promoUrl,
-      promoTimestamp: promoTimestamp,
-      submittedAt:    submittedAt,
-      offerCode:      OFFER_CODE,
-      channelName:    affiliateData.channelName || "",
-      medium:         affiliateData.medium || "",
+      promoDate:   promoDate,
+      submittedAt: submittedAt,
+      offerCode:   OFFER_CODE,
+      channelName: affiliateData.channelName || "",
+      medium:      affiliateData.medium || "",
     };
+
+    // Only include URL and timestamp fields for non-Facebook affiliates
+    if (!isFacebook) {
+      promotionRecord.promoUrl       = promoUrl;
+      promotionRecord.promoTimestamp = promoTimestamp;
+    }
 
     var batch = db.batch();
 
@@ -938,26 +945,37 @@
     batch.set(promoRef, promotionRecord);
 
     var affiliateRef = db.collection(COLLECTION).doc(OFFER_CODE);
-    batch.update(affiliateRef, {
+    var affiliateUpdate = {
       lastPromoDate:                promoDate,
-      lastPromoUrl:                 promoUrl,
-      lastPromoTimestamp:           promoTimestamp,
       lastPromoSubmittedAt:         submittedAt,
       commissionEligibilityEndDate: newEndDateStr,
-    });
+    };
+
+    // Only update URL and timestamp fields for non-Facebook affiliates
+    if (!isFacebook) {
+      affiliateUpdate.lastPromoUrl       = promoUrl;
+      affiliateUpdate.lastPromoTimestamp = promoTimestamp;
+    }
+
+    batch.update(affiliateRef, affiliateUpdate);
 
     batch.commit().then(function() {
       affiliateData.lastPromoDate                = promoDate;
-      affiliateData.lastPromoUrl                 = promoUrl;
-      affiliateData.lastPromoTimestamp           = promoTimestamp;
       affiliateData.lastPromoSubmittedAt         = submittedAt;
       affiliateData.commissionEligibilityEndDate = newEndDateStr;
 
+      if (!isFacebook) {
+        affiliateData.lastPromoUrl       = promoUrl;
+        affiliateData.lastPromoTimestamp = promoTimestamp;
+      }
+
       populateEligibilityBar();
 
-      document.getElementById("promo-date").value      = "";
-      document.getElementById("promo-url").value       = "";
-      document.getElementById("promo-timestamp").value = "";
+      document.getElementById("promo-date").value = "";
+      if (!isFacebook) {
+        document.getElementById("promo-url").value       = "";
+        document.getElementById("promo-timestamp").value = "";
+      }
 
       sucEl.textContent   = "Promotion submitted successfully! Your commission eligibility has been extended to " + displayDate(newEndDateStr) + ", pending review.";
       sucEl.style.display = "block";
