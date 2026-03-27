@@ -1119,48 +1119,54 @@ ${getSection7Html(medium)}
 
     // ── Sections ─────────────────────────────────────────────────
     addHeading("1. PARTNERSHIP OVERVIEW");
-    addPara("Dainware grants Affiliate the right to promote Wander (the \"App\") to Affiliate's audience using the tracking tools provided by Dainware, including a unique promo code (identified in Exhibit A), QR code, and affiliate URL (collectively, the \"Offer Code\"), in exchange for commission payments as outlined in this Agreement. Affiliate is under no obligation to promote the App. This Agreement governs the terms and conditions that apply if and when Affiliate chooses to do so.");
+    addPara("Dainware grants Affiliate the right to promote Wander (the \"App\") to Affiliate's audience using the tracking tools provided by Dainware, including a unique promo code (identified in Exhibit A), QR code, and affiliate URL (collectively, the \"Offer Code\"), in exchange for commission payments as outlined in this Agreement. Affiliate is under no obligation to promote the App. This Agreement governs the terms and conditions that apply if and when Affiliate chooses to do so. Affiliate may promote as frequently or infrequently as they wish, with commissions subject to the Commission Eligibility Period defined in Section 5.");
 
     addHeading("2. COMMISSION STRUCTURE");
-    addPara("2.1 Offer Code effectiveness:");
+    addPara("2.1 Offer Code effectiveness");
     addBullet("The Offer Code applies exclusively to the in-app purchase with Reference Name \"3 Tour Credits\" (the \"In-App Purchase\").");
     addBullet("The Offer Code may only be redeemed by users who have not previously made any purchase within the Wander app.");
     addBullet("The Offer Code will provide the redeemer with a 10% discount calculated from the USD retail price of the In-App Purchase while the Offer Code remains active. Retail pricing in other currencies is determined by the app store platform and may result in a discount percentage that varies slightly from 10%");
     addPara(`2.2 Dainware will pay Affiliate a ${commPct}% commission on all net proceeds generated from purchases of the In-App Purchase made using the Offer Code.`);
     addPara("2.3 Net proceeds are defined as amounts actually received by Dainware from Apple or Google after all platform fees, discounts, refunds, and adjustments.");
-    addPara("2.4 Example calculation:");
+    addPara("2.4 Example calculation");
     addBullet(`In-App Purchase retail price: $${retailPrice}`);
     addBullet(`Proceeds after 10% customer discount: $${discounted}`);
     addBullet(`Net proceeds after 15% App Store / Play Store fee: $${netProceeds}`);
     addBullet(`Affiliate commission (${commPct}% of $${netProceeds}): $${commission}`);
-    addPara("2.5 Apple, Google or other platforms may at any time raise or lower their developer fees. Changes to their fee structure may affect net proceeds on which the Affiliate commission percentage is calculated.");
+    addPara("2.5 Variable App Store / Play Store / Other platform fee structures");
+    addBullet("Apple, Google or other platforms may at any time raise or lower the fee they charge developers. Changes to their fee structure may affect net proceeds on which the Affiliate commission percentage is calculated.");
     addPara("2.6 The retail price of the in-app purchase is set at Dainware's sole discretion and may be changed at any time. Commission percentages remain fixed as described in Section 2.2, but the dollar amount of commissions will reflect the then-current retail price.");
 
     addHeading("3. PAYMENTS");
-    addPara("3.1 Payment timing — Commissions are paid monthly:");
+    addPara("3.1 Payment timing");
+    addPara("Commissions are paid monthly and based on the following schedule:");
     addBullet("Sales generated in any given month are paid to Affiliate approximately 1 calendar month plus 7 days following the sale month.");
     addBullet("Example: Sales generated in January are paid on or around March 7th.");
     addBullet("This timing aligns with Apple's payout schedule to Dainware (Apple pays Dainware for January sales on or around March 1st).");
-    addPara("3.2 Payment issuance:");
+    addPara("3.2 Payment issuance");
     addBullet("Payments are issued for any commission amount greater than $0.00.");
     addBullet("Payments are issued via PayPal to the PayPal address identified in Exhibit A.");
-    addBullet("All payments are issued in USD. Dainware is not responsible for currency conversion costs, foreign transaction fees, or PayPal availability in the recipient's country.");
-    addPara("3.3 Right to Withhold for Refunds, Fraud, or Chargebacks: Dainware reserves the right to adjust, withhold, or deduct commissions for refunded transactions, chargebacks, fraudulent activity, or transactions determined to be invalid.");
-    addPara("3.4 Right to Audit / Correct Errors: Dainware reserves the right to correct commission calculation errors and adjust future payments accordingly.");
-    addPara("3.5 Commission Payment Guarantee: Dainware will not withhold or reduce commissions except as explicitly described in this Agreement.");
+    addBullet("All payments are issued in USD. Dainware is not responsible for currency conversion costs, foreign transaction fees, or PayPal availability in the recipient's country. Affiliate is responsible for maintaining a PayPal account capable of receiving USD payments.");
+    addPara("3.3 Right to Withhold for Refunds, Fraud, or Chargebacks");
+    addBullet("Dainware reserves the right to adjust, withhold, or deduct commissions for refunded transactions, chargebacks, fraudulent activity, or transactions determined to be invalid. Commissions will only be paid on completed transactions that are not refunded or reversed.");
+    addPara("3.4 Right to Audit / Correct Errors");
+    addBullet("Dainware reserves the right to correct commission calculation errors and adjust future payments accordingly.");
+    addPara("3.5 Commission Payment Guarantee");
+    addBullet("Dainware will not withhold or reduce commissions except as explicitly described in this Agreement, including but not limited to refunds, chargebacks, fraudulent activity, violations of this Agreement, or expiration of the Commission Eligibility Period.");
 
     addHeading("4. CURRENCY & PRICING");
     addPara("The App is available in many different countries and as such, the In-App Purchase is available in many different currencies and prices. For simplicity, the Affiliate's commission will be calculated using the net proceeds in USD received by Dainware from the platform on which the purchase was made.");
 
     addHeading("5. COMMISSION ELIGIBILITY PERIOD");
-    addPara("5.1 Affiliate earns commissions on all sales made using the Offer Code during the Commission Eligibility Period.");
-    addPara(`5.2 The Commission Eligibility Period begins on the effective date of this Agreement and extends for ${eligDays} days.`);
-    addPara(`5.3 Rolling ${eligDays}-day expiration: Each new Qualifying Promotion extends the Commission Eligibility Period for an additional ${eligDays} days from the published date of that Qualifying Promotion.`);
+    addPara("5.1 Commission Eligibility Period: Affiliate earns commissions on all sales made using the Offer Code during the Commission Eligibility Period.");
+    addPara(`5.2 The Commission Eligibility Period begins on the effective date of this Agreement, and extends for ${eligDays} days.`);
+    addPara(`5.3 Rolling ${eligDays} day expiration: Each new Qualifying Promotion extends the Commission Eligibility Period for an additional ${eligDays} days from the published date of that Qualifying Promotion.`);
     addPara("5.4 Example:");
-    addBullet(`Affiliate posts a Qualifying Promotion on ${ex1Start} — eligibility runs through ${ex1End} (${eligDays} days).`);
-    addBullet(`If Affiliate posts another Qualifying Promotion on ${ex2Start}, eligibility resets and now runs through ${ex2End} (${eligDays} days from ${ex2Start}).`);
-    addBullet(`If no new Qualifying Promotion is posted by ${ex1End}, this Agreement is considered "passively terminated."`);
-    addPara("5.5 Code May Remain Active: The Offer Code may remain active for customer use indefinitely, but Affiliate will not earn commissions after the Commission Eligibility Period has expired.");
+    addBullet(`Affiliate posts a Qualifying Promotion on ${ex1Start}`);
+    addBullet(`Commission eligibility runs through ${ex1End} (${eligDays} days).`);
+    addBullet(`If Affiliate posts another Qualifying Promotion on ${ex2Start}, the eligibility window resets and now runs through ${ex2End} (${eligDays} days from ${ex2Start}).`);
+    addBullet(`If Affiliate does not post a new Qualifying Promotion by ${ex1End}, this Agreement would be considered "passively terminated" and the Affiliate would receive commissions on all sales using their Offer Code made through ${ex1End} (the end of the Commission Eligibility Period).`);
+    addPara("5.5 Code May Remain Active: The Offer Code may remain active for customer use indefinitely, continuing to provide redeemers with a discount. However, Affiliate will not earn commissions on sales made with the Offer Code after the Commission Eligibility Period has expired.");
     addPara("5.6 Reactivation: To resume earning commissions after the Commission Eligibility Period has expired, Affiliate must enter into a new agreement with Dainware and will be assigned a new Offer Code.");
 
     // Medium-aware sections 6 & 7
@@ -1169,16 +1175,16 @@ ${getSection7Html(medium)}
 
     addHeading("8. REPORTING & TRACKING");
     addPara("8.1 Dainware will provide Affiliate with the ability to track Offer Code usage showing the number of redemptions over time periods via the \"Affiliate Portal\".");
-    addPara("8.2 Report accuracy is on a best-effort basis and is dependent on third parties including the Apple App Store API, Google Play Store API, and Google Firebase Functions. In the event of a discrepancy, data sourced directly from Apple App Store Connect, Google Play Console, or other official platform reporting systems shall serve as the authoritative basis for commission calculations and payment issuance.");
+    addPara("8.2 Best effort of Affiliate Portal report availability and accuracy: Dainware will make a best effort to ensure the reports generated by the Affiliate via the Affiliate Portal are accurate and up-to-date. However, reporting availability and accuracy is dependent on third parties, including but not limited to: Apple App Store API, Google Play Store API and Google Firebase Functions. Inaccuracies may also be caused by, but not limited to, time zones, customer refunds, fraud or chargebacks. Data in the reports generated by the Affiliate via the Affiliate Portal may not completely align with actual Offer Code redemptions or commission payments issued due to, but not limited to, the aforementioned examples. In the event of a discrepancy, the data sourced directly from Apple App Store Connect, Google Play Console, or any other official platform reporting system used to process purchases shall serve as the authoritative basis for commission calculations and payment issuance.");
 
     addHeading("9. TERM & TERMINATION");
     addPara("9.1 This Agreement begins on the Effective Date and continues until:");
-    addBullet("Explicitly terminated by either party (\"Active Termination\"); OR");
-    addBullet(`${eligDays} days have elapsed since the last Qualifying Promotion ("Passive Termination"); OR`);
+    addBullet("Explicitly terminated by either party (\"Active Termination\"), OR");
+    addBullet(`${eligDays} days have elapsed since the last Qualifying Promotion ("Passive Termination"), OR`);
     addBullet(`${eligDays} days have elapsed since the Effective Date and no Qualifying Promotion has been performed ("Passive Termination").`);
-    addPara(`9.2 Dainware may actively terminate this Agreement at any time with written notice. Upon termination by Dainware, Affiliate will continue to earn commissions for the remainder of the Commission Eligibility Period (${eligDays} days from the most recent Qualifying Promotion) unless Affiliate has violated the terms of this Agreement.`);
-    addPara(`9.3 Affiliate may actively terminate this Agreement at any time with written notice, or passively by ceasing to promote the App for ${eligDays} days.`);
-    addPara(`9.4 Upon termination, the Offer Code may remain active at Dainware's discretion, but Affiliate will not earn further commissions beyond ${eligDays} days following the most recent Qualifying Promotion.`);
+    addPara(`9.2 Dainware may actively terminate this Agreement at any time with written notice (email is acceptable). Upon termination by Dainware, Affiliate will continue to earn commissions on sales made using the Offer Code for the remainder of the Commission Eligibility Period as defined in Section 5 (${eligDays} days from the most recent Qualifying Promotion) unless Affiliate has violated the terms of this Agreement, at which point, Affiliate relinquishes all rights to unpaid commissions.`);
+    addPara(`9.3 Affiliate may actively terminate this Agreement at any time with written notice (email is acceptable). Affiliate may, without formal notice, passively terminate this Agreement by ceasing to promote the App for ${eligDays} days. As described in Section 5, commission eligibility will automatically expire ${eligDays} days after the last Qualifying Promotion, at which point this Agreement is considered to be passively terminated.`);
+    addPara(`9.4 Upon termination, the Offer Code may remain active at Dainware's discretion for customer use, but Affiliate will not earn further commissions beyond ${eligDays} days following the most recent Qualifying Promotion.`);
 
     addHeading("10. REPRESENTATIONS & WARRANTIES");
     addPara("10.1 Affiliate represents that they have the right to promote the App on their platforms and that their content does not violate any third-party rights.");
@@ -1194,8 +1200,8 @@ ${getSection7Html(medium)}
     addPara("Dainware makes no guarantees regarding the amount of commissions Affiliate may potentially earn. Earnings depend on Affiliate's promotional activity and customer response.");
 
     addHeading("13. INTELLECTUAL PROPERTY USAGE AND OWNERSHIP");
-    addPara("13.1 Affiliate is granted a limited, non-exclusive, non-transferable license to use Wander's name, logo, promotional assets, and screen recordings or footage of the App in use (\"App Footage\"), solely for purposes of promoting the App under this Agreement. App Footage must accurately represent the App and may not be edited in a misleading or deceptive manner.");
-    addPara("13.2 Offer Codes are the exclusive property of Dainware. The Offer Code assigned under this Agreement is valid only for the duration of this Agreement and may be deactivated by Dainware upon termination or expiration of the Commission Eligibility Period.");
+    addPara("13.1 Affiliate is granted a limited, non-exclusive, non-transferable license to use Wander's name, logo, promotional assets, and screen recordings or footage of the App in use (\"App Footage\"), solely for purposes of promoting the App under this Agreement. App Footage must accurately represent the App's features and functionality and may not be edited in a misleading or deceptive manner. Affiliate may not modify Wander's branding or use it in a misleading or unauthorized manner.");
+    addPara("13.2 Offer Codes are the exclusive property of Dainware. The Offer Code assigned under this Agreement is valid only for the duration of this Agreement and may be deactivated by Dainware upon termination of this Agreement or expiration of the Commission Eligibility Period. Dainware is not responsible for commissions associated with use of inactive or expired Offer Codes.");
 
     addHeading("14. INDEPENDENT CONTRACTOR");
     addPara("Affiliate is an independent contractor and is not an employee, partner, or agent of Dainware. Affiliate is responsible for all taxes on commission income.");
@@ -1213,7 +1219,7 @@ ${getSection7Html(medium)}
     addPara("Sections relating to payments, liability limitations, and governing law survive termination.");
 
     addHeading("19. RECORD RETENTION AND CLAIM PERIOD");
-    addPara("Affiliate agrees that commission calculations and payment records maintained by Dainware shall be deemed accurate and final unless Affiliate provides written notice of a dispute within 90 days of the applicable payment date. Dainware is not obligated to maintain offer code usage, commission, or tracking records beyond 364 days from any current date.");
+    addPara("Affiliate agrees that commission calculations and payment records maintained by Dainware shall be deemed accurate and final unless Affiliate provides written notice of a dispute within 90 days of the applicable payment date. Dainware is not obligated to maintain offer code usage, commission or tracking records beyond 364 days from any current date.");
 
     addHeading("20. DISPUTES");
     addPara("Any disputes arising under this Agreement shall first be resolved through good-faith negotiation. If unresolved, disputes shall be resolved in the courts of Missouri.");
