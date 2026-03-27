@@ -737,7 +737,7 @@
     // Section 5.4 example dates — all derived from eligDays
     const ex1Start  = "January 1, 2026";
     const ex1End    = addDaysToDateStr(ex1Start, eligDays);
-    const ex2Start  = addDaysToDateStr(ex1Start, eligDays - 15);
+    const ex2Start  = addDaysToDateStr(ex1Start, Math.floor(eligDays / 2));
     const ex2End    = addDaysToDateStr(ex2Start, eligDays);
 
     document.getElementById("contract-box").innerHTML = `
@@ -920,7 +920,7 @@ ${getSection7Html(medium)}
     // Section 5.4 example dates — all derived from eligDays
     const ex1Start = "January 1, 2026";
     const ex1End   = addDaysToDateStr(ex1Start, eligDays);
-    const ex2Start = addDaysToDateStr(ex1Start, eligDays - 15);
+    const ex2Start = addDaysToDateStr(ex1Start, Math.floor(eligDays / 2));
     const ex2End   = addDaysToDateStr(ex2Start, eligDays);
 
     const pageW  = doc.internal.pageSize.getWidth();
