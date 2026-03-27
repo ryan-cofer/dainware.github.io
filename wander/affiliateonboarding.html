@@ -375,7 +375,7 @@
   <main>
     <div class="page-subtitle">Please complete your information below, then review and sign your partnership agreement.</div>
 
-    <!-- AFFILIATE INFO (moved above contract) -->
+    <!-- AFFILIATE INFO -->
     <div class="section-label">Your Information</div>
     <div class="form-grid">
       <div class="form-group">
@@ -403,8 +403,8 @@
         <input type="text" id="ob-paypal" placeholder="PayPal email for commission payments" oninput="updateContract()" />
       </div>
       <div class="form-group full-width">
-        <label>YouTube Channel URL</label>
-        <input type="text" id="ob-channelUrl" placeholder="https://youtube.com/@yourchannel" oninput="updateContract()" />
+        <label id="ob-channelUrl-label">Channel URL</label>
+        <input type="text" id="ob-channelUrl" placeholder="https://..." oninput="updateContract()" />
       </div>
     </div>
 
@@ -496,6 +496,105 @@
   let leadId   = null;
 
   // ─────────────────────────────────────────────────────────────────
+  // Medium-aware helpers — single source of truth for both the
+  // HTML preview and the generated PDF
+  // ─────────────────────────────────────────────────────────────────
+  function getChannelLabel(medium) {
+    switch (medium) {
+      case "Facebook": return "Facebook Page/Group URL";
+      default:         return "YouTube Channel URL";
+    }
+  }
+
+  function getChannelPlaceholder(medium) {
+    switch (medium) {
+      case "Facebook": return "https://facebook.com/yourpage";
+      default:         return "https://youtube.com/@yourchannel";
+    }
+  }
+
+  function getPrimaryChannelWord(medium) {
+    switch (medium) {
+      case "Facebook": return "Facebook";
+      default:         return "YouTube";
+    }
+  }
+
+  // Section 6 HTML (for live contract preview)
+  function getSection6Html(medium, eligDays) {
+    switch (medium) {
+      case "Facebook":
+        return `
+<h3>6. QUALIFYING PROMOTIONS</h3>
+<p>6.1 A "Qualifying Promotion" that extends the Commission Eligibility Period includes a public post or video on Affiliate's Facebook page or group that satisfies all of the following:</p>
+<ul>
+  <li>The unaltered affiliate URL is included in the post body or video description.</li>
+  <li>Wander is mentioned by name with the Offer Code clearly displayed or described.</li>
+  <li>The post or video remains publicly accessible for the duration of the Commission Eligibility Period.</li>
+</ul>
+<p>6.2 Affiliate must self-report the posting of a promotion via the Wander Affiliate Portal. Failure to do so will exempt the promotion from being considered a Qualifying Promotion. These submissions must occur before the Commission Eligibility Period expires in order to extend the Commission Eligibility Period.</p>
+<p>6.3 Continuing Availability Requirement</p>
+<ul>
+  <li>Affiliate must ensure that any Qualifying Promotion remains publicly accessible and contains the required promotional elements for the duration of the Commission Eligibility Period. If the Qualifying Promotion is removed, made private, altered to remove required promotional elements, or otherwise becomes inaccessible, Affiliate's commission eligibility will immediately terminate as of the date the promotion becomes unavailable. Commissions earned prior to that date remain payable in accordance with this Agreement.</li>
+</ul>`;
+      default:
+        return `
+<h3>6. QUALIFYING PROMOTIONS</h3>
+<p>6.1 A "Qualifying Promotion" that extends the Commission Eligibility Period includes:</p>
+<ul>
+  <li>The unaltered affiliate URL in the video description.</li>
+  AND
+  <li>A verbal mention of Wander with the Offer Code text AND Wander app icon displayed on screen for at least 7 seconds.</li>
+  OR
+  <li>A verbal mention of Wander with the QR code AND Wander app icon displayed on screen for at least 7 seconds.</li>
+</ul>
+<p>6.2 Affiliate must self-report the posting of a promotion via the Wander Affiliate Portal. Failure to do so will exempt the promotion from being considered a Qualifying Promotion. These submissions must occur before the Commission Eligibility Period expires in order to extend the Commission Eligibility Period.</p>
+<p>6.3 Continuing Availability Requirement</p>
+<ul>
+  <li>Affiliate must ensure that any Qualifying Promotion remains publicly accessible and contains the required promotional elements for the duration of the Commission Eligibility Period. If the Qualifying Promotion is removed, made private, altered to remove required promotional elements, or otherwise becomes inaccessible, Affiliate's commission eligibility will immediately terminate as of the date the promotion becomes unavailable. Commissions earned prior to that date remain payable in accordance with this Agreement.</li>
+</ul>`;
+    }
+  }
+
+  // Section 7 HTML (for live contract preview)
+  function getSection7Html(medium) {
+    const channelWord = getPrimaryChannelWord(medium);
+    return `
+<h3>7. DISTRIBUTION CHANNELS</h3>
+<p>Wander grants the Affiliate the right to promote Wander using the Offer Code on any of their preferred distribution channels (blogs, social media, or otherwise) in addition to ${channelWord}. However, the Commission Eligibility Period is only extended by use of a Qualifying Promotion as described in Section 6.</p>`;
+  }
+
+  // Section 6 PDF (writes directly via addHeading/addPara/addBullet)
+  function getSection6Pdf(medium, eligDays, addHeading, addPara, addBullet) {
+    switch (medium) {
+      case "Facebook":
+        addHeading("6. QUALIFYING PROMOTIONS");
+        addPara("6.1 A \"Qualifying Promotion\" that extends the Commission Eligibility Period includes a public post or video on Affiliate's Facebook page or group that satisfies all of the following:");
+        addBullet("The unaltered affiliate URL is included in the post body or video description.");
+        addBullet("Wander is mentioned by name with the Offer Code clearly displayed or described.");
+        addBullet("The post or video remains publicly accessible for the duration of the Commission Eligibility Period.");
+        addPara("6.2 Affiliate must self-report the posting of a promotion via the Wander Affiliate Portal. Failure to do so will exempt the promotion from being considered a Qualifying Promotion. Submissions must occur before the Commission Eligibility Period expires.");
+        addPara("6.3 Continuing Availability Requirement: Affiliate must ensure that any Qualifying Promotion remains publicly accessible and contains the required promotional elements for the duration of the Commission Eligibility Period. If the Qualifying Promotion is removed, made private, or altered, Affiliate's commission eligibility will immediately terminate as of that date.");
+        break;
+      default:
+        addHeading("6. QUALIFYING PROMOTIONS");
+        addPara("6.1 A \"Qualifying Promotion\" that extends the Commission Eligibility Period requires:");
+        addBullet("The unaltered affiliate URL in the video description; AND");
+        addBullet("A verbal mention of Wander with the Offer Code text AND Wander app icon displayed on screen for at least 7 seconds; OR");
+        addBullet("A verbal mention of Wander with the QR code AND Wander app icon displayed on screen for at least 7 seconds.");
+        addPara("6.2 Affiliate must self-report the posting of a promotion via the Wander Affiliate Portal. Failure to do so will exempt the promotion from being considered a Qualifying Promotion. Submissions must occur before the Commission Eligibility Period expires.");
+        addPara("6.3 Continuing Availability Requirement: Affiliate must ensure that any Qualifying Promotion remains publicly accessible and contains the required promotional elements for the duration of the Commission Eligibility Period. If the Qualifying Promotion is removed, made private, or altered, Affiliate's commission eligibility will immediately terminate as of that date.");
+    }
+  }
+
+  // Section 7 PDF
+  function getSection7Pdf(medium, addHeading, addPara) {
+    const channelWord = getPrimaryChannelWord(medium);
+    addHeading("7. DISTRIBUTION CHANNELS");
+    addPara(`Wander grants the Affiliate the right to promote Wander using the Offer Code on any of their preferred distribution channels (blogs, social media, or otherwise) in addition to ${channelWord}. However, the Commission Eligibility Period is only extended by use of a Qualifying Promotion as described in Section 6.`);
+  }
+
+  // ─────────────────────────────────────────────────────────────────
   // Decode onboarding code back to offer code
   // ─────────────────────────────────────────────────────────────────
   function decodeOnboardingCode(code) {
@@ -549,6 +648,12 @@
       if (leadData.email)      document.getElementById("ob-email").value      = leadData.email;
       if (leadData.channelUrl) document.getElementById("ob-channelUrl").value = leadData.channelUrl;
 
+      // Update channel URL label and placeholder based on medium
+      const channelUrlLabel = document.getElementById("ob-channelUrl-label");
+      const channelUrlInput = document.getElementById("ob-channelUrl");
+      if (channelUrlLabel) channelUrlLabel.textContent = getChannelLabel(leadData.medium);
+      if (channelUrlInput) channelUrlInput.placeholder = getChannelPlaceholder(leadData.medium);
+
       // Initial contract render
       renderContract(leadData);
 
@@ -586,6 +691,7 @@
     const commPct       = lead.commissionPct || 25;
     const eligDays      = lead.commissionEligibilityPeriod || 90;
     const effectiveDate = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+    const medium        = lead.medium || "";
 
     const retailPrice = 19.99;
     const discounted  = (retailPrice * 0.90).toFixed(2);
@@ -594,42 +700,39 @@
     const commission  = (netProceeds * commPct / 100).toFixed(2);
 
     // Read live form values
-    const firstName      = document.getElementById("ob-firstName")     ? document.getElementById("ob-firstName").value.trim()     : "";
-    const lastName       = document.getElementById("ob-lastName")      ? document.getElementById("ob-lastName").value.trim()      : "";
-    const businessEntity = document.getElementById("ob-businessEntity")? document.getElementById("ob-businessEntity").value.trim(): "";
-    const address        = document.getElementById("ob-address")       ? document.getElementById("ob-address").value.trim()       : "";
-    const email          = document.getElementById("ob-email")         ? document.getElementById("ob-email").value.trim()         : "";
-    const paypal         = document.getElementById("ob-paypal")        ? document.getElementById("ob-paypal").value.trim()        : "";
-    const channelUrl     = document.getElementById("ob-channelUrl")    ? document.getElementById("ob-channelUrl").value.trim()    : (lead.channelUrl || "");
+    const firstName      = document.getElementById("ob-firstName")      ? document.getElementById("ob-firstName").value.trim()      : "";
+    const lastName       = document.getElementById("ob-lastName")       ? document.getElementById("ob-lastName").value.trim()       : "";
+    const businessEntity = document.getElementById("ob-businessEntity") ? document.getElementById("ob-businessEntity").value.trim() : "";
+    const address        = document.getElementById("ob-address")        ? document.getElementById("ob-address").value.trim()        : "";
+    const email          = document.getElementById("ob-email")          ? document.getElementById("ob-email").value.trim()          : "";
+    const paypal         = document.getElementById("ob-paypal")         ? document.getElementById("ob-paypal").value.trim()         : "";
+    const channelUrl     = document.getElementById("ob-channelUrl")     ? document.getElementById("ob-channelUrl").value.trim()     : (lead.channelUrl || "");
 
     // Build affiliate name display
-    let affiliateName = "";
-    let affiliatePartyLine = "";
     const fullName = [firstName, lastName].filter(Boolean).join(" ");
+    let affiliatePartyLine;
     if (businessEntity) {
-      affiliateName = businessEntity;
       affiliatePartyLine = businessEntity
         ? `${esc(businessEntity)} ("Affiliate") — represented by ${esc(fullName)}, its authorized representative`
         : `<span class="pending">[Affiliate Name]</span>`;
     } else {
-      affiliateName = fullName;
       affiliatePartyLine = fullName
         ? `${esc(fullName)} ("Affiliate")`
         : `<span class="pending">[Affiliate Name]</span>`;
     }
 
-    const affiliateNameDisplay  = affiliatePartyLine;
-    const addressDisplay        = address        ? esc(address)        : `<span class="pending">[Affiliate Physical Address]</span>`;
-    const emailDisplay          = email          ? esc(email)          : `<span class="pending">[Affiliate Email Address]</span>`;
-    const paypalDisplay         = paypal         ? esc(paypal)         : `<span class="pending">[Affiliate PayPal Address]</span>`;
-    const channelUrlDisplay     = channelUrl     ? esc(channelUrl)     : `<span class="pending">[Affiliate YouTube Channel URL]</span>`;
+    const addressDisplay    = address    ? esc(address)    : `<span class="pending">[Affiliate Physical Address]</span>`;
+    const emailDisplay      = email      ? esc(email)      : `<span class="pending">[Affiliate Email Address]</span>`;
+    const paypalDisplay     = paypal     ? esc(paypal)     : `<span class="pending">[Affiliate PayPal Address]</span>`;
+    const channelLabel      = getChannelLabel(medium);
+    const channelUrlDisplay = channelUrl ? esc(channelUrl) : `<span class="pending">[Affiliate ${esc(channelLabel)}]</span>`;
 
     document.getElementById("contract-box").innerHTML = `
 <h3>WANDER AFFILIATE PARTNERSHIP AGREEMENT</h3>
 <p>This Agreement is entered into as of ${effectiveDate} ("Effective Date") between:</p>
 <p><strong>Dainware LLC ("Wander")</strong><br>900 NW High Point Dr., Lee's Summit, MO 64081 USA<br>ryan.cofer@dainware.com</p>
 <p>and</p>
-<p><strong>${affiliateNameDisplay}</strong><br>${addressDisplay}<br>${emailDisplay}</p>
+<p><strong>${affiliatePartyLine}</strong><br>${addressDisplay}<br>${emailDisplay}</p>
 
 <h3>1. PARTNERSHIP OVERVIEW</h3>
 <p>Dainware grants Affiliate the right to promote Wander (the "App") to Affiliate's audience using the tracking tools provided by Dainware, including a unique promo code (identified in Exhibit A), QR code, and affiliate URL (collectively, the "Offer Code"), in exchange for commission payments as outlined in this Agreement. Affiliate is under no obligation to promote the App. This Agreement governs the terms and conditions that apply if and when Affiliate chooses to do so. Affiliate may promote as frequently or infrequently as they wish, with commissions subject to the Commission Eligibility Period defined in Section 5.</p>
@@ -699,23 +802,9 @@
 <p>5.5 Code May Remain Active: The Offer Code may remain active for customer use indefinitely, continuing to provide redeemers with a discount. However, Affiliate will not earn commissions on sales made with the Offer Code after the Commission Eligibility Period has expired.</p>
 <p>5.6 Reactivation: To resume earning commissions after the Commission Eligibility Period has expired, Affiliate must enter into a new agreement with Dainware and will be assigned a new Offer Code.</p>
 
-<h3>6. QUALIFYING PROMOTIONS</h3>
-<p>6.1 A "Qualifying Promotion" that extends the Commission Eligibility Period includes:</p>
-<ul>
-  <li>The unaltered affiliate URL in the video description.</li>
-  AND
-  <li>A verbal mention of Wander with the Offer Code text AND Wander app icon displayed on screen for at least 7 seconds.</li>
-  OR
-  <li>A verbal mention of Wander with the QR code AND Wander app icon displayed on screen for at least 7 seconds.</li>
-</ul>
-<p>6.2 Affiliate must self-report the posting of a promotion via the Wander Affiliate Portal. Failure to do so will exempt the promotion from being considered a Qualifying Promotion. These submissions must occur before the Commission Eligibility Period expires in order to extend the Commission Eligibility Period.</p>
-<p>6.3 Continuing Availability Requirement</p>
-<ul>
-  <li>Affiliate must ensure that any Qualifying Promotion remains publicly accessible and contains the required promotional elements for the duration of the Commission Eligibility Period. If the Qualifying Promotion is removed, made private, altered to remove required promotional elements, or otherwise becomes inaccessible, Affiliate's commission eligibility will immediately terminate as of the date the promotion becomes unavailable. Commissions earned prior to that date remain payable in accordance with this Agreement.</li>
-</ul>
+${getSection6Html(medium, eligDays)}
 
-<h3>7. DISTRIBUTION CHANNELS</h3>
-<p>Wander grants the Affiliate the right to promote Wander using the Offer Code on any of their preferred distribution channels (blogs, social media, or otherwise) in addition to YouTube. However, the Commission Eligibility Period is only extended by use of a Qualifying Promotion as described in Section 6.</p>
+${getSection7Html(medium)}
 
 <h3>8. REPORTING &amp; TRACKING</h3>
 <p>8.1 Dainware will provide Affiliate with the ability to track Offer Code usage showing the number of redemptions over time periods via the "Affiliate Portal".</p>
@@ -780,12 +869,12 @@
 <p>Including Exhibit A attached hereto:</p>
 <p>The parties below agree that electronic signatures, including typed names and dates, are legally binding and have the same legal effect as handwritten signatures, in accordance with the Electronic Signatures in Global and National Commerce Act (E-SIGN Act) and any applicable state or international equivalent.</p>
 <p><strong>Dainware LLC:</strong><br>Ryan Cofer, Manager<br>Date: 2/20/2026</p>
-<p><strong>Affiliate:</strong><br>${affiliateNameDisplay}<br>Date: ${effectiveDate}</p>
+<p><strong>Affiliate:</strong><br>${affiliatePartyLine}<br>Date: ${effectiveDate}</p>
 
 <div class="exhibit">
   <h3>EXHIBIT A — AFFILIATE INFORMATION</h3>
   <p><strong>Promo Code:</strong> ${esc(offerCode)}</p>
-  <p><strong>Affiliate YouTube Channel URL:</strong> ${channelUrlDisplay}</p>
+  <p><strong>${esc(channelLabel)}:</strong> ${channelUrlDisplay}</p>
   <p><strong>Affiliate PayPal Address:</strong> ${paypalDisplay}</p>
   <p><strong>Affiliate Physical Address:</strong> ${addressDisplay}</p>
   <p><strong>Affiliate Email Address:</strong> ${emailDisplay}</p>
@@ -805,6 +894,7 @@
     const offerCode     = lead.offerCode || "—";
     const commPct       = lead.commissionPct || 25;
     const eligDays      = lead.commissionEligibilityPeriod || 90;
+    const medium        = lead.medium || "";
     const effectiveDate = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
     const submittedAt   = new Date().toLocaleString("en-US", { dateStyle: "long", timeStyle: "short" });
 
@@ -826,8 +916,8 @@
       darkText:    [30,  30,  30 ],
       bodyText:    [50,  50,  50 ],
       mutedText:   [100, 100, 100],
-      accent:      [20,  60,  100],   // dark navy for headings/accents
-      rule:        [180, 180, 180],   // light gray dividers
+      accent:      [20,  60,  100],
+      rule:        [180, 180, 180],
       white:       [255, 255, 255],
     };
 
@@ -840,7 +930,6 @@
     doc.setPage(1);
     fillPageBg();
 
-    // Wrap addPage to always set white background
     const origAddPage = doc.addPage.bind(doc);
     doc.addPage = function(...args) {
       origAddPage(...args);
@@ -944,7 +1033,6 @@
     }
 
     // ── Document header ───────────────────────────────────────────
-    // Title
     doc.setFontSize(16);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(...C.accent);
@@ -967,7 +1055,6 @@
     rule(C.rule, 0.5);
     y += 8;
 
-    // Parties block
     doc.setFontSize(9.5);
     doc.setFont("times", "normal");
     doc.setTextColor(...C.bodyText);
@@ -1057,16 +1144,9 @@
     addPara("5.5 Code May Remain Active: The Offer Code may remain active for customer use indefinitely, but Affiliate will not earn commissions after the Commission Eligibility Period has expired.");
     addPara("5.6 Reactivation: To resume earning commissions after the Commission Eligibility Period has expired, Affiliate must enter into a new agreement with Dainware and will be assigned a new Offer Code.");
 
-    addHeading("6. QUALIFYING PROMOTIONS");
-    addPara("6.1 A \"Qualifying Promotion\" that extends the Commission Eligibility Period requires:");
-    addBullet("The unaltered affiliate URL in the video description; AND");
-    addBullet("A verbal mention of Wander with the Offer Code text AND Wander app icon displayed on screen for at least 7 seconds; OR");
-    addBullet("A verbal mention of Wander with the QR code AND Wander app icon displayed on screen for at least 7 seconds.");
-    addPara("6.2 Affiliate must self-report the posting of a promotion via the Wander Affiliate Portal. Failure to do so will exempt the promotion from being considered a Qualifying Promotion. Submissions must occur before the Commission Eligibility Period expires.");
-    addPara("6.3 Continuing Availability Requirement: Affiliate must ensure that any Qualifying Promotion remains publicly accessible and contains the required promotional elements for the duration of the Commission Eligibility Period. If the Qualifying Promotion is removed, made private, or altered, Affiliate's commission eligibility will immediately terminate as of that date.");
-
-    addHeading("7. DISTRIBUTION CHANNELS");
-    addPara("Wander grants the Affiliate the right to promote Wander using the Offer Code on any of their preferred distribution channels (blogs, social media, or otherwise) in addition to YouTube. However, the Commission Eligibility Period is only extended by use of a Qualifying Promotion as described in Section 6.");
+    // Medium-aware sections 6 & 7
+    getSection6Pdf(medium, eligDays, addHeading, addPara, addBullet);
+    getSection7Pdf(medium, addHeading, addPara);
 
     addHeading("8. REPORTING & TRACKING");
     addPara("8.1 Dainware will provide Affiliate with the ability to track Offer Code usage showing the number of redemptions over time periods via the \"Affiliate Portal\".");
@@ -1141,14 +1221,14 @@
     rule(C.rule, 0.5);
     y += 8;
 
-    addExhibitField("Promo Code:",              offerCode);
-    addExhibitField("YouTube Channel URL:",     fields.channelUrl   || "[Not provided]");
-    addExhibitField("PayPal Address:",          fields.paypal       || "[Not provided]");
-    addExhibitField("Physical Address:",        fields.address      || "[Not provided]");
-    addExhibitField("Email Address:",           fields.email        || "[Not provided]");
-    addExhibitField("Tax Form Type:",           fields.taxFormType  || "[Not provided]");
+    addExhibitField("Promo Code:",                        offerCode);
+    addExhibitField(getChannelLabel(medium) + ":",        fields.channelUrl   || "[Not provided]");
+    addExhibitField("PayPal Address:",                    fields.paypal       || "[Not provided]");
+    addExhibitField("Physical Address:",                  fields.address      || "[Not provided]");
+    addExhibitField("Email Address:",                     fields.email        || "[Not provided]");
+    addExhibitField("Tax Form Type:",                     fields.taxFormType  || "[Not provided]");
     if (fields.businessEntity) {
-      addExhibitField("Business Entity:",       fields.businessEntity);
+      addExhibitField("Business Entity:",                 fields.businessEntity);
     }
 
     // ── Signature block ───────────────────────────────────────────
@@ -1232,11 +1312,9 @@
     const totalPages = doc.internal.getNumberOfPages();
     for (let i = 1; i <= totalPages; i++) {
       doc.setPage(i);
-      // Thin footer rule
       doc.setDrawColor(...C.rule);
       doc.setLineWidth(0.5);
       doc.line(margin, pageH - 36, margin + colW, pageH - 36);
-      // Footer text
       doc.setFontSize(7.5);
       doc.setFont("helvetica", "normal");
       doc.setTextColor(...C.mutedText);
@@ -1291,7 +1369,7 @@
     if (!address)                  { setStatus("Please enter your physical address.", true); return; }
     if (!email)                    { setStatus("Please enter your email address.", true); return; }
     if (!paypal)                   { setStatus("Please enter your PayPal address.", true); return; }
-    if (!channelUrl)               { setStatus("Please enter your YouTube channel URL.", true); return; }
+    if (!channelUrl)               { setStatus(`Please enter your ${getChannelLabel(leadData ? leadData.medium : "")}.`, true); return; }
     if (!taxFormType)              { setStatus("Please select your tax form type.", true); return; }
     if (!taxFile)                  { setStatus("Please upload your completed tax form PDF.", true); return; }
     if (!signature)                { setStatus("Please type your full legal name as your electronic signature.", true); return; }
