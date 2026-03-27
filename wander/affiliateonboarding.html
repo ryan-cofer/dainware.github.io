@@ -496,6 +496,15 @@
   let leadId   = null;
 
   // ─────────────────────────────────────────────────────────────────
+  // Add eligDays to a date string like "January 1, 2026" → formatted result
+  // ─────────────────────────────────────────────────────────────────
+  function addDaysToDateStr(dateStr, days) {
+    const d = new Date(dateStr);
+    d.setDate(d.getDate() + days);
+    return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+  }
+
+  // ─────────────────────────────────────────────────────────────────
   // Medium-aware helpers — single source of truth for both the
   // HTML preview and the generated PDF
   // ─────────────────────────────────────────────────────────────────
@@ -725,6 +734,12 @@
     const channelLabel      = getChannelLabel(medium);
     const channelUrlDisplay = channelUrl ? esc(channelUrl) : `<span class="pending">[Affiliate ${esc(channelLabel)}]</span>`;
 
+    // Section 5.4 example dates — all derived from eligDays
+    const ex1Start  = "January 1, 2026";
+    const ex1End    = addDaysToDateStr(ex1Start, eligDays);
+    const ex2Start  = addDaysToDateStr(ex1Start, eligDays - 15);
+    const ex2End    = addDaysToDateStr(ex2Start, eligDays);
+
     document.getElementById("contract-box").innerHTML = `
 <h3>WANDER AFFILIATE PARTNERSHIP AGREEMENT</h3>
 <p>This Agreement is entered into as of ${effectiveDate} ("Effective Date") between:</p>
@@ -792,10 +807,10 @@
 <p>5.3 Rolling ${eligDays} day expiration: Each new Qualifying Promotion extends the Commission Eligibility Period for an additional ${eligDays} days from the published date of that Qualifying Promotion.</p>
 <p>5.4 Example:</p>
 <ul>
-  <li>Affiliate posts a Qualifying Promotion on January 1, 2026</li>
-  <li>Commission eligibility runs through April 1, 2026 (90 days).</li>
-  <li>If Affiliate posts another Qualifying Promotion on March 15, 2026, the eligibility window resets and now runs through June 13, 2026 (90 days from March 15).</li>
-  <li>If Affiliate does not post a new Qualifying Promotion by April 1, 2026, this Agreement would be considered "passively terminated" and the Affiliate would receive commissions on all sales using their Offer Code made through April 1, 2026 (the end of the Commission Eligibility Period).</li>
+  <li>Affiliate posts a Qualifying Promotion on ${ex1Start}</li>
+  <li>Commission eligibility runs through ${ex1End} (${eligDays} days).</li>
+  <li>If Affiliate posts another Qualifying Promotion on ${ex2Start}, the eligibility window resets and now runs through ${ex2End} (${eligDays} days from ${ex2Start}).</li>
+  <li>If Affiliate does not post a new Qualifying Promotion by ${ex1End}, this Agreement would be considered "passively terminated" and the Affiliate would receive commissions on all sales using their Offer Code made through ${ex1End} (the end of the Commission Eligibility Period).</li>
 </ul>
 <p>5.5 Code May Remain Active: The Offer Code may remain active for customer use indefinitely, continuing to provide redeemers with a discount. However, Affiliate will not earn commissions on sales made with the Offer Code after the Commission Eligibility Period has expired.</p>
 <p>5.6 Reactivation: To resume earning commissions after the Commission Eligibility Period has expired, Affiliate must enter into a new agreement with Dainware and will be assigned a new Offer Code.</p>
@@ -901,6 +916,12 @@ ${getSection7Html(medium)}
     const appStoreFee = 0.15;
     const netProceeds = (discounted * (1 - appStoreFee)).toFixed(2);
     const commission  = (netProceeds * commPct / 100).toFixed(2);
+
+    // Section 5.4 example dates — all derived from eligDays
+    const ex1Start = "January 1, 2026";
+    const ex1End   = addDaysToDateStr(ex1Start, eligDays);
+    const ex2Start = addDaysToDateStr(ex1Start, eligDays - 15);
+    const ex2End   = addDaysToDateStr(ex2Start, eligDays);
 
     const pageW  = doc.internal.pageSize.getWidth();
     const pageH  = doc.internal.pageSize.getHeight();
@@ -1136,9 +1157,9 @@ ${getSection7Html(medium)}
     addPara(`5.2 The Commission Eligibility Period begins on the effective date of this Agreement and extends for ${eligDays} days.`);
     addPara(`5.3 Rolling ${eligDays}-day expiration: Each new Qualifying Promotion extends the Commission Eligibility Period for an additional ${eligDays} days from the published date of that Qualifying Promotion.`);
     addPara("5.4 Example:");
-    addBullet("Affiliate posts a Qualifying Promotion on January 1, 2026 — eligibility runs through April 1, 2026 (90 days).");
-    addBullet("If Affiliate posts another Qualifying Promotion on March 15, 2026, eligibility resets and now runs through June 13, 2026.");
-    addBullet("If no new Qualifying Promotion is posted by April 1, 2026, this Agreement is considered \"passively terminated.\"");
+    addBullet(`Affiliate posts a Qualifying Promotion on ${ex1Start} — eligibility runs through ${ex1End} (${eligDays} days).`);
+    addBullet(`If Affiliate posts another Qualifying Promotion on ${ex2Start}, eligibility resets and now runs through ${ex2End} (${eligDays} days from ${ex2Start}).`);
+    addBullet(`If no new Qualifying Promotion is posted by ${ex1End}, this Agreement is considered "passively terminated."`);
     addPara("5.5 Code May Remain Active: The Offer Code may remain active for customer use indefinitely, but Affiliate will not earn commissions after the Commission Eligibility Period has expired.");
     addPara("5.6 Reactivation: To resume earning commissions after the Commission Eligibility Period has expired, Affiliate must enter into a new agreement with Dainware and will be assigned a new Offer Code.");
 
