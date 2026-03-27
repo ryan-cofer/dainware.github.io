@@ -933,15 +933,15 @@
 
     var promotionRecord = {
       promoDate:   promoDate,
+      promoUrl:    promoUrl,
       submittedAt: submittedAt,
       offerCode:   OFFER_CODE,
       channelName: affiliateData.channelName || "",
       medium:      affiliateData.medium || "",
     };
 
-    // Only include URL and timestamp fields for non-Facebook affiliates
+    // Only include timestamp field for non-Facebook affiliates
     if (!isFacebook) {
-      promotionRecord.promoUrl       = promoUrl;
       promotionRecord.promoTimestamp = promoTimestamp;
     }
 
@@ -953,13 +953,13 @@
     var affiliateRef = db.collection(COLLECTION).doc(OFFER_CODE);
     var affiliateUpdate = {
       lastPromoDate:                promoDate,
+      lastPromoUrl:                 promoUrl,
       lastPromoSubmittedAt:         submittedAt,
       commissionEligibilityEndDate: newEndDateStr,
     };
 
-    // Only update URL and timestamp fields for non-Facebook affiliates
+    // Only update timestamp field for non-Facebook affiliates
     if (!isFacebook) {
-      affiliateUpdate.lastPromoUrl       = promoUrl;
       affiliateUpdate.lastPromoTimestamp = promoTimestamp;
     }
 
@@ -967,11 +967,11 @@
 
     batch.commit().then(function() {
       affiliateData.lastPromoDate                = promoDate;
+      affiliateData.lastPromoUrl                 = promoUrl;
       affiliateData.lastPromoSubmittedAt         = submittedAt;
       affiliateData.commissionEligibilityEndDate = newEndDateStr;
 
       if (!isFacebook) {
-        affiliateData.lastPromoUrl       = promoUrl;
         affiliateData.lastPromoTimestamp = promoTimestamp;
       }
 
